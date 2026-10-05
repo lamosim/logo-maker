@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# Fetched font files are reproducible from assets/fonts/catalog.json and manifest.json
+assets/fonts/*/*.ttf
+assets/fonts/*/*.otf
+assets/fonts/*/instances/
+
+# Local Claude settings
+.claude/settings.local.json
