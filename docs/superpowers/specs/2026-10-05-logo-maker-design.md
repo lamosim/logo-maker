@@ -302,7 +302,7 @@ Exports choose the build by target size: 96 px and above uses `full` symbol; 33 
 
 - `assets/fonts/catalog.json`: about 60 families from `docs/research/03-deliverable-spec.md` section 4.4, each `{family, category, license, personality[], google_dir, variable, weights[]}`. Categories: geometric sans, grotesk, humanist sans, transitional serif, old-style serif, didone display, slab, display, mono, rounded.
 - `logomaker fonts fetch <Family>`: downloads the family's TTF files and licence from `https://raw.githubusercontent.com/google/fonts/main/<google_dir>/`, verifies each file parses with fontTools, writes `assets/fonts/<family>/manifest.json` with URLs and sha256. Families not in the catalogue are fetched by reading the repository's `METADATA.pb`.
-- Variable fonts are instanced to the requested weight with `fontTools.varLib.instancer` and cached under `instances/`.
+- Variable fonts are used directly at any weight: fontTools builds the glyph outlines at the requested `wght` location and HarfBuzz shapes with the same variation, so no static instances are generated. Packages ship the variable file.
 - The kit refuses an uncached family with exit 3 and the message "run logomaker fonts fetch <Family>".
 - Packages copy the used family's TTFs and licence file into `package/fonts/` with a `FONT-NOTICE.md` naming the licence.
 
@@ -372,7 +372,7 @@ Ten criteria, each 1 to 5 with one line of evidence:
 9. Congruent: shape, weight, colour and typeface match the feature targets and the name's sound.
 10. System: lockups, tiers and variants derive cleanly; a one-paragraph rationale exists.
 
-Gate: criteria 1, 3 and 4 at 4 or above, no hard audit failures. The sheet shows the scores beside each survivor.
+Gate: criteria 1, 3 and 4 at 4 or above, no hard audit failures. Scores live in `<concept>/scorecard.json` (`schemas.Scorecard`: the ten scores, evidence, `kill`, `reason`); `sheet concepts` refuses a concept without a passing audit and a gate-passing scorecard, and shows the scores beside each survivor.
 
 ## 9. Package manifest
 
@@ -411,6 +411,7 @@ All commands print one JSON object with at least `{"ok": bool, "errors": [], "wa
 | `logomaker brand list` / `brand status <slug>` | registry and state |
 | `logomaker brand advance <slug> --to <phase>` | gated phase transition |
 | `logomaker brand decide <slug> --phase p --by user|claude --note "..."` | append a decision |
+| `logomaker brand set <slug> [--territory] [--concept] [--primary-lockup] [--industry] [--surface ...] [--font ROLE=FAMILY:WEIGHT]` | record choices in the state file without editing it by hand |
 | `logomaker names analyze <name>` | linguistic features |
 | `logomaker names check <name> [--tlds com,co,io,ai,app,dev] [--handles github]` | availability |
 | `logomaker fonts list [--category c] [--personality p]` / `fonts fetch <Family>` | catalogue and cache |
