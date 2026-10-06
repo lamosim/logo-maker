@@ -6,6 +6,7 @@ from .primitives import (  # noqa: F401
 )
 from .ops import align, center, fit, intersect, mirror_x, mirror_y, offset, rotate, scale, stroke, subtract, translate, union, xor  # noqa: F401
 from .optical import StrokeWidths, compensate_stroke, optical_center, overshoot  # noqa: F401
+from .text import TextShape, glyph, text  # noqa: F401
 
 __all__ = [
     "Box", "Shape", "fmt", "normalize_winding",
@@ -14,4 +15,5 @@ __all__ = [
     "align", "center", "fit", "intersect", "mirror_x", "mirror_y", "offset", "rotate", "scale", "stroke", "subtract",
     "translate", "union", "xor",
     "StrokeWidths", "compensate_stroke", "optical_center", "overshoot",
+    "TextShape", "glyph", "text",
 ]

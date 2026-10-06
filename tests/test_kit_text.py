@@ -1,0 +1,82 @@
+import math
+
+import pytest
+import skia
+
+from logomaker.kit.ops import translate
+from logomaker.kit.text import TextShape, glyph, text
+from logomaker.output import CliError
+
+FIRA_CAP = 1374  # OS/2 sCapHeight of the fixture font
+FIRA_UPEM = 1950
+FIRA_ADVANCE = 1200  # monospace advance in font units
+
+
+def test_cap_height_scales_the_glyphs(project_root):
+    h = text("H", "Fira Code", cap_height=200)
+    assert isinstance(h, TextShape)
+    assert math.isclose(h.bounds.h, 200, abs_tol=1.0)
+    assert math.isclose(h.bounds.y0, 0, abs_tol=1.0)  # baseline at y = 0
+    assert math.isclose(h.cap_height, 200) and math.isclose(h.x_height, 1050 / FIRA_CAP * 200, rel_tol=0.01)
+
+
+def test_advance_tracking_and_kern_overrides(project_root):
+    # 300 is the fixture's default instance: OS/2 sCapHeight (1374) equals the drawn H, so these constants stay exact
+    scale = 200 / FIRA_CAP
+    plain = text("ABC", "Fira Code", weight=300, cap_height=200)
+    assert math.isclose(plain.advance, 3 * FIRA_ADVANCE * scale, rel_tol=1e-3)
+    assert len(plain.glyph_bounds) == 3
+    tracked = text("AB", "Fira Code", weight=300, cap_height=200, tracking=100)
+    base = text("AB", "Fira Code", weight=300, cap_height=200)
+    assert math.isclose(tracked.advance - base.advance, 100 / 1000 * FIRA_UPEM * scale, rel_tol=1e-3)
+    kerned = text("AB", "Fira Code", weight=300, cap_height=200, kern={"AB": -200})
+    assert math.isclose(base.advance - kerned.advance, 200 / 1000 * FIRA_UPEM * scale, rel_tol=1e-3)
+    assert kerned.glyph_bounds[1].x0 < base.glyph_bounds[1].x0
+
+
+def test_features_change_shapes(project_root):
+    with_calt = text("->", "Fira Code", features=("calt",))
+    without = text("->", "Fira Code", features=())
+    assert with_calt.to_path_data() != without.to_path_data()
+
+
+def test_variable_weight_changes_stem_width(project_root):
+    light = glyph("H", "Fira Code", weight=300, cap_height=200)
+    bold = glyph("H", "Fira Code", weight=700, cap_height=200)
+    assert bold.area > light.area * 1.3
+    assert math.isclose(bold.bounds.h, 200, abs_tol=1.0)  # cap height measured on the drawn instance
+
+
+def test_missing_family_exits_3(project_root):
+    with pytest.raises(CliError) as exc:
+        text("Sora", "Sora")
+    assert exc.value.code == 3 and "run: logomaker fonts fetch Sora" in str(exc.value)
+
+
+def test_transform_keeps_geometry(project_root):
+    t = text("Go", "Fira Code", cap_height=100)
+    moved = translate(t, 50, 0)
+    assert math.isclose(moved.bounds.x0, t.bounds.x0 + 50, abs_tol=1e-3)  # skia stores points as float32
+
+
+def test_counters_stay_open_under_nonzero_fill(project_root):
+    # The fixture's zero has a slash that splits its counter in two; pathops winds one half like the outline.
+    zero = glyph("0", "Fira Code", cap_height=200)
+    nonzero, even_odd = skia.Path(zero.path), skia.Path(zero.path)
+    nonzero.setFillType(skia.PathFillType.kWinding)  # the SVG's fill-rule="nonzero"
+    even_odd.setFillType(skia.PathFillType.kEvenOdd)  # how pathops means its overlap-free output
+    b = zero.bounds
+    grid = [(b.x0 + b.w * i / 50, b.y0 + b.h * j / 50) for i in range(51) for j in range(51)]
+    assert [nonzero.contains(x, y) for x, y in grid] == [even_odd.contains(x, y) for x, y in grid]
+
+
+def test_out_of_range_weights_take_the_nearest_axis_weight(project_root):
+    # the fixture's wght axis spans 300-700
+    assert glyph("H", "Fira Code", weight=100).to_path_data() == glyph("H", "Fira Code", weight=300).to_path_data()
+    assert glyph("H", "Fira Code", weight=900).to_path_data() == glyph("H", "Fira Code", weight=700).to_path_data()
+    assert glyph("H", "Fira Code", weight=900).font == "Fira Code 700"
+
+
+def test_empty_string_gives_an_empty_shape(project_root):
+    empty = text("", "Fira Code")
+    assert empty.is_empty and empty.advance == 0 and empty.glyph_bounds == []
