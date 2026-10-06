@@ -174,6 +174,27 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
     assert registry._check_concept(brand, state) == ["01-good/audit.json has failures"]
 
 
+def test_a_malformed_registry_index_is_an_error_naming_it(project_root):
+    run("brand", "new", "Keystone")
+    index = project_root / "registry" / "brands.json"
+    for content in ("not json", "[]", '{"brands": 3}', '{"brands": [{"name": "no slug"}]}'):
+        index.write_text(content)
+        code, payload = run("brand", "list")
+        assert code == 2 and "traceback" not in payload and payload["errors"][0].startswith(str(index)), (content, payload)
+        assert "rebuild" in payload["errors"][0]
+
+
+def test_brand_list_rebuilds_a_missing_index_from_the_brand_folders(project_root):
+    run("brand", "new", "Quill")
+    run("brand", "new", "Keystone")
+    (project_root / "registry" / "brands.json").unlink()
+    (project_root / "registry" / "INDEX.md").unlink()
+    code, payload = run("brand", "list")
+    assert code == 0 and [(b["slug"], b["name"], b["phase"]) for b in payload["brands"]] == [("keystone", "Keystone", "intake"), ("quill", "Quill", "intake")]
+    assert json.loads((project_root / "registry" / "brands.json").read_text())["brands"] == payload["brands"]
+    assert "| quill | Quill | intake |" in (project_root / "registry" / "INDEX.md").read_text()
+
+
 def test_final_tokens_must_validate(project_root):
     from tests.test_color import good_tokens
 

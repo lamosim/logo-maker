@@ -57,22 +57,40 @@ def new_brand(paths: ProjectPaths, name: str, slug: str | None = None, unnamed: 
     return state
 
 
+def _entry(state: BrandState) -> dict[str, Any]:
+    return {"slug": state.slug, "name": state.name, "phase": state.phase.value, "updated": state.updated}
+
+
 def list_brands(paths: ProjectPaths) -> list[dict[str, Any]]:
+    """The registry index, registry/brands.json. A missing index is rebuilt from brands/*/brand.json and written back;
+    a malformed one is a CliError naming it."""
     path = paths.registry / "brands.json"
     if not path.is_file():
-        return []
-    return json.loads(path.read_text(encoding="utf-8")).get("brands", [])
+        entries = [_entry(load_state(paths, folder.name)) for folder in sorted(paths.brands.glob("*")) if (folder / "brand.json").is_file()]
+        _write_registry(paths, entries)
+        return entries
+    rebuild = "; delete it and run `logomaker brand list` to rebuild it from the brand folders"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as err:  # malformed JSON, or bytes that are not UTF-8
+        raise CliError(f"{path} is not valid JSON: {err}{rebuild}") from err
+    entries = data.get("brands") if isinstance(data, dict) else None
+    if not isinstance(entries, list) or not all(isinstance(e, dict) and "slug" in e for e in entries):
+        raise CliError(f'{path} must hold {{"brands": [...]}} with a slug in every entry{rebuild}')
+    return entries
 
 
-def _update_registry(paths: ProjectPaths, state: BrandState) -> None:
+def _write_registry(paths: ProjectPaths, entries: list[dict[str, Any]]) -> None:
     paths.registry.mkdir(parents=True, exist_ok=True)
-    entries = [e for e in list_brands(paths) if e["slug"] != state.slug]
-    entries.append({"slug": state.slug, "name": state.name, "phase": state.phase.value, "updated": state.updated})
-    entries.sort(key=lambda e: e["slug"])
+    entries = sorted(entries, key=lambda e: e["slug"])
     (paths.registry / "brands.json").write_text(json.dumps({"brands": entries}, indent=2) + "\n", encoding="utf-8")
     lines = ["# Brands", "", "| Slug | Name | Phase | Updated |", "|---|---|---|---|"]
     lines += [f"| {e['slug']} | {e['name']} | {e['phase']} | {e['updated']} |" for e in entries]
     (paths.registry / "INDEX.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _update_registry(paths: ProjectPaths, state: BrandState) -> None:
+    _write_registry(paths, [e for e in list_brands(paths) if e["slug"] != state.slug] + [_entry(state)])
 
 
 def decide(paths: ProjectPaths, slug: str, phase: Phase, by: str, note: str) -> BrandState:
