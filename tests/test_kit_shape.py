@@ -80,7 +80,10 @@ def test_normalize_winding_alternates_nested_contours():
         p.addCircle(0, 0, r)
     fixed = normalize_winding(p)
     assert math.isclose(Shape(fixed).area, math.pi * (100**2 - 80**2 + 60**2), rel_tol=0.005)
-    assert [signed_area(part.flatten()[0]) > 0 for part in Shape(fixed).subpaths()] == [True, False, True]
+    parts = Shape(fixed).subpaths()
+    assert [signed_area(part.flatten()[0]) > 0 for part in parts] == [True, False, True]
+    widths = [part.bounds.w for part in parts]  # contour order is kept
+    assert len(widths) == 3 and all(math.isclose(w, e, abs_tol=0.01) for w, e in zip(widths, (200, 160, 120)))
     assert fixed.getFillType() == skia.PathFillType.kWinding
     assert Shape(normalize_winding(p)).to_path_data() == Shape(fixed).to_path_data()
 

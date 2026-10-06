@@ -265,8 +265,9 @@ def normalize_winding(path: skia.Path) -> skia.Path:
 
     Pathops return even-odd paths with arbitrary contour directions. Here contours at even depth run counter-clockwise
     (positive signed area) and those at odd depth clockwise, so fill-rule nonzero and even-odd agree and `Shape.area`
-    is right. Contours keep their order; degenerate ones, and any without an inside probe point, pass through unchanged.
-    The result has winding fill.
+    is right. The input is read as even-odd and its contours must not cross each other (Simplify output or hand-built
+    nested contours); overlapping contours are not merged. Contours keep their order; degenerate ones, and any without
+    an inside probe point, pass through unchanged. The result has winding fill.
     """
     parts = Shape(path).subpaths()
     polys = [part.flatten()[0] for part in parts]

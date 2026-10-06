@@ -1,5 +1,7 @@
 import math
 
+import pytest
+
 from logomaker.kit.primitives import (
     arc, bezier, circle, line, polygon, polyline, rect, rect_centered, regular_polygon, ring, rrect, snap, snap_angle, wedge,
 )
@@ -70,3 +72,14 @@ def test_bezier_filled_and_stroked():
 def test_self_crossing_stroke_excludes_its_hole():
     looped = polyline([(0, 0), (100, 0), (100, 100), (50, 100), (50, -50)], 10)
     assert math.isclose(looped.area, 3900, rel_tol=0.01)
+
+
+def test_non_positive_widths_are_rejected():
+    with pytest.raises(ValueError, match="stroke width must be positive"):
+        polyline([(0, 0), (100, 0), (100, 100)], 0.1)  # snaps to 0
+    with pytest.raises(ValueError, match="stroke width must be positive"):
+        line(0, 0, 100, 0, -5)
+    with pytest.raises(ValueError, match="stroke width must be positive"):
+        arc(0, 0, 100, 0, 90, 0)
+    with pytest.raises(ValueError, match="ring width must be positive"):
+        ring(0, 0, 100, 0.1)  # snaps to 0

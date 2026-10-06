@@ -46,6 +46,8 @@ def _finish(path: skia.Path, free: bool) -> Shape:
 
 
 def stroked_path(path: skia.Path, width: float, cap: str = "butt", join: str = "miter", miter_limit: float = 4) -> skia.Path:
+    if width <= 0:  # skia strokes width <= 0 as a hairline, and Simplify would then fill the bare centreline
+        raise ValueError("stroke width must be positive")
     paint = skia.Paint()
     paint.setStyle(skia.Paint.kStroke_Style)
     paint.setStrokeWidth(width)
@@ -66,6 +68,8 @@ def circle(cx: float, cy: float, r: float, free: bool = False) -> Shape:
 def ring(cx: float, cy: float, r: float, width: float, start: float | None = None, end: float | None = None, free: bool = False) -> Shape:
     """Annulus with outer radius r and band width `width`; with start/end (degrees, counter-clockwise) an annular sector."""
     cx, cy, r, width = _v(cx, free), _v(cy, free), _v(r, free), _v(width, free)
+    if width <= 0:
+        raise ValueError("ring width must be positive")
     inner = r - width
     if start is None or end is None:
         # The hole is wound against the outline so it stays a hole under SVG fill-rule="nonzero" and in Shape.area.
