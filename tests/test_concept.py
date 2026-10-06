@@ -1,9 +1,11 @@
 import json
+import os
 
 from click.testing import CliRunner
 
 from logomaker.cli import main
 from logomaker.kit import concept as conceptlib
+from logomaker.kit.mark import VARIANTS
 from logomaker.paths import project
 from tests.conftest import install_concept
 
@@ -69,3 +71,36 @@ def test_final_folder_resolves(project_root):
     final = project_root / "brands" / "keystone" / "final"
     (final / "concept.py").write_text((project_root / "brands" / "keystone" / "concepts" / "01-good" / "concept.py").read_text())
     assert conceptlib.concept_folder(paths, "keystone", "final") == final
+
+
+def test_reload_sees_same_size_edit_and_writes_no_bytecode(project_root):
+    folder = install_concept(project_root, "good")
+    source = folder / "concept.py"
+    before = conceptlib.build_tiers(conceptlib.load_concept(folder))["full"].to_svg("black")
+    original, stat = source.read_text(), source.stat()
+    edited = original.replace("end=330", "end=300")  # angles snap to 15 degrees, so end=331 would draw the same ring
+    assert edited != original and len(edited) == len(original)
+    source.write_text(edited)
+    os.utime(source, ns=(stat.st_atime_ns, stat.st_mtime_ns))  # same size and mtime second: a cached .pyc would still look fresh
+    after = conceptlib.build_tiers(conceptlib.load_concept(folder))["full"].to_svg("black")
+    assert after != before
+    assert not (folder / "__pycache__").exists()
+
+
+def test_unknown_variant_exits_2_and_keeps_previous_build(project_root):
+    install_concept(project_root, "good")
+    assert run("concept", "build", "keystone", "01-good")[0] == 0
+    build = project_root / "brands" / "keystone" / "concepts" / "01-good" / "build"
+    report = (build / "build.json").read_text()
+    code, payload = run("concept", "build", "keystone", "01-good", "--variants", "blak")
+    assert (build / "full-lockup-black.svg").is_file() and (build / "build.json").read_text() == report
+    assert code == 2 and "traceback" not in payload
+    assert "'blak'" in payload["errors"][0] and all(v in payload["errors"][0] for v in VARIANTS)
+
+
+def test_import_time_errors_exit_2_with_traceback(project_root):
+    folder = install_concept(project_root, "good")
+    for source, error in (("def build(p:\n", "SyntaxError"), ("raise ValueError('at import')\n", "ValueError: at import")):
+        (folder / "concept.py").write_text(source)
+        code, payload = run("concept", "build", "keystone", "01-good")
+        assert code == 2 and "failed to import" in payload["errors"][0] and error in payload["errors"][0] and "traceback" in payload

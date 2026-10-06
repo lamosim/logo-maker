@@ -13,6 +13,7 @@ import click
 from . import __version__, registry
 from . import fonts as fontlib
 from .kit import concept as conceptlib
+from .kit.mark import VARIANTS
 from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
 from .schemas import Phase
@@ -231,6 +232,9 @@ def concept_build(slug: str, concept: str, variants: str) -> None:
     paths = project()
     folder = conceptlib.concept_folder(paths, slug, concept)
     wanted = tuple(v.strip() for v in variants.split(",") if v.strip())
+    unknown = [v for v in wanted if v not in VARIANTS]
+    if unknown:  # checked before anything is loaded or the build folder is cleared
+        raise CliError(f"Unknown variant {', '.join(map(repr, unknown))}; choose one of: {', '.join(VARIANTS)}")
     if any(v in ("color", "reverse") for v in wanted):
         raise CliError("color and reverse variants need --tokens (see Task 8)")
     module = conceptlib.load_concept(folder)

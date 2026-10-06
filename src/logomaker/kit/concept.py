@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import sys
 import traceback
+import types
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -65,11 +65,15 @@ def load_concept(folder: Path) -> ConceptModule:
     if not source.is_file():
         raise CliError(f"No concept.py in {folder}")
     name = f"logomaker_concept_{hashlib.sha1(str(source.resolve()).encode()).hexdigest()[:12]}"
-    spec = importlib.util.spec_from_file_location(name, source)
-    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    module = types.ModuleType(name)
+    module.__file__ = str(source)
     try:
+        # Compile from source on every load, never via importlib's bytecode cache: a .pyc passes as fresh while the source
+        # keeps its size and whole-second mtime, so a quick same-length edit would build stale geometry. Bytes plus
+        # dont_inherit=True compile it as an import does (coding cookie and BOM honoured, no __future__ flags from here).
+        code = compile(source.read_bytes(), str(source), "exec", dont_inherit=True)
         sys.modules[name] = module
-        spec.loader.exec_module(module)  # type: ignore[union-attr]
+        exec(code, module.__dict__)  # noqa: S102 - running the concept module is the point of loading it
     except Exception as err:  # noqa: BLE001
         raise CliError(f"{source} failed to import: {type(err).__name__}: {err}", data={"traceback": traceback.format_exc()}) from err
     for attr in ("META", "PARAMS", "TIERS", "build"):
