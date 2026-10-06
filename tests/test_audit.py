@@ -64,6 +64,7 @@ def test_industry_resolution_ranks_whole_word_aliases(project_root):
     dental = audit.resolve_industries(cliches, "Dental clinic")  # equal lengths: the earlier match ranks first
     assert dental[0] == "dental" and "healthcare" in dental
     assert audit.resolve_industry(cliches, "Orthodontics") == "dental"
+    assert audit.resolve_industry(cliches, "Dentists") == "dental"  # plurals of aliases match too
     assert audit.resolve_industry(cliches, "Invoicing for consultants") == "fintech"
     assert audit.resolve_industry(cliches, "AI tooling") == "ai"
     assert audit.resolve_industries(cliches, "Widgets") == [] and audit.resolve_industries(cliches, None) == []
@@ -81,6 +82,7 @@ def test_cliche_matching_is_word_level(project_root):
     assert terms("keystone", "real estate") == [] and terms("eclipse", "beauty") == []
     assert terms("k") == [] and terms("circle") == []
     assert terms("sparkle burst", "AI tooling") == ["sparkle"] and terms("hexagon", "AI tooling") == ["hexagon"]
+    assert terms("hexagons", "AI tooling") == ["hexagon"] and terms("swooshes") == ["swoosh"]  # plural motifs still match
     union = audit.check_cliches(["tooth", "heartbeat"], cliches, "Dental clinic")
     assert [(f.data["term"], f.data["source"]) for f in union] == [("tooth", "dental"), ("heartbeat", "healthcare")]
 
@@ -214,6 +216,35 @@ def test_good_concept_passes_raster_checks(project_root, renderer):
     install_concept(project_root, "good")
     result = audit.audit_concept(project(), "keystone", "01-good", renderer=renderer)
     assert result.ok, [f.message for f in result.failures]
+
+
+def test_box_size_fits_the_longest_side_exactly():
+    tall = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 100"></svg>'
+    assert audit._box_size(tall, 16) == (2, 16) and audit._box_size(tall, 512) == (51, 512)
+    assert audit._box_size('<svg viewBox="0 0 100 10"></svg>', 16) == (16, 2)
+    assert audit._box_size('<svg viewBox="0 0 50 50"></svg>', 16) == (16, 16)
+
+
+@requires_chrome
+@pytest.mark.render
+def test_wordmark_only_concept_warns_on_lockup_fallbacks(project_root, renderer):
+    install_concept(project_root, "wordmark_only", name="13-word")
+    result = audit.audit_concept(project(), "keystone", "13-word", renderer=renderer)
+    assert result.ok, [f.message for f in result.failures]
+    tiers = findings(result, "tiers")
+    assert [(f.data["tier"], f.data["fallback"]) for f in tiers] == [("small", "full-lockup"), ("favicon", "full-lockup")]
+    assert all("no symbol" in f.message and "monogram" in f.message for f in tiers)
+    favicon = [f for f in findings(result, "min_feature") if f.data["output"] == "favicon"]
+    assert favicon and favicon[0].severity == "warn"
+
+
+@requires_chrome
+@pytest.mark.render
+def test_symbol_fallbacks_keep_fail_severity(project_root, renderer):
+    install_concept(project_root, "tiny_part", name="03-tiny")
+    result = audit.audit_concept(project(), "keystone", "03-tiny", renderer=renderer)
+    favicon = [f for f in findings(result, "min_feature") if f.data["output"] == "favicon"]  # checked on the small build
+    assert not result.ok and favicon[0].severity == "fail"
 
 
 @requires_chrome

@@ -30,8 +30,8 @@ def load_cliches(paths: ProjectPaths) -> dict:
 
 
 def _words(phrase: str) -> re.Pattern:
-    """Matches `phrase` as whole words, so 'key' is not found in 'keystone'."""
-    return re.compile(rf"\b{re.escape(phrase.lower().strip())}\b")
+    """Matches `phrase` as whole words, plural -s/-es allowed: 'hexagon' finds 'hexagons', 'key' does not find 'keystone'."""
+    return re.compile(rf"\b{re.escape(phrase.lower().strip())}(?:e?s)?\b")
 
 
 def resolve_industries(cliches: dict, industry: str | None) -> list[str]:
@@ -77,7 +77,8 @@ def _symbol_parts(geo: dict) -> list[dict]:
     return [p for p in geo["parts"] if p["name"].startswith("symbol")]
 
 
-def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta) -> list[Finding]:
+def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta, lenient: bool = False) -> list[Finding]:
+    """Symbol geometry checks for one size; `lenient` (a wordmark lockup standing in for a missing tier) warns instead of failing."""
     out: list[Finding] = []
     parts = _symbol_parts(geo)
     if not parts:
@@ -107,7 +108,7 @@ def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta) -> list[Find
     canvas = max(geo["bounds"]["w"], geo["bounds"]["h"])
     tiny = [sp for p in parts for sp in p["subpaths"] if max(sp["w"], sp["h"]) < canvas * TINY_FRACTION]
     if tiny:
-        sev = "fail" if name in ("small", "favicon") else "warn"
+        sev = "fail" if name in ("small", "favicon") and not lenient else "warn"
         out.append(Finding(check="tiny_parts", severity=sev, message=f"{name}: {len(tiny)} part(s) smaller than 1/48 of the canvas will vanish when small", data={"output": name, "count": len(tiny), "parts": tiny[:5]}))
     b = geo["bounds"]
     aspect = b["h"] / b["w"] if b["w"] else 0
@@ -135,31 +136,35 @@ def _text_legibility(outputs: dict, geometries: dict, state) -> list[Finding]:
     return out
 
 
-def _box_width(svg: str, box: int) -> int:
-    """Render width that fits the mark's longest side to `box`, as sheets and exports fit marks into square boxes."""
+def _box_size(svg: str, box: int) -> tuple[int, int]:
+    """Render size whose longest side is exactly `box`, as sheets and exports fit marks into square boxes."""
     w, h = svg_size(svg, 1000)
-    return box if w >= h else max(1, round(box * w / h))
+    return (box, max(1, round(box * h / w))) if w >= h else (max(1, round(box * w / h)), box)
 
 
-def _raster_findings(marks: dict, renderer: Renderer) -> list[Finding]:
-    """Raster checks; `marks` maps each checked size (full-symbol, small, favicon) to the Mark it ships as."""
+def _raster_findings(marks: dict, renderer: Renderer, lenient: frozenset[str] = frozenset()) -> list[Finding]:
+    """Raster checks; `marks` maps each checked size (full-symbol, small, favicon) to the Mark it ships as.
+
+    Sizes in `lenient` are stand-ins (a wordmark lockup for a missing tier): their problems warn instead of failing.
+    """
     out: list[Finding] = []
     for name, (target, min_px) in MIN_FEATURE.items():
         mark = marks.get(name)
         if mark is None:
             continue
+        hard = "warn" if name in lenient else "fail"
         svg = mark.to_svg("black")
-        big = ink_mask(renderer.svg_to_png(svg, _box_width(svg, 512)))
+        big = ink_mask(renderer.svg_to_png(svg, *_box_size(svg, 512)))
         feature = min_feature_px(big) * target / 512
         if feature < min_px:
-            out.append(Finding(check="min_feature", severity="fail", message=f"{name}: thinnest feature is {feature:.2f} px at {target} px (need {min_px}); thicken strokes or redraw the tier",
+            out.append(Finding(check="min_feature", severity=hard, message=f"{name}: thinnest feature is {feature:.2f} px at {target} px (need {min_px}); thicken strokes or redraw the tier",
                                data={"output": name, "feature_px": round(feature, 2), "target": target}))
         else:
             out.append(Finding(check="min_feature", severity="info", message=f"{name}: thinnest feature {feature:.2f} px at {target} px", data={"output": name, "feature_px": round(feature, 2), "target": target}))
-        small = ink_mask(renderer.svg_to_png(svg, _box_width(svg, target)))
+        small = ink_mask(renderer.svg_to_png(svg, *_box_size(svg, target)))
         before, after = component_count(big), component_count(small)
         if after < before:
-            sev = "fail" if name in ("small", "favicon") else "warn"
+            sev = hard if name in ("small", "favicon") else "warn"
             out.append(Finding(check="one_colour_merge", severity=sev, message=f"{name}: {before} part(s) at 512 px become {after} at {target} px (parts merge or vanish)",
                                data={"output": name, "before": before, "after": after, "target": target}))
     return out
@@ -175,7 +180,12 @@ def _checked_outputs(outputs: dict) -> tuple[dict[str, str], list[Finding]]:
             continue
         fallback = next(name for name in chain if name in outputs)  # full-lockup always exists
         sources[tier] = fallback
-        out.append(Finding(check="tiers", severity="warn", message=f"tier {tier!r} missing; checks run on {fallback!r}", data={"tier": tier, "fallback": fallback}))
+        if fallback == "full-lockup":  # reached only when the concept has no symbol
+            message = (f"tier {tier!r} missing and the concept has no symbol; checks run on 'full-lockup' and only warn. "
+                       "Draw monogram small and favicon tiers in build(p) for a usable favicon")
+        else:
+            message = f"tier {tier!r} missing; checks run on {fallback!r}"
+        out.append(Finding(check="tiers", severity="warn", message=message, data={"tier": tier, "fallback": fallback}))
     return sources, out
 
 
@@ -196,9 +206,10 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
         findings.append(Finding(check="determinism", severity="fail", message="building twice gave different SVG; remove randomness or time-dependent code", data={}))
 
     sources, tier_findings = _checked_outputs(outputs)
+    lenient = frozenset(name for name, source in sources.items() if source == "full-lockup")  # wordmark-only stand-ins
     findings += tier_findings
     for name, source in sources.items():
-        findings += _geometry_findings(name, geometries[source], module.meta)
+        findings += _geometry_findings(name, geometries[source], module.meta, lenient=name in lenient)
     roles = [r for r in geometries["full-lockup"]["roles"] if r != "paper"]
     if len(roles) > MAX_ROLES:
         findings.append(Finding(check="colour_count", severity="warn", message=f"{len(roles)} colour roles in use (more than {MAX_ROLES})", data={"roles": roles}))
@@ -225,7 +236,7 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
 
     rendered = False
     if renderer is not None:
-        findings += _raster_findings({name: outputs[source] for name, source in sources.items()}, renderer)
+        findings += _raster_findings({name: outputs[source] for name, source in sources.items()}, renderer, lenient)
         rendered = True
 
     result = AuditResult(
