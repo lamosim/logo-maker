@@ -36,7 +36,21 @@ def command(fn):
     return wrapper
 
 
-@click.group()
+class JsonGroup(click.Group):
+    """Click group whose usage errors (unknown option or command, bad value) also end in one JSON object."""
+
+    def main(self, *args, **kwargs):
+        try:
+            # Non-standalone mode raises usage errors instead of printing them to stderr. --help and
+            # --version return their exit code (0), which the console script's sys.exit(main()) uses.
+            return super().main(*args, standalone_mode=False, **kwargs)
+        except click.ClickException as err:
+            emit(ok=False, errors=[err.format_message()], code=EXIT_RULE)
+        except click.Abort:
+            emit(ok=False, errors=["aborted"], code=EXIT_RULE)
+
+
+@click.group(cls=JsonGroup)
 @click.version_option(__version__)
 def main() -> None:
     """logomaker: deterministic steps for the Claude Code logo skill."""

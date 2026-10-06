@@ -20,3 +20,26 @@ def test_setup_creates_folders(project_root):
     assert result.exit_code == 0, result.output
     assert (project_root / "brands").is_dir()
     assert (project_root / "registry").is_dir()
+
+
+def test_unknown_option_is_a_json_failure():
+    result = CliRunner().invoke(main, ["setup", "--bogus"])
+    assert result.exit_code == 2
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "--bogus" in payload["errors"][0]
+
+
+def test_unknown_command_is_a_json_failure():
+    result = CliRunner().invoke(main, ["nosuchcmd"])
+    assert result.exit_code == 2
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "nosuchcmd" in payload["errors"][0]
+
+
+def test_help_stays_plain_text_and_exits_zero():
+    result = CliRunner().invoke(main, ["--help"])
+    assert result.exit_code == 0, result.output
+    assert result.stdout.startswith("Usage:")
+    assert "setup" in result.stdout
