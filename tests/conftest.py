@@ -88,3 +88,15 @@ def strategy_payload() -> dict:
         "logo_type_reason": "new brand with a short distinctive name",
         "constraints": {"min_lockup_px": 120, "one_colour": True},
     }
+
+
+def install_concept(project_root: Path, fixture: str, slug: str = "keystone", name: str = "01-good") -> Path:
+    """Create brand `slug` (if needed) and copy tests/fixtures/concepts/<fixture> to brands/<slug>/concepts/<name>."""
+    from logomaker import registry
+    from logomaker.paths import project
+
+    if not (project_root / "brands" / slug).exists():
+        registry.new_brand(project(), slug.title(), slug=slug)
+    target = project_root / "brands" / slug / "concepts" / name
+    shutil.copytree(FIXTURES / "concepts" / fixture, target, dirs_exist_ok=True)
+    return target

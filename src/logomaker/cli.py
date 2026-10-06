@@ -12,6 +12,7 @@ import click
 
 from . import __version__, registry
 from . import fonts as fontlib
+from .kit import concept as conceptlib
 from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
 from .schemas import Phase
@@ -214,6 +215,28 @@ def fonts_list(category: str | None, personality: str | None) -> None:
 @command
 def fonts_fetch(family: str) -> None:
     emit({"manifest": fontlib.fetch(project(), family)})
+
+
+@main.group("concept")
+def concept_group() -> None:
+    """Build, audit and render concept modules."""
+
+
+@concept_group.command("build")
+@click.argument("slug")
+@click.argument("concept")
+@click.option("--variants", default="black,white", help="Comma-separated: black,white,mono (color/reverse need --tokens, Task 8)")
+@command
+def concept_build(slug: str, concept: str, variants: str) -> None:
+    paths = project()
+    folder = conceptlib.concept_folder(paths, slug, concept)
+    wanted = tuple(v.strip() for v in variants.split(",") if v.strip())
+    if any(v in ("color", "reverse") for v in wanted):
+        raise CliError("color and reverse variants need --tokens (see Task 8)")
+    module = conceptlib.load_concept(folder)
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
+    report = conceptlib.write_build(folder, outputs, variants=wanted)
+    emit({"concept": str(folder.relative_to(paths.root)), "build": report}, warnings=report["warnings"])
 
 
 if __name__ == "__main__":  # pragma: no cover
