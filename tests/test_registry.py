@@ -181,6 +181,18 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
     assert registry._check_concept(brand, state) == ["01-good/audit.json has failures"]
 
 
+def test_malformed_audit_or_verify_json_is_reported_not_raised(project_root):
+    install_concept(project_root, "good")
+    state = registry.set_fields(project(), "keystone", concept="01-good")
+    brand = project_root / "brands" / "keystone"
+    for content, problem in (("{not json", "is not valid JSON: "), ("[1, 2]", "is not a JSON object")):
+        (brand / "concepts" / "01-good" / "audit.json").write_text(content)
+        (brand / "package" / "verify.json").write_text(content)
+        concept, verify = registry._check_concept(brand, state), registry._check_verify(brand, state)
+        assert len(concept) == 1 and concept[0].startswith(f"concepts/01-good/audit.json {problem}"), concept
+        assert len(verify) == 1 and verify[0].startswith(f"package/verify.json {problem}"), verify
+
+
 def test_a_malformed_registry_index_is_an_error_naming_it(project_root):
     run("brand", "new", "Keystone")
     index = project_root / "registry" / "brands.json"

@@ -45,9 +45,7 @@ def save_state(paths: ProjectPaths, state: BrandState) -> None:
 
 def new_brand(paths: ProjectPaths, name: str, slug: str | None = None, unnamed: bool = False) -> BrandState:
     slug = slug or slugify(name)
-    if slug != slugify(slug):
-        raise CliError(f"Slug {slug!r} must be lowercase letters, digits and hyphens")
-    folder = paths.brand(slug)
+    folder = paths.brand(slug)  # refuses anything but a slug
     if folder.exists():
         raise CliError(f"Brand {slug!r} already exists at {folder}")
     for sub in BRAND_SUBDIRS:
@@ -163,6 +161,16 @@ def _need(brand: Path, path: Path, model: type[BaseModel] | None = None) -> list
     return [err] if err else []
 
 
+def _read_json(brand: Path, path: Path) -> tuple[dict[str, Any], str | None]:
+    """`path` parsed as a JSON object, or ({}, a message naming it relative to `brand`)."""
+    label = path.relative_to(brand)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as err:  # malformed JSON, or bytes that are not UTF-8
+        return {}, f"{label} is not valid JSON: {err}"
+    return (data, None) if isinstance(data, dict) else ({}, f"{label} is not a JSON object")
+
+
 def _check_brief(brand: Path, state: BrandState) -> list[str]:
     return _need(brand, brand / "brief.md") + _need(brand, brand / "brief.json", Brief)
 
@@ -202,7 +210,9 @@ def _check_concept(brand: Path, state: BrandState) -> list[str]:
     audit = folder / "audit.json"
     missing = _need(brand, folder / "concept.py") + _need(brand, audit)
     if audit.is_file():
-        result = json.loads(audit.read_text(encoding="utf-8"))
+        result, error = _read_json(brand, audit)
+        if error:
+            return missing + [error]
         if result.get("fingerprint") != concept_fingerprint(folder):
             missing.append(f"{state.concept}/audit.json is stale (concept.py, params.json or tokens.json changed); re-run concept audit")
         if not result.get("rendered"):
@@ -224,8 +234,10 @@ def _check_final(brand: Path, state: BrandState) -> list[str]:
 def _check_verify(brand: Path, state: BrandState) -> list[str]:
     verify = brand / "package" / "verify.json"
     missing = _need(brand, verify)
-    if verify.is_file() and not json.loads(verify.read_text(encoding="utf-8")).get("ok"):
-        missing.append("package/verify.json reports failures")
+    if verify.is_file():
+        result, error = _read_json(brand, verify)
+        if error or not result.get("ok"):
+            missing.append(error or "package/verify.json reports failures")
     return missing
 
 

@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
 from .output import CliError
 
 MARKER = "[tool.logomaker]"
+SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")  # exactly the strings registry.slugify leaves unchanged
 
 
 @dataclass(frozen=True)
@@ -39,6 +41,9 @@ class ProjectPaths:
         return self.assets / "cliches.json"
 
     def brand(self, slug: str) -> Path:
+        """brands/<slug>. Only a slug is accepted, so no argument can reach outside brands/."""
+        if not SLUG.fullmatch(slug):
+            raise CliError(f"Slug {slug!r} must be lowercase letters, digits and hyphens")
         return self.brands / slug
 
 

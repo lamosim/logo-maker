@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 import traceback
 import types
@@ -16,6 +17,7 @@ from ..paths import ProjectPaths
 from .mark import VARIANTS, Mark
 
 TIER_NAMES = ("full", "compact", "small", "favicon")
+CONCEPT_NAME = re.compile(r"[0-9]{2}-[a-z0-9]+(?:-[a-z0-9]+)*")  # NN-slug, e.g. 03-keystone
 
 
 @dataclass
@@ -57,6 +59,9 @@ class ConceptModule:
 
 
 def concept_folder(paths: ProjectPaths, slug: str, name: str) -> Path:
+    """brands/<slug>/final or brands/<slug>/concepts/<NN-slug>; any other name (a path, '..') is refused."""
+    if name != "final" and not CONCEPT_NAME.fullmatch(name):
+        raise CliError(f"Concept {name!r} must be 'final' or a concept folder name like 03-keystone (two digits, a hyphen, a slug)")
     brand = paths.brand(slug)
     if not brand.is_dir():
         raise CliError(f"Unknown brand {slug!r}")

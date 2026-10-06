@@ -132,6 +132,19 @@ def test_unknown_concept_folder_exits_2(project_root):
     assert code == 2 and "concept.py" in payload["errors"][0]
 
 
+def test_concept_names_must_be_final_or_nn_slug(project_root):
+    install_concept(project_root, "good")
+    for bad in ("../x", "foo/bar", "01-good/../01-good", "..", "1-good", "01_good", "01-Good", "01-good/"):
+        with pytest.raises(CliError) as err:
+            conceptlib.concept_folder(project(), "keystone", bad)
+        assert err.value.code == 2 and "must be 'final' or" in str(err.value), bad
+    for bad_slug in ("../x", "foo/bar"):
+        with pytest.raises(CliError, match="must be lowercase letters, digits and hyphens"):
+            conceptlib.concept_folder(project(), bad_slug, "01-good")
+    code, payload = run("concept", "build", "keystone", "../01-good")
+    assert code == 2 and "must be 'final' or" in payload["errors"][0]
+
+
 def test_final_folder_resolves(project_root):
     install_concept(project_root, "good")
     paths = project()
