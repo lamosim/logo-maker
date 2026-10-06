@@ -348,7 +348,7 @@ Writes `audit.json` with `{ok, failures[], warnings[], info{}}`. Checks and thre
 | bounds | symbol aspect ratio, bounds centre versus area centroid offset | info |
 | generic_profile | symbol height/width between 0.72 and 0.82 and symmetric and abstract (the false-recognition profile) | info |
 | colour_count | more than 3 roles used | warn |
-| grayscale | luminance difference under 0.15 between any two used role colours | warn |
+| grayscale | OKLab lightness difference under 0.15 between any two used role colours (amended from linear luminance, which flagged ordinary blue-on-black palettes) | warn |
 | contrast | WCAG ratio and APCA Lc for every role versus light paper and dark paper; wordmark under 4.5 or under Lc 60; symbol roles under 3.0 or under Lc 45 | fail (colour variants only) |
 | cvd | protan, deutan, tritan, achromatopsia simulations; any role pair whose simulated contrast falls under 1.5 | warn |
 | text_legibility | wordmark x-height in px at the brand's minimum lockup width under 7 px | fail |

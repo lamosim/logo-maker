@@ -3517,7 +3517,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: `output.emit`, `CliError`, `EXIT_RULE`; `concept.write_build(... palette, dark_palette)`.
 - Produces: `color.normalize_hex(value) -> str`, `color.info(value) -> dict` (`hex, rgb, hsl, oklch, cmyk, luminance`), `color.luminance(hex) -> float`, `color.wcag_contrast(a, b) -> float`, `color.apca_lc(text_hex, bg_hex) -> float`, `color.CVD_KINDS`, `color.simulate_cvd(hex, kind) -> str`, `color.ramp(hex, steps=9) -> list[str]`, `color.ColorEntry`, `color.Tokens` (pydantic; `colors: dict[str, ColorEntry]`, `roles: {"light": {role: name}, "dark": {...}}`, `paper: {"light": name, "dark": name}`; method `palette(context) -> dict[str, str]` including `"paper"`), `color.enrich_tokens(tokens) -> Tokens`, `color.ContrastRow`, `color.CvdRow`, `color.CheckResult(ok, failures, warnings, contrast, cvd, palettes)`, `color.check_tokens(tokens) -> CheckResult`, `color.load_tokens(path) -> Tokens`. CLI: `color info <value>`, `color ramp <value> [--steps 9]`, `color check <tokens.json>`, and `concept build ... [--tokens PATH]` (auto-detects `tokens.json` in the concept folder).
-- Thresholds (spec section 8.1): role `ink` needs WCAG ≥ 4.5 and |Lc| ≥ 60 against its paper; `primary`, `secondary`, `accent` need WCAG ≥ 3.0 and |Lc| ≥ 45; CVD pairs under 1.5 warn; grayscale luminance difference under 0.15 warns.
+- Thresholds (spec section 8.1): role `ink` needs WCAG ≥ 4.5 and |Lc| ≥ 60 against its paper; `primary`, `secondary`, `accent` need WCAG ≥ 3.0 and |Lc| ≥ 45; CVD pairs under 1.5 warn; grayscale OKLab lightness difference under 0.15 warns (amended from linear luminance).
 
 - [ ] **Step 1: Write the failing tests**
 
