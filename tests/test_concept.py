@@ -7,6 +7,7 @@ from click.testing import CliRunner
 from logomaker.cli import main
 from logomaker.kit import concept as conceptlib
 from logomaker.kit.mark import VARIANTS
+from logomaker.output import CliError
 from logomaker.paths import project
 from tests.conftest import install_concept
 
@@ -171,3 +172,22 @@ def test_concept_build_with_tokens_writes_colour_variants(project_root):
     assert 'fill="#e8572a"' in (build / "full-lockup-color.svg").read_text()
     assert 'fill="#ff9a6e"' in (build / "full-lockup-reverse.svg").read_text()
     assert 'fill="currentColor"' in (build / "full-lockup-mono.svg").read_text()
+
+
+def test_validate_variants_dedupes_in_order_and_rejects_empty_or_unknown():
+    assert conceptlib.validate_variants(v for v in ("white", "black", "white")) == ("white", "black")
+    for bad in ((), ("blak",)):
+        with pytest.raises(CliError) as err:
+            conceptlib.validate_variants(bad)
+        assert all(v in str(err.value) for v in VARIANTS)
+
+
+def test_draft_tokens_only_matter_for_colour_variants(project_root):
+    folder = install_concept(project_root, "good")
+    (folder / "tokens.json").write_text('{"colors": ')
+    code, payload = run("concept", "build", "keystone", "01-good")
+    assert code == 0, payload
+    before = snapshot(folder / "build")
+    code, payload = run("concept", "build", "keystone", "01-good", "--variants", "color")
+    assert code == 2 and "traceback" not in payload and "01-good/tokens.json is invalid" in payload["errors"][0]
+    assert snapshot(folder / "build") == before

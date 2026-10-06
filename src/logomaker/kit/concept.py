@@ -6,9 +6,9 @@ import json
 import sys
 import traceback
 import types
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
 
 from ..output import CliError
 from ..paths import ProjectPaths
@@ -126,14 +126,20 @@ def build_outputs(marks: dict[str, Mark]) -> dict[str, Mark]:
     return outputs
 
 
-def write_build(folder: Path, outputs: dict[str, Mark], variants: tuple[str, ...] = ("black", "white"),
-                palette: dict[str, str] | None = None, dark_palette: dict[str, str] | None = None) -> dict:
-    variants = tuple(dict.fromkeys(variants))
-    if not variants:
+def validate_variants(variants: Iterable[str]) -> tuple[str, ...]:
+    """Deduplicate `variants` in order; raise CliError listing VARIANTS when none are given or any is unknown."""
+    chosen = tuple(dict.fromkeys(variants))
+    if not chosen:
         raise CliError(f"No variants to build; choose one or more of: {', '.join(VARIANTS)}")
-    unknown = [v for v in variants if v not in VARIANTS]
+    unknown = [v for v in chosen if v not in VARIANTS]
     if unknown:
         raise CliError(f"Unknown variant {', '.join(map(repr, unknown))}; choose one of: {', '.join(VARIANTS)}")
+    return chosen
+
+
+def write_build(folder: Path, outputs: dict[str, Mark], variants: tuple[str, ...] = ("black", "white"),
+                palette: dict[str, str] | None = None, dark_palette: dict[str, str] | None = None) -> dict:
+    variants = validate_variants(variants)
     # Render everything in memory first, so any failure (e.g. a palette missing a role) leaves the previous build intact.
     svgs: dict[str, str] = {}
     geometry: dict[str, dict] = {}

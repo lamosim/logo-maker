@@ -118,26 +118,28 @@ def allowed_next(state: BrandState) -> Phase | None:
     return PHASE_ORDER[PHASE_ORDER.index(state.phase) + 1]
 
 
-def _validate_file(path: Path, model: type[BaseModel]) -> str | None:
-    """Return an error message if `path` is missing or does not validate as `model`."""
+def _validate_file(path: Path, model: type[BaseModel], label: str | None = None) -> str | None:
+    """Return an error message if `path` is missing or does not validate as `model`; messages call it `label` (default: its name)."""
+    label = label or path.name
     if not path.is_file():
-        return f"{path.name} is missing"
+        return f"{label} is missing"
     try:
         model.model_validate_json(path.read_text(encoding="utf-8"))
     except ValidationError as err:
         first = err.errors()[0]
         loc = ".".join(str(p) for p in first["loc"]) or "root"
-        return f"{path.name} is invalid: {loc}: {first['msg']}"
+        return f"{label} is invalid: {loc}: {first['msg']}"
     except ValueError as err:
-        return f"{path.name} is not valid JSON: {err}"
+        return f"{label} is not valid JSON: {err}"
     return None
 
 
 def _need(brand: Path, path: Path, model: type[BaseModel] | None = None) -> list[str]:
     """Return a message if `path` is missing or, when `model` is given, does not validate as it."""
+    label = str(path.relative_to(brand))
     if model is None:
-        return [] if path.is_file() else [f"{path.relative_to(brand)} is missing"]
-    err = _validate_file(path, model)
+        return [] if path.is_file() else [f"{label} is missing"]
+    err = _validate_file(path, model, label)
     return [err] if err else []
 
 

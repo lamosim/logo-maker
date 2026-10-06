@@ -15,7 +15,6 @@ from . import __version__, registry
 from . import color as colorlib
 from . import fonts as fontlib
 from .kit import concept as conceptlib
-from .kit.mark import VARIANTS
 from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
 from .schemas import Phase
@@ -234,7 +233,7 @@ def color_info(value: str) -> None:
 
 @color_group.command("ramp")
 @click.argument("value")
-@click.option("--steps", default=9, type=int)
+@click.option("--steps", default=9, type=click.IntRange(min=1))
 @command
 def color_ramp(value: str, steps: int) -> None:
     emit({"ramp": colorlib.ramp(value, steps)})
@@ -262,20 +261,15 @@ def concept_group() -> None:
 def concept_build(slug: str, concept: str, variants: str, tokens_path: str | None) -> None:
     paths = project()
     folder = conceptlib.concept_folder(paths, slug, concept)
-    wanted = tuple(dict.fromkeys(v.strip() for v in variants.split(",") if v.strip()))
     # Variants are checked before tokens are read, the concept is loaded or the build folder is touched.
-    if not wanted:
-        raise CliError(f"No variants to build; choose one or more of: {', '.join(VARIANTS)}")
-    unknown = [v for v in wanted if v not in VARIANTS]
-    if unknown:
-        raise CliError(f"Unknown variant {', '.join(map(repr, unknown))}; choose one of: {', '.join(VARIANTS)}")
-    tokens_file = Path(tokens_path) if tokens_path else (folder / "tokens.json" if (folder / "tokens.json").is_file() else None)
+    wanted = conceptlib.validate_variants(v.strip() for v in variants.split(",") if v.strip())
     palette = dark_palette = None
-    if tokens_file is not None:
+    if any(v in ("color", "reverse") for v in wanted):  # only colour variants read tokens, so a draft never blocks the rest
+        tokens_file = Path(tokens_path) if tokens_path else folder / "tokens.json"
+        if not tokens_file.is_file():
+            raise CliError("color and reverse variants need --tokens or a tokens.json in the concept folder")
         tokens = colorlib.load_tokens(tokens_file)
         palette, dark_palette = tokens.palette("light"), tokens.palette("dark")
-    if any(v in ("color", "reverse") for v in wanted) and palette is None:
-        raise CliError("color and reverse variants need --tokens or a tokens.json in the concept folder")
     module = conceptlib.load_concept(folder)
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
     report = conceptlib.write_build(folder, outputs, variants=wanted, palette=palette, dark_palette=dark_palette)

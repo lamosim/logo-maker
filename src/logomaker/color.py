@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from decimal import ROUND_DOWN, Decimal
 from itertools import combinations
 from pathlib import Path
 from typing import Literal
@@ -9,7 +10,9 @@ from typing import Literal
 from coloraide import Color as _Color
 from coloraide.spaces.cmy import CMY
 from coloraide.spaces.cmyk import CMYK
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, ValidationError, model_validator
+
+from .output import CliError
 
 
 class Color(_Color):
@@ -38,13 +41,13 @@ def luminance(value: str) -> float:
 
 
 def info(value: str) -> dict:
-    c = Color(value).convert("srgb")
+    c = Color(value).convert("srgb").fit("srgb")  # fit once, so every channel below describes the same in-gamut colour
     r, g, b = (round(x * 255) for x in c.coords())
     hsl = c.convert("hsl")
     oklch = c.convert("oklch")
     cmyk = c.convert("cmyk")
     return {
-        "hex": normalize_hex(value),
+        "hex": c.to_string(hex=True, alpha=False).lower(),
         "rgb": [r, g, b],
         "hsl": [round(hsl["h"] if hsl["h"] == hsl["h"] else 0.0, 1), round(hsl["s"] * 100, 1), round(hsl["l"] * 100, 1)],
         "oklch": [round(oklch["l"], 4), round(oklch["c"], 4), round(oklch["h"] if oklch["h"] == oklch["h"] else 0.0, 2)],
@@ -54,7 +57,7 @@ def info(value: str) -> dict:
 
 
 def wcag_contrast(a: str, b: str) -> float:
-    return round(float(Color(a).contrast(Color(b), method="wcag21")), 3)
+    return float(Color(a).contrast(Color(b), method="wcag21"))
 
 
 def _apca_y(value: str) -> float:
@@ -64,7 +67,7 @@ def _apca_y(value: str) -> float:
 
 
 def apca_lc(text_hex: str, bg_hex: str) -> float:
-    """APCA lightness contrast (W3 0.1.9). Positive for dark text on light, negative for light on dark."""
+    """APCA lightness contrast (W3 0.1.9), unrounded. Positive for dark text on light, negative for light on dark."""
     ytxt, ybg = _apca_y(text_hex), _apca_y(bg_hex)
     if ytxt <= _BLK_THRS:
         ytxt += (_BLK_THRS - ytxt) ** _BLK_CLMP
@@ -78,7 +81,17 @@ def apca_lc(text_hex: str, bg_hex: str) -> float:
     else:
         sapc = (ybg**_REV_BG - ytxt**_REV_TXT) * _SCALE
         lc = 0.0 if sapc > -_LO_CLIP else sapc + _OFFSET
-    return round(lc * 100, 2)
+    return lc * 100
+
+
+def _shown(value: float, places: int) -> float:
+    """`value` truncated toward zero at `places` decimals, so a shown number never meets a threshold the raw value misses."""
+    return float(Decimal(value).quantize(Decimal(1).scaleb(-places), rounding=ROUND_DOWN))
+
+
+def _lightness(value: str) -> float:
+    """OKLCH (OKLab) lightness, 0 to 1."""
+    return float(Color(value).convert("oklch")["l"])
 
 
 def simulate_cvd(value: str, kind: str) -> str:
@@ -126,6 +139,8 @@ class Tokens(BaseModel):
         for context in ("light", "dark"):
             if context not in self.roles or context not in self.paper:
                 raise ValueError(f"roles and paper must define both light and dark (missing {context})")
+            if "paper" in self.roles[context]:
+                raise ValueError(f"roles.{context} must not define 'paper'; paper.{context} names the background colour")
             for role in REQUIRED_ROLES:
                 if role not in self.roles[context]:
                     raise ValueError(f"roles.{context} must include {role!r}")
@@ -150,7 +165,16 @@ def enrich_tokens(tokens: Tokens) -> Tokens:
 
 
 def load_tokens(path: Path) -> Tokens:
-    return Tokens.model_validate_json(Path(path).read_text(encoding="utf-8"))
+    """Read and validate a tokens file. A bad file raises CliError naming the file and its first problem."""
+    path = Path(path)
+    try:
+        return Tokens.model_validate_json(path.read_text(encoding="utf-8"))
+    except ValidationError as err:
+        first = err.errors()[0]
+        loc = ".".join(str(p) for p in first["loc"]) or "root"
+        raise CliError(f"{path} is invalid: {loc}: {first['msg']}") from err
+    except ValueError as err:  # bytes that are not UTF-8
+        raise CliError(f"{path} is not valid JSON: {err}") from err
 
 
 class ContrastRow(BaseModel):
@@ -194,19 +218,22 @@ def check_tokens(tokens: Tokens) -> CheckResult:
             need_wcag, need_apca = (4.5, 60.0) if role == "ink" else (3.0, 45.0)
             wcag = wcag_contrast(hex_value, paper)
             apca = apca_lc(hex_value, paper)
-            ok = wcag >= need_wcag and abs(apca) >= need_apca
-            result.contrast.append(ContrastRow(context=context, role=role, color=hex_value, against=paper, wcag=wcag, apca=apca,
+            ok = wcag >= need_wcag and abs(apca) >= need_apca  # raw values: rounding must never lift a miss to a pass
+            shown_wcag, shown_apca = _shown(wcag, 3), _shown(apca, 2)
+            result.contrast.append(ContrastRow(context=context, role=role, color=hex_value, against=paper, wcag=shown_wcag, apca=shown_apca,
                                                required_wcag=need_wcag, required_apca=need_apca, ok=ok))
             if not ok:
-                result.failures.append(f"{context}: role {role} ({hex_value}) on paper {paper}: WCAG {wcag} (need {need_wcag}), APCA {apca} (need {need_apca})")
+                result.failures.append(f"{context}: role {role} ({hex_value}) on paper {paper}: WCAG {shown_wcag} (need {need_wcag}), APCA {shown_apca} (need {need_apca})")
         for (ra, ca), (rb, cb) in combinations(roles.items(), 2):
-            if abs(luminance(ca) - luminance(cb)) < 0.15:
-                result.warnings.append(f"grayscale: {context} roles {ra} and {rb} differ by less than 0.15 luminance")
+            delta = abs(_lightness(ca) - _lightness(cb))
+            if delta < 0.15:
+                result.warnings.append(f"grayscale: {context} roles {ra} and {rb} differ by {_shown(delta, 3)} in OKLCH lightness (under 0.15)")
             for kind in CVD_KINDS:
                 contrast = wcag_contrast(simulate_cvd(ca, kind), simulate_cvd(cb, kind))
                 ok = contrast >= 1.5
-                result.cvd.append(CvdRow(kind=kind, context=context, a=ra, b=rb, contrast=contrast, ok=ok))
+                shown = _shown(contrast, 3)
+                result.cvd.append(CvdRow(kind=kind, context=context, a=ra, b=rb, contrast=shown, ok=ok))
                 if not ok:
-                    result.warnings.append(f"cvd {kind}: {context} roles {ra} and {rb} collapse to contrast {contrast}")
+                    result.warnings.append(f"cvd {kind}: {context} roles {ra} and {rb} collapse to contrast {shown}")
     result.ok = not result.failures
     return result

@@ -156,6 +156,8 @@ def test_final_tokens_must_validate(project_root):
     tokens.write_text("{}")
     state = registry.load_state(project(), "keystone")
     missing = registry._check_final(brand, state)
-    assert len(missing) == 1 and "tokens.json" in missing[0]
+    assert len(missing) == 1 and missing[0].startswith("final/tokens.json is invalid: colors: ")
     tokens.write_text(json.dumps(good_tokens()))
     assert registry._check_final(brand, state) == []
+    tokens.unlink()
+    assert registry._check_final(brand, state) == ["final/tokens.json is missing"]
