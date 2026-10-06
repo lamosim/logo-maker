@@ -32,3 +32,13 @@ def test_component_count_and_min_feature():
     thin = np.zeros((40, 40), dtype=bool)
     thin[20, 5:35] = True
     assert min_feature_px(thin) == 1.0
+
+
+def test_min_feature_stops_when_any_original_component_vanishes():
+    mask = np.zeros((200, 200), dtype=bool)
+    mask[10:20, 10:190] = True  # a 10 px bar: vanishes after 5 erosions
+    mask[60:100, 20:60] = True  # two 40 px blobs ...
+    mask[60:100, 140:180] = True
+    mask[77:83, 60:140] = True  # ... joined by a 6 px neck, which splits them after 3 erosions
+    assert component_count(mask) == 2
+    assert 9 <= min_feature_px(mask) <= 11  # the bar's width, not the blobs'

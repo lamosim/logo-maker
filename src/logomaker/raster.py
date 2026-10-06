@@ -29,13 +29,17 @@ def component_count(mask: np.ndarray) -> int:
 
 
 def min_feature_px(mask: np.ndarray) -> float:
-    """Erode until a component vanishes; the thinnest feature is about 2k-1 pixels wide after k erosions."""
+    """Erode until any original component vanishes; the thinnest feature is about 2k-1 pixels wide after k erosions.
+
+    A thin part attached to a thicker body is not measured, since it vanishes without its whole component vanishing.
+    """
     if not mask.any():
         return 0.0
-    original = component_count(mask)
+    # Track the original labels, not the count: a component splitting under erosion must not hide another vanishing.
+    labels, n = ndimage.label(mask, structure=_STRUCTURE)
     current = mask.copy()
     k = 0
-    while current.any() and component_count(current) >= original:
+    while current.any() and len(np.unique(labels[current])) == n:
         current = ndimage.binary_erosion(current, structure=_STRUCTURE, border_value=1)
         k += 1
         if k > max(mask.shape):
