@@ -10,9 +10,10 @@ import traceback
 
 import click
 
-from . import __version__
+from . import __version__, registry
 from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
+from .schemas import Phase
 
 CHROME_APP = "/Applications/Google Chrome.app"
 CHROME_BIN = CHROME_APP + "/Contents/MacOS/Google Chrome"
@@ -105,6 +106,85 @@ def setup(check: bool) -> None:
         },
         warnings=warnings,
     )
+
+
+@main.group("brand")
+def brand() -> None:
+    """Create, inspect and advance brands."""
+
+
+def _brand_payload(state) -> dict:
+    return {"brand": state.model_dump(mode="json")}
+
+
+@brand.command("new")
+@click.argument("name")
+@click.option("--slug", default=None, help="Override the generated slug.")
+@click.option("--unnamed", is_flag=True, help="NAME is a working title; a naming phase will run.")
+@command
+def brand_new(name: str, slug: str | None, unnamed: bool) -> None:
+    emit(_brand_payload(registry.new_brand(project(), name, slug, unnamed)))
+
+
+@brand.command("list")
+@command
+def brand_list() -> None:
+    emit({"brands": registry.list_brands(project())})
+
+
+@brand.command("status")
+@click.argument("slug")
+@command
+def brand_status(slug: str) -> None:
+    paths = project()
+    state = registry.load_state(paths, slug)
+    nxt = registry.allowed_next(state)
+    payload = _brand_payload(state)
+    payload["next"] = nxt.value if nxt else None
+    payload["missing"] = registry.prerequisites(paths, state, nxt) if nxt else []
+    emit(payload)
+
+
+@brand.command("advance")
+@click.argument("slug")
+@click.option("--to", "target", required=True, type=click.Choice([p.value for p in Phase]))
+@command
+def brand_advance(slug: str, target: str) -> None:
+    emit(_brand_payload(registry.advance(project(), slug, Phase(target))))
+
+
+@brand.command("decide")
+@click.argument("slug")
+@click.option("--phase", required=True, type=click.Choice([p.value for p in Phase]))
+@click.option("--by", default="user", type=click.Choice(["user", "claude"]))
+@click.option("--note", required=True)
+@command
+def brand_decide(slug: str, phase: str, by: str, note: str) -> None:
+    emit(_brand_payload(registry.decide(project(), slug, Phase(phase), by, note)))
+
+
+@brand.command("rename")
+@click.argument("slug")
+@click.option("--name", required=True)
+@command
+def brand_rename(slug: str, name: str) -> None:
+    emit(_brand_payload(registry.rename(project(), slug, name)))
+
+
+@brand.command("set")
+@click.argument("slug")
+@click.option("--territory", default=None)
+@click.option("--concept", default=None, help="Concept folder name, e.g. 03-keystone")
+@click.option("--primary-lockup", "primary_lockup", default=None, type=click.Choice(["horizontal", "stacked"]))
+@click.option("--industry", default=None)
+@click.option("--surface", "surfaces", multiple=True, help="Ranked surfaces; repeat the flag.")
+@click.option("--font", "fonts", multiple=True, help="ROLE=FAMILY[:WEIGHT], e.g. wordmark=Sora:650")
+@command
+def brand_set(slug: str, territory, concept, primary_lockup, industry, surfaces, fonts) -> None:
+    emit(_brand_payload(registry.set_fields(
+        project(), slug, territory=territory, concept=concept, primary_lockup=primary_lockup,
+        industry=industry, surfaces=surfaces, fonts=fonts,
+    )))
 
 
 if __name__ == "__main__":  # pragma: no cover
