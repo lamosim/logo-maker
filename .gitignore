@@ -23,3 +23,6 @@ assets/fonts/*/instances/
 
 # Local Claude settings
 .claude/settings.local.json
+
+# Superpowers plan workspaces (ledgers, briefs, review packages)
+.superpowers/
