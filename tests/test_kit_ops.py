@@ -88,6 +88,18 @@ def test_stroke_and_offset():
         stroke(s, 0)
 
 
+def test_inward_offsets_shrink_by_the_distance_or_vanish():
+    assert offset(circle(0, 0, 10), -20).is_empty  # thinner than twice the distance: nothing is left
+    assert offset(circle(0, 0, 100), -150).is_empty
+    assert math.isclose(offset(circle(0, 0, 100), -30).area, math.pi * 70**2, rel_tol=0.01)
+    b = offset(rect(0, 0, 200, 100), -10).bounds
+    assert math.isclose(b.w, 180, abs_tol=1e-3) and math.isclose(b.h, 80, abs_tol=1e-3)
+    # A dot thinner than twice the distance inside a ring's hole vanishes; the ring around it only thins. (The stroker
+    # draws offsets to about 0.25 units, which costs this thin ring about 1% of its area.)
+    target = offset(union(ring(0, 0, 100, 40), circle(0, 0, 10)), -15)
+    assert math.isclose(target.area, math.pi * (85**2 - 75**2), rel_tol=0.02) and len(target.subpaths()) == 2
+
+
 def test_transforms():
     r = rect(0, 0, 10, 20)
     b = rotate(r, 90).bounds

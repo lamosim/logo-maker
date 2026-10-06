@@ -332,20 +332,26 @@ def normalize_winding(path: skia.Path) -> skia.Path:
     a conic); degenerate ones, and any without an inside probe point, pass through unchanged, while a move with no segment
     after it is dropped. The result has winding fill.
     """
-    contours = _contour_paths(path)
-    polys = [Shape(contour).flatten()[0] for contour in contours]
-    areas = [_signed_area_and_centroid(poly)[0] for poly in polys]
-    containers = [j for j, a in enumerate(areas) if abs(a) >= 1e-9]
     out = skia.Path()
-    for i, contour in enumerate(contours):
-        probe = _inside_probe(polys[i]) if abs(areas[i]) >= 1e-9 else None
-        if probe is None:
-            out.addPath(contour)
-            continue
-        depth = sum(1 for j in containers if j != i and _contains(polys[j], probe))
-        if (areas[i] > 0) == (depth % 2 == 0):
+    for contour, area, depth in contour_nesting(path):
+        if depth is None or (area > 0) == (depth % 2 == 0):
             out.addPath(contour)
         else:
             out.reverseAddPath(contour)
     out.setFillType(skia.PathFillType.kWinding)
     return out
+
+
+def contour_nesting(path: skia.Path) -> list[tuple[skia.Path, float, int | None]]:
+    """Each contour of `path` (as `_contour_paths` splits it) with its signed area and its depth: how many other
+    contours enclose it, read as even-odd. The depth is None for a degenerate contour or one without an inside probe."""
+    contours = _contour_paths(path)
+    polys = [Shape(contour).flatten()[0] for contour in contours]
+    areas = [_signed_area_and_centroid(poly)[0] for poly in polys]
+    containers = [j for j, a in enumerate(areas) if abs(a) >= 1e-9]
+    nesting: list[tuple[skia.Path, float, int | None]] = []
+    for i, contour in enumerate(contours):
+        probe = _inside_probe(polys[i]) if abs(areas[i]) >= 1e-9 else None
+        depth = None if probe is None else sum(1 for j in containers if j != i and _contains(polys[j], probe))
+        nesting.append((contour, areas[i], depth))
+    return nesting

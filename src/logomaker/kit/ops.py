@@ -8,7 +8,7 @@ from __future__ import annotations
 import skia
 
 from .primitives import stroked_path
-from .shape import Box, Shape, normalize_winding
+from .shape import Box, Shape, contour_nesting, normalize_winding
 
 
 def _op(a: skia.Path, b: skia.Path, op: skia.PathOp) -> skia.Path:
@@ -58,11 +58,31 @@ def stroke(shape: Shape, width: float, cap: str = "butt", join: str = "miter", m
 
 
 def offset(shape: Shape, distance: float) -> Shape:
+    """Grow the shape by `distance`, rounding what it grows, or shrink it by -distance (see `_inset`)."""
     if distance == 0:
         return shape.copy()
-    band = stroke(shape, 2 * abs(distance), join="round")
-    result = union(shape, band) if distance > 0 else subtract(shape, band)
-    return shape._with_path(result.path, shape.free_segments)  # the band is derived from shape: count its free segments once
+    result = union(shape, stroke(shape, 2 * distance, join="round")) if distance > 0 else _inset(shape, -distance)
+    return shape._with_path(result.path, shape.free_segments)  # derived from shape alone: count its free segments once
+
+
+def _inset(shape: Shape, distance: float) -> Shape:
+    """Everything in `shape` at least `distance` (> 0) from its outline.
+
+    Subtracting a round-joined stroke band of the outline is exact except behind a convex curve tighter than the
+    distance: skia's stroker folds there and its band misses an island of the shape (a dot of radius r < distance keeps
+    a dot of radius distance - r). A true inset region grown back by nearly `distance` still fits inside the shape; an
+    island does not, so islands are dropped, deepest first, so that an island in a ring's hole never condemns the ring.
+    The shortfall, max(2% of the distance, 1 unit), stays clear of the stroker's own error (about 0.25 units per
+    stroke on the 1000-unit canvas); an island under about half a unit across can survive it.
+    """
+    result = subtract(shape, stroke(shape, 2 * distance, join="round"))
+    grow = distance - max(0.02 * distance, 1.0)
+    outlines = [(depth, contour) for contour, area, depth in contour_nesting(result.path) if area > 0 and depth is not None]
+    for _, outline in sorted(outlines, key=lambda item: -item[0]):
+        region = intersect(result, Shape(outline))
+        if grow > 0 and not subtract(offset(region, grow), shape).is_empty:
+            result = subtract(result, Shape(outline))
+    return result
 
 
 def translate(shape: Shape, dx: float, dy: float) -> Shape:
