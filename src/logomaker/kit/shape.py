@@ -187,8 +187,27 @@ class Shape:
             elif verb == skia.Path.Verb.kClose_Verb:
                 yield ("Z", [])
 
+    def _contours(self) -> list[tuple[Point, list[Point], bool]]:
+        """Each contour straight from the path's own verbs: (start, every segment's end point, closed). Unlike
+        `commands()` nothing is split or added: a conic is one segment and the closing line stays implied."""
+        contours: list[tuple[Point, list[Point], bool]] = []
+        it = skia.Path.RawIter(self.path)
+        while True:
+            verb, pts = it.next()
+            if verb == skia.Path.Verb.kDone_Verb:
+                return contours
+            if verb == skia.Path.Verb.kMove_Verb:
+                contours.append((_xy(pts[0]), [], False))
+            elif verb == skia.Path.Verb.kClose_Verb:
+                start, ends, _ = contours[-1]
+                contours[-1] = (start, ends, True)
+            else:  # line, quad, conic or cubic: its last point is the on-curve end
+                contours[-1][1].append(_xy(pts[-1]))
+
     def anchor_count(self) -> int:
-        return sum(len(pts) for _, pts in self.commands())
+        """On-curve nodes, as a designer counts them (a circle has 4): each contour's start and each segment's end
+        point, an end point back on the start counted once. Control points and the SVG's conic splits do not count."""
+        return sum(len(ends) + (0 if ends[-1] == start else 1) for start, ends, _ in self._contours() if ends)
 
     def straight_segments(self) -> list[tuple[Point, Point]]:
         segments: list[tuple[Point, Point]] = []

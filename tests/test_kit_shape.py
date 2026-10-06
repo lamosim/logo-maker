@@ -37,10 +37,29 @@ def test_circle_commands_are_cubics_and_area_is_close():
     s = Shape(p)
     kinds = {k for k, _ in s.commands()}
     assert kinds == {"M", "C", "Z"}
-    assert s.anchor_count() == 49
+    assert s.anchor_count() == 4  # on-curve nodes, as a designer counts them; the SVG still draws 16 cubics
+    assert sum(1 for k, _ in s.commands() if k == "C") == 16
     assert math.isclose(s.area, math.pi * 50 * 50, rel_tol=0.005)
     cx, cy = s.centroid
     assert math.isclose(cx, 30, abs_tol=0.5) and math.isclose(cy, -40, abs_tol=0.5)
+
+
+def test_anchor_count_counts_on_curve_nodes_once():
+    from logomaker.kit.primitives import regular_polygon, ring
+
+    assert ring(0, 0, 100, 20).anchor_count() == 8
+    assert regular_polygon(0, 0, 300, 200).anchor_count() == 200
+    p = skia.Path()
+    p.moveTo(0, 0)
+    p.lineTo(10, 0)
+    p.quadTo(15, 5, 10, 10)
+    p.conicTo(5, 15, 0, 10, 0.7)
+    p.cubicTo(-5, 8, -5, 2, 0, 0)  # ends on the start point: the same node, counted once
+    p.close()
+    p.moveTo(50, 50)
+    p.lineTo(60, 50)  # an open contour: both ends count
+    p.moveTo(90, 90)  # a lone move draws nothing
+    assert Shape(p).anchor_count() == 4 + 2
 
 
 def test_path_data_flips_y_and_is_deterministic():
