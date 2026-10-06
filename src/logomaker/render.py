@@ -21,10 +21,13 @@ def check_chrome(chrome_app: Path = CHROME_APP) -> dict:
 
 
 def svg_size(svg: str, width: int) -> tuple[int, int]:
+    """`width` and the height that keeps the viewBox's aspect; square without a viewBox or with a degenerate one."""
     match = _VIEWBOX.search(svg)
     if not match:
         return width, width
     _, _, w, h = (float(v) for v in match.group(1).replace(",", " ").split())
+    if not (w > 0 and h > 0):  # a zero (or NaN) extent has no aspect to keep; never divide by it
+        return width, width
     return width, max(1, round(width * h / w))
 
 

@@ -1,5 +1,6 @@
 import math
 
+import pytest
 import skia
 
 from logomaker.kit.shape import Box, Shape, fmt, normalize_winding, path_from_commands
@@ -13,6 +14,12 @@ def test_fmt_never_emits_scientific_notation_or_negative_zero():
     assert fmt(-3.10) == "-3.1"
     assert fmt(0.125, precision=2) == "0.12"
     assert fmt(100, precision=0) == "100"
+
+
+def test_fmt_refuses_non_finite_numbers():
+    for value in (math.nan, math.inf, -math.inf):
+        with pytest.raises(ValueError, match="finite"):
+            fmt(value)
 
 
 def square(size=10.0) -> Shape:

@@ -113,6 +113,21 @@ def test_empty_symbol_is_rejected():
         Mark(symbol=circle(0, 0, 100), tagline=Shape.empty())
 
 
+def test_parts_without_finite_width_and_height_are_refused():
+    from logomaker.kit.primitives import polygon
+
+    nan_rect = rect(math.nan, 0, 10, 10, free=True)
+    nan_vertex = polygon([(0, 0), (100, 0), (math.nan, 50)], free=True)
+    for part in (rect(0, 0, 0, 0), rect(0, 0, 100, 0), nan_rect, nan_vertex):
+        assert not part.is_empty  # each has outlines, so only the extent check stops it
+        with pytest.raises(ValueError, match="Composite part 1 \\(secondary\\) is empty or non-finite"):
+            Composite([(circle(0, 0, 100), "primary"), (part, "secondary")])
+        with pytest.raises(ValueError, match="symbol is empty or non-finite"):
+            Mark(symbol=part)
+        with pytest.raises(ValueError, match="wordmark is empty or non-finite"):
+            Mark(symbol=circle(0, 0, 100), wordmark=part)
+
+
 def test_tagline_follows_the_wordmark(project_root):
     m = good_mark(project_root, tagline=text("tag", "Fira Code", cap_height=60))
     placed = {p.name: p.shape.bounds for p in m.layout()}

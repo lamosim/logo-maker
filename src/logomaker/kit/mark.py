@@ -14,6 +14,14 @@ VARIANTS = ("color", "reverse", "black", "white", "mono")
 DEFAULT_ROLES = {"symbol": "primary", "wordmark": "ink", "tagline": "ink"}
 
 
+def _check_part(part: Shape | Composite, label: str) -> None:
+    """Refuse a part that draws nothing or would poison the output: no outline, a non-finite one (NaN or infinite
+    coordinates), or bounds without both width and height (a point or a line has no area to fill)."""
+    finite = part.path.isFinite() if isinstance(part, Shape) else True  # a Composite's parts were checked already
+    if part.is_empty or not finite or not (part.bounds.w > 0 and part.bounds.h > 0):
+        raise ValueError(f"{label} is empty or non-finite")
+
+
 def _check_role(role: str) -> None:
     if role == "paper":  # a paper-coloured part would turn to ink in the black, white and mono variants
         raise ValueError("'paper' is the background role; knock shapes out with subtract() instead")
@@ -28,8 +36,7 @@ class Composite:
         if not parts:
             raise ValueError("Composite needs at least one part")
         for i, (shape, role) in enumerate(parts):
-            if shape.is_empty:
-                raise ValueError(f"Composite part {i} ({role}) is empty")
+            _check_part(shape, f"Composite part {i} ({role})")
             _check_role(role)
         self.parts = list(parts)
 
@@ -80,12 +87,9 @@ class Mark:
     ):
         if symbol is None and wordmark is None:
             raise ValueError("Mark needs a symbol or a wordmark")
-        if symbol is not None and symbol.is_empty:
-            raise ValueError("symbol is empty")
-        if wordmark is not None and wordmark.is_empty:
-            raise ValueError("wordmark is empty")
-        if tagline is not None and tagline.is_empty:
-            raise ValueError("tagline is empty")
+        for label, part in (("symbol", symbol), ("wordmark", wordmark), ("tagline", tagline)):
+            if part is not None:
+                _check_part(part, label)
         if lockup not in LOCKUPS:
             raise ValueError(f"lockup must be one of {LOCKUPS}, got {lockup!r}")
         if lockup == "symbol" and symbol is None:

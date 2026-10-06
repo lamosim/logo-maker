@@ -275,6 +275,8 @@ def test_box_size_fits_the_longest_side_exactly():
     assert audit._box_size(tall, 16) == (2, 16) and audit._box_size(tall, 512) == (51, 512)
     assert audit._box_size('<svg viewBox="0 0 100 10"></svg>', 16) == (16, 2)
     assert audit._box_size('<svg viewBox="0 0 50 50"></svg>', 16) == (16, 16)
+    for degenerate in ("0 0 0 0", "0 0 0 10", "0 0 10 0"):  # no area to keep the aspect of: the whole box, never a division by zero
+        assert audit._box_size(f'<svg viewBox="{degenerate}"></svg>', 16) == (16, 16)
 
 
 @requires_chrome

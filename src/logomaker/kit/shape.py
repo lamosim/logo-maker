@@ -44,7 +44,9 @@ class Box:
 
 
 def fmt(value: float, precision: int = 2) -> str:
-    """Format a number for SVG: fixed precision, no trailing zeros, never '-0' or exponents."""
+    """Format a number for SVG: fixed precision, no trailing zeros, never '-0' or exponents. NaN and infinities raise."""
+    if not math.isfinite(value):
+        raise ValueError(f"cannot write the non-finite number {value} into an SVG")
     rounded = round(value, precision)
     if rounded == 0:
         return "0"

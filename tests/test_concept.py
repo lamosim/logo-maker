@@ -91,6 +91,16 @@ def test_sys_exit_in_a_concept_is_an_error_not_an_exit(project_root):
         assert code == 2 and payload["ok"] is False and "concept called sys.exit(); return the Mark instead" in payload["errors"][0]
 
 
+def test_non_finite_geometry_never_reaches_the_build(project_root):
+    folder = install_concept(project_root, "good")
+    source = (folder / "concept.py").read_text()
+    for nan_rect in ("rect(float('nan'), 0, 10, 10)", "rect(float('nan'), 0, 10, 10, free=True)"):
+        (folder / "concept.py").write_text(source.replace("symbol = ring(0, 0, 400, p.stroke, start=30, end=330)", f"symbol = {nan_rect}"))
+        code, payload = run("concept", "build", "keystone", "01-good")
+        assert code == 2 and not (folder / "build").exists(), payload
+    assert "symbol is empty or non-finite" in payload["errors"][0]  # free=True skips snapping, so Mark is what stops it
+
+
 def test_concept_without_meta_exits_2(project_root):
     install_concept(project_root, "nometa", name="03-nometa")
     code, payload = run("concept", "build", "keystone", "03-nometa")
