@@ -228,6 +228,9 @@ def _check_territories(brand: Path, state: BrandState) -> list[str]:
         except (KeyError, TypeError, ValueError):
             slugs = []
             missing.append("territories.json must contain a 'territories' list with slugs")
+        # `brand set --territory` takes only slugs, so a territory named otherwise could never be chosen.
+        missing += [f"territories.json: territory slug {s!r} is not a slug"
+                    for s in slugs if not (isinstance(s, str) and SLUG.fullmatch(s))]
         if state.territory not in slugs:
             missing.append("territory not chosen (run: logomaker brand set <slug> --territory <territory-slug>)")
     return missing

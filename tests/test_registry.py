@@ -265,6 +265,18 @@ def test_a_registry_rebuild_skips_brand_files_it_cannot_use_and_says_which(proje
     assert code == 2 and "traceback" not in payload and payload["errors"][0].startswith(f"{alpha} is invalid: ")
 
 
+def test_territories_json_must_use_slugs(project_root):
+    run("brand", "new", "Keystone")
+    brand = project_root / "brands" / "keystone"
+    spec = brand / "territories" / "territories.json"
+    spec.write_text(json.dumps({"territories": [{"slug": "forge"}, {"slug": "forge_works"}, {"slug": 7}]}))
+    state = registry.set_fields(project(), "keystone", territory="forge")
+    assert registry._check_territories(brand, state) == [
+        "territories.json: territory slug 'forge_works' is not a slug", "territories.json: territory slug 7 is not a slug"]
+    spec.write_text(json.dumps({"territories": [{"slug": "forge"}, {"slug": "forge-works"}]}))
+    assert registry._check_territories(brand, state) == []
+
+
 def test_final_tokens_must_validate(project_root):
     from tests.test_color import good_tokens
 
