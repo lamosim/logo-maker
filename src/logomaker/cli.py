@@ -15,6 +15,7 @@ from . import __version__, registry
 from . import audit as auditlib
 from . import color as colorlib
 from . import fonts as fontlib
+from . import sheets as sheetlib
 from .kit import concept as conceptlib
 from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
@@ -254,14 +255,7 @@ def concept_group() -> None:
     """Build, audit and render concept modules."""
 
 
-@concept_group.command("build")
-@click.argument("slug")
-@click.argument("concept")
-@click.option("--variants", default="black,white", help="Comma-separated subset of black,white,mono,color,reverse")
-@click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
-@command
-def concept_build(slug: str, concept: str, variants: str, tokens_path: str | None) -> None:
-    paths = project()
+def _build_concept(paths, slug: str, concept: str, variants: str, tokens_path: str | None):
     folder = conceptlib.concept_folder(paths, slug, concept)
     # Variants are checked before tokens are read, the concept is loaded or the build folder is touched.
     wanted = conceptlib.validate_variants(v.strip() for v in variants.split(",") if v.strip())
@@ -274,7 +268,18 @@ def concept_build(slug: str, concept: str, variants: str, tokens_path: str | Non
         palette, dark_palette = tokens.palette("light"), tokens.palette("dark")
     module = conceptlib.load_concept(folder)
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
-    report = conceptlib.write_build(folder, outputs, variants=wanted, palette=palette, dark_palette=dark_palette)
+    return folder, conceptlib.write_build(folder, outputs, variants=wanted, palette=palette, dark_palette=dark_palette)
+
+
+@concept_group.command("build")
+@click.argument("slug")
+@click.argument("concept")
+@click.option("--variants", default="black,white", help="Comma-separated subset of black,white,mono,color,reverse")
+@click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
+@command
+def concept_build(slug: str, concept: str, variants: str, tokens_path: str | None) -> None:
+    paths = project()
+    folder, report = _build_concept(paths, slug, concept, variants, tokens_path)
     emit({"concept": str(folder.relative_to(paths.root)), "build": report}, warnings=report["warnings"])
 
 
@@ -291,6 +296,38 @@ def concept_audit(slug: str, concept: str, no_render: bool) -> None:
         with Renderer() as renderer:
             result = auditlib.audit_concept(paths, slug, concept, renderer=renderer)
     emit({"audit": result.model_dump()}, warnings=[f.message for f in result.warnings])
+
+
+@concept_group.command("render")
+@click.argument("slug")
+@click.argument("concept")
+@click.option("--round", "round_n", type=click.IntRange(min=1), default=None, help="Write renders/round-N (default: one past the highest existing round)")
+@command
+def concept_render(slug: str, concept: str, round_n: int | None) -> None:
+    # No renderer passed: the sheet launches Chrome itself, only once the concept has loaded and built.
+    emit(sheetlib.critique_sheet(project(), slug, concept, round_n))
+
+
+@concept_group.command("run")
+@click.argument("slug")
+@click.argument("concept")
+@click.option("--round", "round_n", type=click.IntRange(min=1), default=None, help="Write renders/round-N (default: one past the highest existing round)")
+@click.option("--variants", default="black,white", help="Comma-separated subset of black,white,mono,color,reverse")
+@click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
+@click.option("--no-render", is_flag=True, help="Build and audit only (no Chrome).")
+@command
+def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tokens_path: str | None, no_render: bool) -> None:
+    paths = project()
+    folder, report = _build_concept(paths, slug, concept, variants, tokens_path)
+    critique = None
+    if no_render:
+        result = auditlib.audit_concept(paths, slug, concept)
+    else:
+        with Renderer() as renderer:
+            result = auditlib.audit_concept(paths, slug, concept, renderer=renderer)
+            critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result)
+    emit({"concept": str(folder.relative_to(paths.root)), "build": report, "audit": result.model_dump(), "critique": critique},
+         warnings=report["warnings"] + [f.message for f in result.warnings])
 
 
 if __name__ == "__main__":  # pragma: no cover

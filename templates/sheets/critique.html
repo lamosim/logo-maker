@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  body{margin:0;width:{{ width }}px;height:{{ height }}px;font:14px/1.3 -apple-system,Helvetica,Arial,sans-serif;background:#e9e9e9;color:#222;overflow:hidden}
+  header{height:40px;padding:10px 20px;box-sizing:border-box;font-weight:600}
+  .row{display:flex;gap:16px;padding:0 20px;align-items:flex-start}
+  .panel{background:#fff;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;margin:0}
+  .panel.dark{background:#000}
+  .panel figcaption{position:absolute;left:6px;bottom:4px;font-size:11px;color:#888}
+  .panel.dark figcaption{color:#aaa}
+  .mirror svg{transform:scaleX(-1)} .rotate svg{transform:rotate(90deg)}
+  .audit{width:600px;height:200px;background:#fff;border:1px solid #ccc;padding:10px;box-sizing:border-box;font-size:12px;overflow:hidden}
+  .audit .fail{color:#b00020} .audit .warn{color:#9a6a00}
+</style></head>
+<body>
+<header>{{ slug }} / {{ concept }} / round {{ round_n }} &mdash; {{ idea }}</header>
+<section class="row" style="height:400px">
+  <figure class="panel" style="width:600px;height:400px">{{ panels.black|safe }}<figcaption>black on white</figcaption></figure>
+  <figure class="panel dark" style="width:600px;height:400px">{{ panels.white|safe }}<figcaption>white on black</figcaption></figure>
+  {% if panels.color %}
+  <figure class="panel" style="width:340px;height:400px;background:{{ panels.paper_light }}">{{ panels.color|safe }}<figcaption>colour on light paper</figcaption></figure>
+  <figure class="panel dark" style="width:340px;height:400px;background:{{ panels.paper_dark }}">{{ panels.reverse|safe }}<figcaption>reverse on dark paper</figcaption></figure>
+  {% endif %}
+</section>
+<section class="row" style="height:320px;margin-top:20px">
+  {% for step in panels.ladder %}
+  <figure class="panel" style="width:{{ [step.size, 64]|max + 24 }}px;height:300px">{{ step.svg|safe }}<figcaption>{{ step.size }} {{ step.output }}</figcaption></figure>
+  {% endfor %}
+  <figure class="panel mirror" style="width:300px;height:300px">{{ panels.mirror|safe }}<figcaption>mirrored</figcaption></figure>
+  <figure class="panel rotate" style="width:300px;height:300px">{{ panels.rotate|safe }}<figcaption>rotated 90</figcaption></figure>
+</section>
+<section class="row" style="height:220px;margin-top:20px">
+  <figure class="panel" style="width:440px;height:200px">{{ panels.one_colour[0]|safe }}<figcaption>one colour, lockup 400 wide</figcaption></figure>
+  <figure class="panel" style="width:240px;height:200px">{{ panels.one_colour[1]|safe }}<figcaption>one colour, lockup 200 wide</figcaption></figure>
+  <div class="audit">
+    {% if audit %}
+    <b>audit {{ 'ok' if audit.ok else 'FAILED' }}</b>{% if not audit.rendered %} (no raster checks){% endif %}
+    {% for m in audit.failures %}<div class="fail">fail: {{ m }}</div>{% endfor %}
+    {% for m in audit.warnings %}<div class="warn">warn: {{ m }}</div>{% endfor %}
+    {% else %}<b>no audit yet</b>{% endif %}
+  </div>
+</section>
+</body></html>
