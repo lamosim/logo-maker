@@ -47,8 +47,11 @@ def load_cliches(paths: ProjectPaths) -> dict:
 
 
 def _words(phrase: str) -> re.Pattern:
-    """Matches `phrase` as whole words, plural -s/-es allowed: 'hexagon' finds 'hexagons', 'key' does not find 'keystone'."""
-    return re.compile(rf"\b{re.escape(phrase.lower().strip())}(?:e?s)?\b")
+    """Matches `phrase` as whole words: 'key' does not find 'keystone'. A phrase of three or more letters also takes a
+    plural -s/-es ('hexagon' finds 'hexagons'); a shorter one does not, so 'ml' never finds 'mls'."""
+    phrase = phrase.lower().strip()
+    plural = "(?:e?s)?" if len(phrase) >= 3 else ""
+    return re.compile(rf"\b{re.escape(phrase)}{plural}\b")
 
 
 def resolve_industries(cliches: dict, industry: str | None) -> list[str]:
@@ -94,8 +97,9 @@ def _symbol_parts(geo: dict) -> list[dict]:
     return [p for p in geo["parts"] if p["name"].startswith("symbol")]
 
 
-def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta, lenient: bool = False) -> list[Finding]:
-    """Symbol geometry checks for one size; `lenient` (a wordmark lockup standing in for a missing tier) warns instead of failing."""
+def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta) -> list[Finding]:
+    """The drawing's own checks: anchors, near-miss angles, free segments, bounds and the generic profile. They run
+    once per real output; a tier standing in on another output's build does not repeat them."""
     out: list[Finding] = []
     parts = _symbol_parts(geo)
     if not parts:
@@ -124,11 +128,6 @@ def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta, lenient: boo
     free = sum(p["free_segments"] for p in parts)
     if free:
         out.append(Finding(check="free_segments", severity="info", message=f"{name}: {free} segment(s) built with free=True", data={"output": name, "count": free}))
-    canvas = max(geo["bounds"]["w"], geo["bounds"]["h"])
-    tiny = [sp for p in parts for sp in p["subpaths"] if max(sp["w"], sp["h"]) < canvas * TINY_FRACTION]
-    if tiny:
-        sev = "fail" if name in ("small", "favicon") and not lenient else "warn"
-        out.append(Finding(check="tiny_parts", severity=sev, message=f"{name}: {len(tiny)} part(s) smaller than 1/48 of the canvas will vanish when small", data={"output": name, "count": len(tiny), "parts": tiny[:5]}))
     b = geo["bounds"]
     aspect = b["h"] / b["w"] if b["w"] else 0
     cx, cy = (sum(p["centroid"][0] * p["area"] for p in parts) / max(sum(p["area"] for p in parts), 1e-9),
@@ -138,6 +137,17 @@ def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta, lenient: boo
     if GENERIC_ASPECT[0] <= aspect <= GENERIC_ASPECT[1] and name == "full-symbol":
         out.append(Finding(check="generic_profile", severity="info", message="symbol aspect sits in the 3:4 band linked to false recognition (Henderson & Cote 1998); make sure the silhouette is distinctive", data={"aspect": round(aspect, 3)}))
     return out
+
+
+def _tiny_parts(name: str, geo: dict) -> list[Finding]:
+    """Symbol subpaths under 1/48 of the canvas: they warn, and fail in the small and favicon tiers (fallbacks too)."""
+    canvas = max(geo["bounds"]["w"], geo["bounds"]["h"])
+    tiny = [sp for p in _symbol_parts(geo) for sp in p["subpaths"] if max(sp["w"], sp["h"]) < canvas * TINY_FRACTION]
+    if not tiny:
+        return []
+    sev = "fail" if name in ("small", "favicon") else "warn"
+    return [Finding(check="tiny_parts", severity=sev, message=f"{name}: {len(tiny)} part(s) smaller than 1/48 of the canvas will vanish when small",
+                    data={"output": name, "count": len(tiny), "parts": tiny[:5]})]
 
 
 def _text_legibility(outputs: dict, geometries: dict, state) -> list[Finding]:
@@ -225,10 +235,13 @@ def _checked_outputs(outputs: dict) -> tuple[dict[str, str], list[Finding]]:
     return sources, out
 
 
-def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: Renderer | None = None) -> AuditResult:
+def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: Renderer | None = None,
+                  tokens_path: str | Path | None = None) -> AuditResult:
+    """Audit a concept and write its audit.json. The colour checks read `tokens_path`, else <concept>/tokens.json;
+    without a renderer the raster checks are skipped (rendered: false)."""
     folder = conceptlib.concept_folder(paths, slug, concept_name)
     state = registry.load_state(paths, slug)
-    fingerprint = concept_fingerprint(folder)
+    fingerprint = concept_fingerprint(folder, tokens_path)
     try:
         module = conceptlib.load_concept(folder)
         outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
@@ -250,23 +263,25 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
     lenient = frozenset(name for name, source in sources.items() if source == "full-lockup")  # wordmark-only stand-ins
     findings += tier_findings
     for name, source in sources.items():
-        findings += _geometry_findings(name, geometries[source], module.meta, lenient=name in lenient)
+        if name == source:  # a fallback repeats only the size-dependent checks, under its own name and severity
+            findings += _geometry_findings(name, geometries[source], module.meta)
+        findings += _tiny_parts(name, geometries[source])
     roles = geometries["full-lockup"]["roles"]
     if len(roles) > MAX_ROLES:
         findings.append(Finding(check="colour_count", severity="warn", message=f"{len(roles)} colour roles in use (more than {MAX_ROLES})", data={"roles": roles}))
     findings += _text_legibility(outputs, geometries, state)
     cliches = load_cliches(paths)
-    industry, source = _industry(paths, state)
+    industry, found_in = _industry(paths, state)
     industries = resolve_industries(cliches, industry)
-    named = f"{industry!r} (from {source})" if industry else "not set"
+    named = f"{industry!r} (from {found_in})" if industry else "not set"
     if industries:
         message = f"industry {named} resolves to {', '.join(industries)}"
     else:
         message = f"industry {named}: none matched; motifs were checked against the general cliché list only"
-    findings.append(Finding(check="industry", severity="info", message=message, data={"industry": industry, "source": source, "resolved": industries}))
+    findings.append(Finding(check="industry", severity="info", message=message, data={"industry": industry, "source": found_in, "resolved": industries}))
     findings += check_cliches(module.meta.motifs, cliches, industry)
 
-    tokens_file = folder / "tokens.json"
+    tokens_file = Path(tokens_path) if tokens_path else folder / "tokens.json"
     if tokens_file.is_file():
         # Type gets the text thresholds: whichever roles the wordmark and tagline are drawn in (ink when there is no type).
         text_roles = sorted({p["role"] for geo in geometries.values() for p in geo["parts"] if p["name"] in ("wordmark", "tagline")}) or ["ink"]

@@ -371,10 +371,10 @@ def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tok
     folder, report = _build_concept(paths, slug, concept, variants, tokens_path)
     critique = None
     if no_render:
-        result = auditlib.audit_concept(paths, slug, concept)
+        result = auditlib.audit_concept(paths, slug, concept, tokens_path=tokens_path)
     else:
         with Renderer() as renderer:
-            result = auditlib.audit_concept(paths, slug, concept, renderer=renderer)
+            result = auditlib.audit_concept(paths, slug, concept, renderer=renderer, tokens_path=tokens_path)
             critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result, tokens_path=tokens_path)
     # Everything is written before the verdict: a failing audit still leaves the build, audit.json and the sheet.
     _emit_audit({"concept": str(folder.relative_to(paths.root)), "build": report, "audit": result.model_dump(), "critique": critique},

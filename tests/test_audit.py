@@ -85,6 +85,13 @@ def test_industry_resolution_ranks_whole_word_aliases(project_root):
     assert audit.resolve_industries(cliches, "Widgets") == [] and audit.resolve_industries(cliches, None) == []
 
 
+def test_short_terms_and_aliases_take_no_plural(project_root):
+    cliches = audit.load_cliches(project())
+    assert audit.resolve_industries(cliches, "MLS real estate listings") == ["real-estate"]  # 'ml' no longer finds 'mls'
+    assert audit.resolve_industries(cliches, "AIs for everyone") == [] and audit.resolve_industry(cliches, "AI tooling") == "ai"
+    assert audit.resolve_industry(cliches, "Dentists") == "dental"  # three letters or more still take -s and -es
+
+
 def test_cliche_matching_is_word_level(project_root):
     cliches = audit.load_cliches(project())
 
@@ -239,6 +246,22 @@ def test_wordmark_contrast_follows_the_role_the_wordmark_uses(project_root):
     assert any(f.message.startswith("light: role primary (#e8572a) on paper #ffffff") and "need 4.5" in f.message for f in contrast)
 
 
+def test_audit_reads_the_tokens_file_it_is_given(project_root):
+    from tests.test_color import good_tokens
+
+    folder = install_concept(project_root, "good")
+    low_contrast = good_tokens()
+    low_contrast["colors"]["coal"]["hex"] = "#777777"
+    palette = project_root / "palette.json"
+    palette.write_text(json.dumps(low_contrast))
+    assert not findings(audit.audit_concept(project(), "keystone", "01-good"), "contrast")  # the folder has no tokens.json
+    result = audit.audit_concept(project(), "keystone", "01-good", tokens_path=palette)
+    assert findings(result, "contrast")[0].severity == "fail" and result.fingerprint == audit.concept_fingerprint(folder, palette)
+    run = CliRunner().invoke(main, ["concept", "run", "keystone", "01-good", "--no-render", "--tokens", str(palette)])
+    payload = json.loads(run.stdout)
+    assert run.exit_code == 2 and {f["check"] for f in payload["audit"]["failures"]} == {"contrast"}
+
+
 def test_broken_tokens_become_a_failure_not_an_abort(project_root):
     folder = install_concept(project_root, "good")
     (folder / "tokens.json").write_text("{}")
@@ -265,6 +288,15 @@ def test_missing_tiers_fall_back_and_warn(project_root):
     assert fallbacks(result) == [("favicon", "small")]
     # The favicon's checks run on the small build under the favicon's name, so the favicon's severity applies.
     assert {f.data["output"]: f.severity for f in findings(result, "tiny_parts")} == {"full-symbol": "warn", "small": "fail", "favicon": "fail"}
+
+
+def test_a_fallback_tier_repeats_only_the_size_dependent_checks(project_root):
+    install_concept(project_root, "tiny_part", name="03-tiny")  # tiers full and small; the favicon falls back to small
+    result = audit.audit_concept(project(), "keystone", "03-tiny")
+    for check in ("anchors", "bounds"):  # drawing checks: once per real output
+        assert [f.data["output"] for f in findings(result, check)] == ["full-symbol", "small"], check
+    assert sorted(f.data["output"] for f in findings(result, "tiny_parts")) == ["favicon", "full-symbol", "small"]  # size-dependent
+    assert [(f.data["tier"], f.data["fallback"]) for f in findings(result, "tiers")] == [("favicon", "small")]
 
 
 @requires_chrome
@@ -313,6 +345,7 @@ def test_symbol_fallbacks_keep_fail_severity(project_root, renderer):
     result = audit.audit_concept(project(), "keystone", "03-tiny", renderer=renderer)
     favicon = [f for f in findings(result, "min_feature") if f.data["output"] == "favicon"]  # checked on the small build
     assert not result.ok and favicon[0].severity == "fail"
+    assert [f.data["output"] for f in findings(result, "anchors")] == ["full-symbol", "small"]  # not repeated for the favicon
 
 
 @requires_chrome
