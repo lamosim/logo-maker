@@ -31,7 +31,9 @@ def test_catalog_is_valid(project_root):
 
 
 def test_fixture_project_fonts_are_catalogue_and_fixtures_only(project_root):
-    assert {p.name for p in (project_root / "assets" / "fonts").iterdir()} == {"catalog.json", "firacode"}
+    fonts_dir = project_root / "assets" / "fonts"
+    assert {p.name for p in fonts_dir.iterdir() if p.is_dir()} == {"firacode"}
+    assert (fonts_dir / "catalog.json").is_file()
 
 
 def test_list_fonts_filters(project_root):
@@ -102,6 +104,11 @@ def test_fetch_reports_github_errors(project_root, monkeypatch):
 RAW = "https://raw.githubusercontent.com/google/fonts/main/apache/test/"
 
 
+def leftover_staging(project_root) -> list[str]:
+    """Fetch staging folders (<slug>.<random>.tmp) still under assets/fonts."""
+    return [p.name for p in (project_root / "assets" / "fonts").iterdir() if p.is_dir() and p.name.endswith(".tmp")]
+
+
 def serve_google_fonts(monkeypatch, files: dict[str, bytes], sizes: dict[str, int] | None = None) -> None:
     """Stand in for GitHub for the family "Test": ofl/test is a 404 and apache/test lists `files`.
 
@@ -138,12 +145,11 @@ def test_fetch_downloads_listing_into_cache(project_root, monkeypatch):
 
 def test_failed_fetch_leaves_the_cache_as_it_was(project_root, monkeypatch):
     folder = project_root / "assets" / "fonts" / "test"
-    staging = folder.with_name("test.tmp")
     serve_google_fonts(monkeypatch, {"OFL.txt": b"licence", "Test[wght].ttf": b"not a font"})
     with pytest.raises(CliError) as exc:
         fonts.fetch(project(), "Test")
     assert exc.value.code == 3 and "not a valid TrueType file" in str(exc.value)
-    assert not folder.exists() and not staging.exists()
+    assert not folder.exists() and leftover_staging(project_root) == []
 
     font = FIXTURE_TTF.read_bytes()
     serve_google_fonts(monkeypatch, {"OFL.txt": b"licence", "Test[wght].ttf": font})
@@ -155,7 +161,30 @@ def test_failed_fetch_leaves_the_cache_as_it_was(project_root, monkeypatch):
     message = str(exc.value)
     assert exc.value.code == 3 and "Test[wght].ttf" in message and "1000" in message and str(len(font)) in message
     assert (folder / "OFL.txt").read_bytes() == b"licence" and (folder / "Test[wght].ttf").read_bytes() == font
-    assert not staging.exists()
+    assert leftover_staging(project_root) == []
+
+
+def test_refetch_replaces_the_old_cache(project_root, monkeypatch):
+    folder = project_root / "assets" / "fonts" / "test"
+    folder.mkdir()
+    (folder / "Old-Regular.ttf").write_bytes(b"stale")
+    (folder / "manifest.json").write_text('{"family": "Test", "files": []}\n', encoding="utf-8")
+    font = FIXTURE_TTF.read_bytes()
+    serve_google_fonts(monkeypatch, {"Test[wght].ttf": font, "OFL.txt": b"licence"})
+    manifest = fonts.fetch(project(), "Test")
+    assert {p.name for p in folder.iterdir()} == {"Test[wght].ttf", "OFL.txt", "manifest.json"}  # Old-Regular.ttf is gone
+    assert (folder / "Test[wght].ttf").read_bytes() == font
+    assert json.loads((folder / "manifest.json").read_text(encoding="utf-8")) == manifest
+    assert leftover_staging(project_root) == []
+
+
+def test_fetch_stages_in_a_folder_of_its_own(project_root, monkeypatch):
+    other_run = project_root / "assets" / "fonts" / "test.tmp"  # a staging folder another fetch is still filling
+    other_run.mkdir()
+    (other_run / "OFL.txt").write_bytes(b"another run")
+    serve_google_fonts(monkeypatch, {"Test[wght].ttf": FIXTURE_TTF.read_bytes(), "OFL.txt": b"licence"})
+    fonts.fetch(project(), "Test")
+    assert (other_run / "OFL.txt").read_bytes() == b"another run"
 
 
 def test_fetch_rejects_a_name_without_letters_or_digits(project_root, monkeypatch):

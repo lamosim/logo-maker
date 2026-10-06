@@ -7,6 +7,7 @@ import os
 import re
 import shlex
 import shutil
+import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -154,7 +155,6 @@ def _download(client: httpx.Client, entry: dict, staging: Path) -> dict:
 
 def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
     folder = family_dir(paths, family)
-    staging = folder.with_name(folder.name + ".tmp")
     listing = None
     used_dir = None
     with httpx.Client(timeout=timeout, follow_redirects=True, headers={"User-Agent": "logomaker"}) as client:
@@ -173,11 +173,9 @@ def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
         wanted = [e for e in listing if e["name"].endswith(".ttf") or e["name"] in LICENCE_FILES]
         if not any(e["name"].endswith(".ttf") for e in wanted):
             raise CliError(f"No .ttf files listed for {family} in {used_dir}", code=EXIT_EXTERNAL)
-        # Download into a sibling staging folder and swap it in only once every file checks out, so a failed
-        # fetch or re-fetch never leaves a partial or mixed cache behind.
-        if staging.exists():
-            shutil.rmtree(staging)
-        staging.mkdir(parents=True)
+        # Download into a staging folder of this run's own (<slug>.<random>.tmp) beside the cache and swap it in
+        # only once every file checks out, so a failed fetch or re-fetch never leaves a partial or mixed cache.
+        staging = Path(tempfile.mkdtemp(prefix=f"{folder.name}.", suffix=".tmp", dir=paths.fonts))
         try:
             files = [_download(client, entry, staging) for entry in wanted]
             manifest = {"family": family, "google_dir": used_dir, "fetched_at": now_iso(), "files": files}
