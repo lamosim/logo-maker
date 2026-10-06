@@ -1,4 +1,4 @@
-"""Pydantic models for brand state, brief and strategy. Audit and token models are added by later tasks."""
+"""Pydantic models for brand state, brief, strategy and audit results. Token models live in color.py."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -176,3 +176,19 @@ class Strategy(BaseModel):
         if len(value) < 3:
             raise ValueError("ladder: give at least three rungs")
         return value
+
+
+class Finding(BaseModel):
+    check: str
+    severity: Literal["fail", "warn", "info"]
+    message: str
+    data: dict = Field(default_factory=dict)
+
+
+class AuditResult(BaseModel):
+    ok: bool
+    failures: list[Finding] = Field(default_factory=list)
+    warnings: list[Finding] = Field(default_factory=list)
+    info: list[Finding] = Field(default_factory=list)
+    outputs: list[str] = Field(default_factory=list)
+    rendered: bool = False

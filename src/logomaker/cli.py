@@ -12,11 +12,13 @@ from pathlib import Path
 import click
 
 from . import __version__, registry
+from . import audit as auditlib
 from . import color as colorlib
 from . import fonts as fontlib
 from .kit import concept as conceptlib
 from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
+from .render import Renderer
 from .schemas import Phase
 
 CHROME_APP = "/Applications/Google Chrome.app"
@@ -274,6 +276,21 @@ def concept_build(slug: str, concept: str, variants: str, tokens_path: str | Non
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
     report = conceptlib.write_build(folder, outputs, variants=wanted, palette=palette, dark_palette=dark_palette)
     emit({"concept": str(folder.relative_to(paths.root)), "build": report}, warnings=report["warnings"])
+
+
+@concept_group.command("audit")
+@click.argument("slug")
+@click.argument("concept")
+@click.option("--no-render", is_flag=True, help="Skip the raster checks (no Chrome needed).")
+@command
+def concept_audit(slug: str, concept: str, no_render: bool) -> None:
+    paths = project()
+    if no_render:
+        result = auditlib.audit_concept(paths, slug, concept)
+    else:
+        with Renderer() as renderer:
+            result = auditlib.audit_concept(paths, slug, concept, renderer=renderer)
+    emit({"audit": result.model_dump()}, warnings=[f.message for f in result.warnings])
 
 
 if __name__ == "__main__":  # pragma: no cover

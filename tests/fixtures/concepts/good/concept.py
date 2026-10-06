@@ -5,7 +5,7 @@ PARAMS = Params(stroke=90, gap=None)
 TIERS = {
     "full": {},
     "compact": {},
-    "small": {"stroke": 130},
+    "small": {"stroke": 130, "wordmark": False},
     "favicon": {"stroke": 170, "wordmark": False},
 }
 
