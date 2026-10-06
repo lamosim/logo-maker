@@ -42,3 +42,9 @@ def test_min_feature_stops_when_any_original_component_vanishes():
     mask[77:83, 60:140] = True  # ... joined by a 6 px neck, which splits them after 3 erosions
     assert component_count(mask) == 2
     assert 9 <= min_feature_px(mask) <= 11  # the bar's width, not the blobs'
+
+
+def test_min_feature_treats_the_canvas_border_as_background():
+    mask = np.zeros((100, 100), dtype=bool)
+    mask[0:10, 10:90] = True  # a 10 px bar flush with the top edge must erode from both sides
+    assert 9 <= min_feature_px(mask) <= 11

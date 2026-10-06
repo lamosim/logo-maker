@@ -40,7 +40,8 @@ def min_feature_px(mask: np.ndarray) -> float:
     current = mask.copy()
     k = 0
     while current.any() and len(np.unique(labels[current])) == n:
-        current = ndimage.binary_erosion(current, structure=_STRUCTURE, border_value=1)
+        # Outside the canvas is background: renders crop tight, so edge-touching features must erode from both sides.
+        current = ndimage.binary_erosion(current, structure=_STRUCTURE, border_value=0)
         k += 1
         if k > max(mask.shape):
             break
