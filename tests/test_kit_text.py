@@ -1,4 +1,5 @@
 import math
+import shutil
 
 import pytest
 import skia
@@ -44,7 +45,9 @@ def test_variable_weight_changes_stem_width(project_root):
     light = glyph("H", "Fira Code", weight=300, cap_height=200)
     bold = glyph("H", "Fira Code", weight=700, cap_height=200)
     assert bold.area > light.area * 1.3
-    assert math.isclose(bold.bounds.h, 200, abs_tol=1.0)  # cap height measured on the drawn instance
+    assert math.isclose(bold.bounds.h, 200, abs_tol=0.05)  # cap height measured on the drawn instance
+    x_height = text("x", "Fira Code", weight=700).x_height
+    assert math.isclose(glyph("x", "Fira Code", weight=700).bounds.y1, x_height, abs_tol=1e-3)  # and so is the x-height
 
 
 def test_missing_family_exits_3(project_root):
@@ -66,8 +69,14 @@ def test_counters_stay_open_under_nonzero_fill(project_root):
     nonzero.setFillType(skia.PathFillType.kWinding)  # the SVG's fill-rule="nonzero"
     even_odd.setFillType(skia.PathFillType.kEvenOdd)  # how pathops means its overlap-free output
     b = zero.bounds
-    grid = [(b.x0 + b.w * i / 50, b.y0 + b.h * j / 50) for i in range(51) for j in range(51)]
+
+    def at(i, j):  # point (i, j) of a 51 x 51 probe grid over the glyph's bounds
+        return b.x0 + b.w * i / 50, b.y0 + b.h * j / 50
+
+    grid = [at(i, j) for i in range(51) for j in range(51)]
     assert [nonzero.contains(x, y) for x, y in grid] == [even_odd.contains(x, y) for x, y in grid]
+    assert not nonzero.contains(*at(31, 16))  # deep inside the half-counter pathops wound like the outline
+    assert nonzero.contains(*at(36, 42))  # where the slash's end overlaps the ring
 
 
 def test_out_of_range_weights_take_the_nearest_axis_weight(project_root):
@@ -75,8 +84,30 @@ def test_out_of_range_weights_take_the_nearest_axis_weight(project_root):
     assert glyph("H", "Fira Code", weight=100).to_path_data() == glyph("H", "Fira Code", weight=300).to_path_data()
     assert glyph("H", "Fira Code", weight=900).to_path_data() == glyph("H", "Fira Code", weight=700).to_path_data()
     assert glyph("H", "Fira Code", weight=900).font == "Fira Code 700"
+    assert glyph("H", "Fira Code", weight=100).font == "Fira Code 300"
 
 
 def test_empty_string_gives_an_empty_shape(project_root):
     empty = text("", "Fira Code")
     assert empty.is_empty and empty.advance == 0 and empty.glyph_bounds == []
+
+
+def test_tracking_stays_out_of_clusters(project_root):
+    plain = text("n\u0308", "Fira Code")  # n + combining diaeresis: one cluster, the mark positioned over the n
+    tracked = text("n\u0308", "Fira Code", tracking=200)
+    assert tracked.advance == plain.advance and tracked.glyph_bounds[1] == plain.glyph_bounds[1]
+
+
+def test_missing_glyphs_are_an_error(project_root):
+    with pytest.raises(CliError) as exc:
+        text("A中", "Fira Code")
+    assert exc.value.code == 2 and "中" in str(exc.value)
+
+
+def test_static_file_uses_os2_metrics_and_its_own_weight(project_root):
+    fonts = project_root / "assets" / "fonts"
+    (fonts / "fakestatic").mkdir()
+    # A static file name: font_path reports static Bold 700, although the file itself still has an fvar.
+    shutil.copy(fonts / "firacode" / "FiraCode[wght].ttf", fonts / "fakestatic" / "FakeStatic-Bold.ttf")
+    h = text("H", "Fake Static", weight=650)
+    assert h.font == "Fake Static 700" and math.isclose(h.bounds.h, 200, abs_tol=1.0)

@@ -12,6 +12,7 @@ from fontTools.pens.transformPen import TransformPen
 from fontTools.ttLib import TTFont
 
 from .. import fonts as fontlib
+from ..output import CliError
 from ..paths import project
 from .shape import Box, Shape, normalize_winding
 
@@ -119,9 +120,11 @@ def text(
     """Shape `string` with HarfBuzz and outline it with fontTools. Baseline y = 0, start x = 0, scaled to `cap_height`.
 
     `features` is the exact set of optional OpenType features applied: HarfBuzz's default-on kern, liga, calt and clig
-    are switched off unless listed. `tracking` and the `kern` pair overrides (e.g. {"AV": -40}) are in 1/1000 em. A
-    variable font's weight is clamped to its wght axis range; a static font ignores it (`font_path` already picked the
-    nearest weight's file). `font` names what was drawn: the family, the weight used and "italic" only for an italic file.
+    are switched off unless listed. `tracking` and `kern` are in 1/1000 em and apply between clusters only, never
+    between a base and its marks; `kern` values (e.g. {"AV": -40}) are added to the font's own kerning. A variable
+    font's weight is clamped to its wght axis range; a static font ignores it (`font_path` already picked the nearest
+    weight's file). `font` names what was drawn: the family, the weight used and "italic" only for an italic file.
+    A character the font has no glyph for raises CliError.
     """
     ff = fontlib.font_path(project(), family, weight, italic)
     tt = _ttfont(str(ff.path))
@@ -146,6 +149,10 @@ def text(
     bounds: list[Box] = []
     x = 0.0
     infos, positions = buf.glyph_infos, buf.glyph_positions or []  # uharfbuzz gives None positions for an empty buffer
+    missing = list(dict.fromkeys(string[info.cluster] for info in infos if info.codepoint == 0))  # glyph 0 is .notdef
+    if missing:
+        raise CliError(f"Font family {family!r} has no glyph for {', '.join(map(repr, missing))}; "
+                       "choose a family that covers them")
     track_units = tracking / 1000 * metrics.upem
     for i, (info, pos) in enumerate(zip(infos, positions)):
         pen = _SkiaPen(glyph_set)
@@ -156,11 +163,11 @@ def text(
             bounds.append(Box(r.left(), r.top(), r.right(), r.bottom()))
             path.addPath(pen.path)
         advance = float(pos.x_advance)
-        if i < len(infos) - 1:
+        if i + 1 < len(infos) and infos[i + 1].cluster != info.cluster:  # between clusters, never inside one
+            nxt = infos[i + 1].cluster
             advance += track_units
-            if kern:
-                pair = string[info.cluster] + string[infos[i + 1].cluster]
-                advance += kern.get(pair, 0.0) / 1000 * metrics.upem
+            if kern:  # keyed by the two characters either side of the cluster boundary
+                advance += kern.get(string[nxt - 1] + string[nxt], 0.0) / 1000 * metrics.upem
         x += advance
     try:  # merge overlapping contours, then wind them for fill-rule nonzero
         outline = normalize_winding(skia.Simplify(path))
