@@ -137,14 +137,17 @@ def _brand_payload(state) -> dict:
 @command
 def brand_new(name: str, slug: str | None, unnamed: bool) -> None:
     """Create a brand folder and its brand.json. The registry index gets an entry."""
-    emit(_brand_payload(registry.new_brand(project(), name, slug, unnamed)))
+    paths = project()
+    _, warnings = registry.list_brands(paths)  # a missing index is rebuilt first, so the brand files it skips are reported
+    emit(_brand_payload(registry.new_brand(paths, name, slug, unnamed)), warnings=warnings)
 
 
 @brand.command("list")
 @command
 def brand_list() -> None:
     """List the brands in the registry. A missing index is rebuilt from the brand folders."""
-    emit({"brands": registry.list_brands(project())})
+    brands, warnings = registry.list_brands(project())
+    emit({"brands": brands}, warnings=warnings)
 
 
 @brand.command("status")

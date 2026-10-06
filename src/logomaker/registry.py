@@ -30,10 +30,18 @@ def state_path(paths: ProjectPaths, slug: str) -> Path:
 
 
 def load_state(paths: ProjectPaths, slug: str) -> BrandState:
+    """brands/<slug>/brand.json. A missing, malformed or invalid file is a CliError naming it."""
     path = state_path(paths, slug)
     if not path.is_file():
         raise CliError(f"Unknown brand {slug!r} (no {path})")
-    return BrandState.model_validate_json(path.read_text(encoding="utf-8"))
+    try:
+        return BrandState.model_validate_json(path.read_text(encoding="utf-8"))
+    except ValidationError as err:  # malformed JSON or the wrong fields
+        first = err.errors()[0]
+        loc = ".".join(str(p) for p in first["loc"]) or "root"
+        raise CliError(f"{path} is invalid: {loc}: {first['msg']}") from err
+    except ValueError as err:  # bytes that are not UTF-8
+        raise CliError(f"{path} is not valid JSON: {err}") from err
 
 
 def save_state(paths: ProjectPaths, state: BrandState) -> None:
@@ -59,14 +67,33 @@ def _entry(state: BrandState) -> dict[str, Any]:
     return {"slug": state.slug, "name": state.name, "phase": state.phase.value, "updated": state.updated}
 
 
-def list_brands(paths: ProjectPaths) -> list[dict[str, Any]]:
-    """The registry index, registry/brands.json. A missing index is rebuilt from brands/*/brand.json and written back;
-    a malformed one is a CliError naming it."""
+def _rebuilt_entries(paths: ProjectPaths) -> tuple[list[dict[str, Any]], list[str]]:
+    """Index entries for every brands/*/brand.json, and a warning naming each one skipped: a file that cannot be read
+    or does not validate, or one in a folder that is not its brand's slug."""
+    entries: list[dict[str, Any]] = []
+    warnings: list[str] = []
+    for state_file in sorted(paths.brands.glob("*/brand.json")):
+        folder = state_file.parent.name
+        try:
+            state = load_state(paths, folder)
+        except (CliError, OSError) as err:
+            warnings.append(f"registry rebuild skipped {state_file}: {err}")
+            continue
+        if state.slug != folder:
+            warnings.append(f"registry rebuild skipped {state_file}: it belongs to brand {state.slug!r}, not {folder!r}")
+            continue
+        entries.append(_entry(state))
+    return entries, warnings
+
+
+def list_brands(paths: ProjectPaths) -> tuple[list[dict[str, Any]], list[str]]:
+    """The registry index, registry/brands.json, and warnings. A missing index is rebuilt from brands/*/brand.json and
+    written back, skipping (with a warning naming each) brand files it cannot use; a malformed index is a CliError."""
     path = paths.registry / "brands.json"
     if not path.is_file():
-        entries = [_entry(load_state(paths, folder.name)) for folder in sorted(paths.brands.glob("*")) if (folder / "brand.json").is_file()]
+        entries, warnings = _rebuilt_entries(paths)
         _write_registry(paths, entries)
-        return entries
+        return entries, warnings
     rebuild = "; delete it and run `logomaker brand list` to rebuild it from the brand folders"
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -75,7 +102,7 @@ def list_brands(paths: ProjectPaths) -> list[dict[str, Any]]:
     entries = data.get("brands") if isinstance(data, dict) else None
     if not isinstance(entries, list) or not all(isinstance(e, dict) and "slug" in e for e in entries):
         raise CliError(f'{path} must hold {{"brands": [...]}} with a slug in every entry{rebuild}')
-    return entries
+    return entries, []
 
 
 def _write_registry(paths: ProjectPaths, entries: list[dict[str, Any]]) -> None:
@@ -88,7 +115,8 @@ def _write_registry(paths: ProjectPaths, entries: list[dict[str, Any]]) -> None:
 
 
 def _update_registry(paths: ProjectPaths, state: BrandState) -> None:
-    _write_registry(paths, [e for e in list_brands(paths) if e["slug"] != state.slug] + [_entry(state)])
+    entries, _ = list_brands(paths)  # a rebuild's warnings reach the user through `brand list` and `brand new`
+    _write_registry(paths, [e for e in entries if e["slug"] != state.slug] + [_entry(state)])
 
 
 def decide(paths: ProjectPaths, slug: str, phase: Phase, by: str, note: str) -> BrandState:

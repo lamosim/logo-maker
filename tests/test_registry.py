@@ -243,6 +243,28 @@ def test_the_concept_gate_follows_only_the_brand_settings_the_audit_reads(projec
     assert len(stale) == 1 and stale[0].startswith("01-good/audit.json is stale") and "industry" in stale[0]
 
 
+def test_a_registry_rebuild_skips_brand_files_it_cannot_use_and_says_which(project_root):
+    run("brand", "new", "Alpha")
+    run("brand", "new", "Gamma")
+    alpha = project_root / "brands" / "alpha" / "brand.json"
+    alpha.write_text(alpha.read_text()[:40])  # truncated mid-object
+    stray = project_root / "brands" / "Not A Slug" / "brand.json"  # a valid file in a folder no slug can name
+    stray.parent.mkdir()
+    stray.write_text((project_root / "brands" / "gamma" / "brand.json").read_text())
+    index = project_root / "registry" / "brands.json"
+    index.unlink()
+    code, payload = run("brand", "new", "Beta")
+    assert code == 0 and payload["brand"]["slug"] == "beta" and "traceback" not in payload, payload
+    named = [[str(path) in w for path in (alpha, stray)] for w in payload["warnings"]]
+    assert sorted(named) == [[False, True], [True, False]]  # one warning per skipped file, naming it
+    index.unlink()
+    code, payload = run("brand", "list")
+    assert code == 0 and [b["slug"] for b in payload["brands"]] == ["beta", "gamma"]
+    assert sorted([str(path) in w for path in (alpha, stray)] for w in payload["warnings"]) == [[False, True], [True, False]]
+    code, payload = run("brand", "status", "alpha")  # reading the broken file directly is a clean error too
+    assert code == 2 and "traceback" not in payload and payload["errors"][0].startswith(f"{alpha} is invalid: ")
+
+
 def test_final_tokens_must_validate(project_root):
     from tests.test_color import good_tokens
 
