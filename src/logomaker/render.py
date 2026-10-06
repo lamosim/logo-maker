@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -51,32 +51,38 @@ class Renderer:
     def __enter__(self) -> "Renderer":
         if not self.chrome_app.exists():
             raise CliError(f"Google Chrome not found at {self.chrome_app}; install it to render", code=EXIT_EXTERNAL)
-        from playwright.sync_api import Error as PlaywrightError
-        from playwright.sync_api import sync_playwright
-
         try:
+            from playwright.sync_api import sync_playwright
+
             self._pw = sync_playwright().start()
             self._browser = self._pw.chromium.launch(channel="chrome", headless=True)
-        except PlaywrightError as err:
-            if self._pw is not None:
-                self._pw.stop()
-                self._pw = None
+        except Exception as err:  # noqa: BLE001 - a Playwright error or anything else starting the driver: all external
+            self.__exit__(None, None, None)
             raise CliError(f"Could not launch Google Chrome: {err}", code=EXIT_EXTERNAL) from err
         return self
 
     def __exit__(self, *exc) -> None:
+        """Close Chrome and stop Playwright. The work is done by now, so a Playwright error while shutting down is ignored."""
         browser, pw = self._browser, self._pw
         self._browser = self._pw = None
+        if browser is None and pw is None:
+            return
+        from playwright.sync_api import Error as PlaywrightError
+
         try:
             if browser is not None:
-                browser.close()
+                with suppress(PlaywrightError):
+                    browser.close()
         finally:
             if pw is not None:
-                pw.stop()
+                with suppress(PlaywrightError):
+                    pw.stop()
 
     @contextmanager
     def _page(self, **options) -> Iterator[Page]:
         """A fresh page, closed afterwards; a Chrome failure on the way (crash, disconnect, timeout) exits 3."""
+        if self._browser is None:
+            raise RuntimeError("Renderer is not open; use it as a context manager")
         from playwright.sync_api import Error as PlaywrightError
 
         try:

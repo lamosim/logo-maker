@@ -39,7 +39,18 @@ def test_playwright_start_failure_exits_3(tmp_path, monkeypatch):
     assert exc.value.code == 3
 
 
-def test_exit_stops_playwright_even_if_closing_chrome_fails():
+def test_any_failure_starting_the_driver_exits_3(tmp_path, monkeypatch):
+    class BrokenDriver:
+        def start(self):
+            raise OSError("driver binary missing")
+
+    monkeypatch.setattr("playwright.sync_api.sync_playwright", BrokenDriver)
+    with pytest.raises(CliError) as exc, Renderer(chrome_app=tmp_path):
+        pass
+    assert exc.value.code == 3 and "driver binary missing" in str(exc.value)
+
+
+def test_exit_ignores_shutdown_failures_and_still_stops_playwright():
     events = []
 
     class Browser:
@@ -50,12 +61,19 @@ def test_exit_stops_playwright_even_if_closing_chrome_fails():
     class Playwright:
         def stop(self):
             events.append("stop")
+            raise PlaywrightError("stop failed")
 
     renderer = Renderer()
     renderer._browser, renderer._pw = Browser(), Playwright()
-    with pytest.raises(PlaywrightError):
-        renderer.__exit__(None, None, None)
+    renderer.__exit__(None, None, None)  # the work is done: a messy shutdown must not fail the command
     assert events == ["close", "stop"] and renderer._browser is None and renderer._pw is None
+
+
+def test_a_renderer_outside_its_with_block_says_how_to_use_it():
+    renderer = Renderer()
+    for render in (lambda: renderer.svg_to_png(CIRCLE, 50), lambda: renderer.html_to_pdf("<p>x</p>")):
+        with pytest.raises(RuntimeError, match="Renderer is not open; use it as a context manager"):
+            render()
 
 
 @requires_chrome
