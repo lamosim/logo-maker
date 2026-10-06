@@ -80,6 +80,7 @@ def chrome_status() -> dict:
 @click.option("--check", is_flag=True, help="Report status only; create nothing. Missing Chrome or modules exit 3.")
 @command
 def setup(check: bool) -> None:
+    """Check Chrome and the Python modules. Without --check, also create brands/, registry/ and assets/fonts/."""
     paths = project()
     modules: dict[str, bool] = {}
     module_errors: dict[str, str] = {}
@@ -126,12 +127,14 @@ def _brand_payload(state) -> dict:
 @click.option("--unnamed", is_flag=True, help="NAME is a working title; a naming phase will run.")
 @command
 def brand_new(name: str, slug: str | None, unnamed: bool) -> None:
+    """Create a brand folder and its brand.json. The registry index gets an entry."""
     emit(_brand_payload(registry.new_brand(project(), name, slug, unnamed)))
 
 
 @brand.command("list")
 @command
 def brand_list() -> None:
+    """List the brands in the registry. A missing index is rebuilt from the brand folders."""
     emit({"brands": registry.list_brands(project())})
 
 
@@ -139,6 +142,7 @@ def brand_list() -> None:
 @click.argument("slug")
 @command
 def brand_status(slug: str) -> None:
+    """Show a brand's state and what it needs next."""
     paths = project()
     state = registry.load_state(paths, slug)
     nxt = registry.allowed_next(state)
@@ -153,6 +157,7 @@ def brand_status(slug: str) -> None:
 @click.option("--to", "target", required=True, type=click.Choice([p.value for p in Phase]))
 @command
 def brand_advance(slug: str, target: str) -> None:
+    """Move a brand to its next phase. Every earlier phase's artifacts must check out."""
     emit(_brand_payload(registry.advance(project(), slug, Phase(target))))
 
 
@@ -163,6 +168,7 @@ def brand_advance(slug: str, target: str) -> None:
 @click.option("--note", required=True)
 @command
 def brand_decide(slug: str, phase: str, by: str, note: str) -> None:
+    """Append a decision to the brand's log."""
     emit(_brand_payload(registry.decide(project(), slug, Phase(phase), by, note)))
 
 
@@ -171,6 +177,7 @@ def brand_decide(slug: str, phase: str, by: str, note: str) -> None:
 @click.option("--name", required=True)
 @command
 def brand_rename(slug: str, name: str) -> None:
+    """Set the brand's chosen name. The slug never changes."""
     emit(_brand_payload(registry.rename(project(), slug, name)))
 
 
@@ -184,6 +191,7 @@ def brand_rename(slug: str, name: str) -> None:
 @click.option("--font", "fonts", multiple=True, help="ROLE=FAMILY[:WEIGHT], e.g. wordmark=Sora:650")
 @command
 def brand_set(slug: str, territory, concept, primary_lockup, industry, surfaces, fonts) -> None:
+    """Record choices in brand.json. Territory, concept, primary lockup, industry, surfaces, fonts."""
     emit(_brand_payload(registry.set_fields(
         project(), slug, territory=territory, concept=concept, primary_lockup=primary_lockup,
         industry=industry, surfaces=surfaces, fonts=fonts,
@@ -200,6 +208,7 @@ def fonts_group() -> None:
 @click.option("--personality", default=None)
 @command
 def fonts_list(category: str | None, personality: str | None) -> None:
+    """List the font catalogue. Filter by category or personality; each family says whether it is cached."""
     from . import fonts as fontlib
 
     paths = project()
@@ -217,6 +226,7 @@ def fonts_list(category: str | None, personality: str | None) -> None:
 @click.argument("family")
 @command
 def fonts_fetch(family: str) -> None:
+    """Download a family from google/fonts. Its TTF files and licence go into assets/fonts/<family>/."""
     from . import fonts as fontlib
 
     emit({"manifest": fontlib.fetch(project(), family)})
@@ -231,6 +241,7 @@ def color_group() -> None:
 @click.argument("value")
 @command
 def color_info(value: str) -> None:
+    """Show a colour in every notation. Hex, RGB, HSL, OKLCH and CMYK, with its luminance."""
     from . import color as colorlib
 
     emit(colorlib.info(value))
@@ -241,6 +252,7 @@ def color_info(value: str) -> None:
 @click.option("--steps", default=9, type=click.IntRange(min=1))
 @command
 def color_ramp(value: str, steps: int) -> None:
+    """Make an OKLCH lightness ramp from a colour."""
     from . import color as colorlib
 
     emit({"ramp": colorlib.ramp(value, steps)})
@@ -250,6 +262,7 @@ def color_ramp(value: str, steps: int) -> None:
 @click.argument("tokens_path", type=click.Path(exists=True, dir_okay=False))
 @command
 def color_check(tokens_path: str) -> None:
+    """Check a tokens file for contrast and CVD. Contrast on light and dark paper; grayscale and colour-vision pairs."""
     from . import color as colorlib
 
     result = colorlib.check_tokens(colorlib.load_tokens(Path(tokens_path)))
@@ -287,6 +300,7 @@ def _build_concept(paths, slug: str, concept: str, variants: str, tokens_path: s
 @click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
 @command
 def concept_build(slug: str, concept: str, variants: str, tokens_path: str | None) -> None:
+    """Build a concept's tiers into build/. SVGs per output and variant, plus geometry.json and build.json."""
     paths = project()
     folder, report = _build_concept(paths, slug, concept, variants, tokens_path)
     emit({"concept": str(folder.relative_to(paths.root)), "build": report}, warnings=report["warnings"])
@@ -304,6 +318,7 @@ def _emit_audit(payload: dict, result, warnings: list[str] | None = None) -> Non
 @click.option("--no-render", is_flag=True, help="Skip the raster checks (no Chrome needed).")
 @command
 def concept_audit(slug: str, concept: str, no_render: bool) -> None:
+    """Audit a concept and write audit.json. The raster checks need Chrome unless --no-render; a failing audit exits 2."""
     from . import audit as auditlib
     from .render import Renderer
 
@@ -323,6 +338,7 @@ def concept_audit(slug: str, concept: str, no_render: bool) -> None:
 @click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
 @command
 def concept_render(slug: str, concept: str, round_n: int | None, tokens_path: str | None) -> None:
+    """Render the concept's critique sheet. It goes into <concept>/renders/round-N/."""
     from . import sheets as sheetlib
 
     # No renderer passed: the sheet launches Chrome itself, only once the concept has loaded and built.
@@ -338,6 +354,7 @@ def concept_render(slug: str, concept: str, round_n: int | None, tokens_path: st
 @click.option("--no-render", is_flag=True, help="Build and audit only (no Chrome).")
 @command
 def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tokens_path: str | None, no_render: bool) -> None:
+    """Build, audit and render a concept. Everything is written first; a failing audit then exits 2."""
     from . import audit as auditlib
     from . import sheets as sheetlib
     from .render import Renderer

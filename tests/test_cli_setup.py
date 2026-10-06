@@ -2,6 +2,7 @@ import json
 import subprocess
 import sys
 
+import click
 from click.testing import CliRunner
 
 from logomaker.cli import main
@@ -85,3 +86,18 @@ def test_setup_check_runs_and_reports_a_missing_module(project_root):
 def test_setup_check_adds_module_errors_only_when_an_import_fails(project_root):
     payload = json.loads(CliRunner().invoke(main, ["setup", "--check"]).stdout)
     assert "pypdf" in payload["modules"] and all(payload["modules"].values()) and "module_errors" not in payload
+
+
+def test_every_command_has_a_one_line_description():
+    def leaves(group, prefix=()):
+        for name, cmd in group.commands.items():
+            if isinstance(cmd, click.Group):
+                yield from leaves(cmd, (*prefix, name))
+            else:
+                yield " ".join((*prefix, name)), cmd
+
+    commands = dict(leaves(main))
+    assert len(commands) == 17
+    assert [name for name, cmd in commands.items() if not (cmd.help or "").strip() or "\n" in cmd.help.strip()] == []
+    result = CliRunner().invoke(main, ["brand", "--help"])
+    assert result.exit_code == 0 and "Move a brand to its next phase." in result.stdout
