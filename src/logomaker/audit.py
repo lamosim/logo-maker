@@ -1,6 +1,7 @@
 """Deterministic concept audits (spec section 8.1). Geometry checks always run; raster checks need a Renderer."""
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -23,6 +24,22 @@ X_HEIGHT_MIN_PX = 7.0
 MAX_ROLES = 3
 GENERIC_ASPECT = (0.72, 0.82)
 TIER_FALLBACKS = {"small": ("full-symbol", "full-lockup"), "favicon": ("small", "full-symbol", "full-lockup")}  # as exports fall back
+
+
+def concept_fingerprint(folder: Path, tokens_path: str | Path | None = None) -> str:
+    """sha256 (hex) of what an audit reads: concept.py, params.json and the tokens file (`tokens_path`, else
+    <folder>/tokens.json), each when present. Each enters as its name and byte count, then its bytes."""
+    digest = hashlib.sha256()
+    tokens = Path(tokens_path) if tokens_path else folder / "tokens.json"
+    for name, path in (("concept.py", folder / "concept.py"), ("params.json", folder / "params.json"), ("tokens.json", tokens)):
+        if path.is_file():
+            data = path.read_bytes()
+            digest.update(f"{name} {len(data)}\n".encode() + data)
+    return digest.hexdigest()
+
+
+def _save(folder: Path, result: AuditResult) -> None:
+    (folder / "audit.json").write_text(json.dumps(result.model_dump(), indent=2) + "\n", encoding="utf-8")
 
 
 def load_cliches(paths: ProjectPaths) -> dict:
@@ -199,12 +216,17 @@ def _checked_outputs(outputs: dict) -> tuple[dict[str, str], list[Finding]]:
 def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: Renderer | None = None) -> AuditResult:
     folder = conceptlib.concept_folder(paths, slug, concept_name)
     state = registry.load_state(paths, slug)
-    module = conceptlib.load_concept(folder)
-    outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
+    fingerprint = concept_fingerprint(folder)
+    try:
+        module = conceptlib.load_concept(folder)
+        outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
+        again = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
+    except CliError as err:  # a concept that does not build must not keep an earlier, passing audit.json
+        _save(folder, AuditResult(ok=False, failures=[Finding(check="build", severity="fail", message=str(err))], fingerprint=fingerprint))
+        raise
     geometries = {name: mark.geometry() for name, mark in outputs.items()}
     findings: list[Finding] = []
 
-    again = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
     if set(again) != set(outputs):
         changed = ", ".join(sorted(set(outputs) ^ set(again)))
         findings.append(Finding(check="determinism", severity="fail", message=f"building twice gave different outputs ({changed} in only one build); remove randomness or time-dependent code",
@@ -253,6 +275,7 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
         info=[f for f in findings if f.severity == "info"],
         outputs=list(outputs),
         rendered=rendered,
+        fingerprint=fingerprint,
     )
-    (folder / "audit.json").write_text(json.dumps(result.model_dump(), indent=2) + "\n", encoding="utf-8")
+    _save(folder, result)
     return result

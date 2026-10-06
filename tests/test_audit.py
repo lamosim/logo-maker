@@ -5,6 +5,7 @@ from click.testing import CliRunner
 
 from logomaker import audit, registry
 from logomaker.cli import main
+from logomaker.output import CliError
 from logomaker.paths import project
 from tests.conftest import install_concept, requires_chrome
 
@@ -305,6 +306,37 @@ def test_dots_that_merge_at_favicon_size_fail(project_root, renderer):
     assert merge and merge[0].severity == "fail" and (merge[0].data["before"], merge[0].data["after"]) == (2, 1)
     # The missing small tier is still rendered, on its full-symbol fallback.
     assert {f.data["output"] for f in findings(result, "min_feature")} == {"full-symbol", "small", "favicon"}
+
+
+def test_fingerprint_covers_concept_params_and_tokens(project_root):
+    from tests.test_color import good_tokens
+
+    folder = install_concept(project_root, "good")
+    first = audit.concept_fingerprint(folder)
+    assert len(first) == 64 and audit.concept_fingerprint(folder) == first
+    assert audit.audit_concept(project(), "keystone", "01-good").fingerprint == first
+    assert json.loads((folder / "audit.json").read_text())["fingerprint"] == first
+    seen = {first}
+    for name, content in (("params.json", '{"stroke": 80}'), ("tokens.json", json.dumps(good_tokens())), ("concept.py", (folder / "concept.py").read_text() + "# edited\n")):
+        (folder / name).write_text(content)
+        seen.add(audit.concept_fingerprint(folder))
+    assert len(seen) == 4  # each file changes it
+    palette = project_root / "palette.json"
+    palette.write_text(json.dumps(good_tokens()))
+    assert audit.concept_fingerprint(folder, palette) == audit.concept_fingerprint(folder)  # same tokens bytes, wherever they live
+    palette.write_text("{}")
+    assert audit.concept_fingerprint(folder, palette) != audit.concept_fingerprint(folder)
+
+
+def test_a_failed_build_replaces_the_audit_with_a_failing_one(project_root):
+    folder = install_concept(project_root, "good")
+    assert audit.audit_concept(project(), "keystone", "01-good").ok
+    write_concept(folder, "raise RuntimeError('boom')")
+    with pytest.raises(CliError, match="RuntimeError: boom") as err:
+        audit.audit_concept(project(), "keystone", "01-good")
+    written = json.loads((folder / "audit.json").read_text())
+    assert written["ok"] is False and written["rendered"] is False and written["fingerprint"] == audit.concept_fingerprint(folder)
+    assert [(f["check"], f["severity"], f["message"]) for f in written["failures"]] == [("build", "fail", str(err.value))]
 
 
 def test_concept_audit_cli(project_root):

@@ -192,3 +192,4 @@ class AuditResult(BaseModel):
     info: list[Finding] = Field(default_factory=list)
     outputs: list[str] = Field(default_factory=list)
     rendered: bool = False
+    fingerprint: str = ""  # audit.concept_fingerprint of the files audited; gates and sheets compare it with the current one

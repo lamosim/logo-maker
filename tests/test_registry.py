@@ -3,11 +3,12 @@ import json
 import pytest
 from click.testing import CliRunner
 
-from logomaker import registry
+from logomaker import audit, registry
 from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import Phase
+from tests.conftest import install_concept
 
 
 def run(*args):
@@ -143,6 +144,34 @@ def test_list_brands(project_root):
     run("brand", "new", "Quill")
     code, payload = run("brand", "list")
     assert [b["slug"] for b in payload["brands"]] == ["keystone", "quill"]
+
+
+def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
+    from tests.test_color import good_tokens
+
+    folder = install_concept(project_root, "good")
+    state = registry.set_fields(project(), "keystone", concept="01-good")
+    brand = project_root / "brands" / "keystone"
+    stale = "01-good/audit.json is stale (concept.py, params.json or tokens.json changed); re-run concept audit"
+
+    def audited(rendered: bool) -> None:
+        """A fresh audit of the concept as it stands; `rendered` stands in for the raster checks (no Chrome needed)."""
+        audit.audit_concept(project(), "keystone", "01-good")
+        saved = json.loads((folder / "audit.json").read_text())
+        (folder / "audit.json").write_text(json.dumps({**saved, "rendered": rendered}))
+
+    audited(rendered=False)
+    assert registry._check_concept(brand, state) == ["01-good/audit.json was made with --no-render; re-run concept audit without it"]
+    audited(rendered=True)
+    assert registry._check_concept(brand, state) == []
+    for name, content in (("params.json", '{"stroke": 80}'), ("tokens.json", json.dumps(good_tokens())), ("concept.py", (folder / "concept.py").read_text() + "# edited\n")):
+        (folder / name).write_text(content)
+        assert registry._check_concept(brand, state) == [stale], name
+        audited(rendered=True)
+        assert registry._check_concept(brand, state) == [], name
+    saved = json.loads((folder / "audit.json").read_text())
+    (folder / "audit.json").write_text(json.dumps({**saved, "ok": False}))
+    assert registry._check_concept(brand, state) == ["01-good/audit.json has failures"]
 
 
 def test_final_tokens_must_validate(project_root):
