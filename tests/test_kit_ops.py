@@ -40,6 +40,16 @@ def test_booleans():
     assert math.isclose(frame.area, 100**2 - 80**2)  # skia winds a hole the union creates like the outline
 
 
+def test_ops_keep_the_curves_they_are_given():
+    # Re-winding keeps each contour's own verbs, so anchors match what pathops and the stroker drew: a circle stays
+    # four conics (4 anchors), never sixteen cubics.
+    c = circle(0, 0, 100)
+    assert mirror_x(c).anchor_count() == mirror_y(c).anchor_count() == 4
+    assert union(c, circle(300, 0, 100)).anchor_count() == 8
+    assert subtract(ring(0, 0, 100, 20), rect(90, -5, 20, 10)).anchor_count() == 11  # pathops splits the outline at the notch
+    assert stroke(c, 10).anchor_count() == 32  # skia's stroker draws each side of a circle as 16 quads
+
+
 def test_failed_boolean_raises_value_error():
     broken = polygon([(0, 0), (math.inf, 0), (0, 10)], free=True)  # pathops rejects non-finite paths
     with pytest.raises(ValueError, match="boolean path operation failed") as excinfo:

@@ -290,29 +290,53 @@ class Shape:
         return "".join(parts)
 
 
+def _contour_paths(path: skia.Path) -> list[skia.Path]:
+    """Each contour of `path` as a path of its own, verb for verb: a conic stays one conic with its weight. (Curves are
+    converted only for output, in `Shape.commands`.)"""
+    contours: list[skia.Path] = []
+    it = skia.Path.RawIter(path)
+    while True:
+        verb, pts = it.next()
+        if verb == skia.Path.Verb.kDone_Verb:
+            return contours
+        if verb == skia.Path.Verb.kMove_Verb:
+            contours.append(skia.Path())
+            contours[-1].moveTo(pts[0])
+        elif verb == skia.Path.Verb.kLine_Verb:
+            contours[-1].lineTo(pts[1])
+        elif verb == skia.Path.Verb.kQuad_Verb:
+            contours[-1].quadTo(pts[1], pts[2])
+        elif verb == skia.Path.Verb.kConic_Verb:
+            contours[-1].conicTo(pts[1], pts[2], it.conicWeight())
+        elif verb == skia.Path.Verb.kCubic_Verb:
+            contours[-1].cubicTo(pts[1], pts[2], pts[3])
+        elif verb == skia.Path.Verb.kClose_Verb:
+            contours[-1].close()
+
+
 def normalize_winding(path: skia.Path) -> skia.Path:
     """Return a copy of `path` whose contour directions alternate with containment depth.
 
     Pathops return even-odd paths with arbitrary contour directions. Here contours at even depth run counter-clockwise
     (positive signed area) and those at odd depth clockwise, so fill-rule nonzero and even-odd agree and `Shape.area`
     is right. The input is read as even-odd and its contours must not cross each other (Simplify output or hand-built
-    nested contours); overlapping contours are not merged. Contours keep their order; degenerate ones, and any without
-    an inside probe point, pass through unchanged. The result has winding fill.
+    nested contours); overlapping contours are not merged. Contours keep their order and their own verbs (a conic stays
+    a conic); degenerate ones, and any without an inside probe point, pass through unchanged. The result has winding fill.
     """
-    parts = Shape(path).subpaths()
-    polys = [part.flatten()[0] for part in parts]
+    contours = _contour_paths(path)
+    polys = [Shape(contour).flatten()[0] for contour in contours]
     areas = [_signed_area_and_centroid(poly)[0] for poly in polys]
     containers = [j for j, a in enumerate(areas) if abs(a) >= 1e-9]
     out = skia.Path()
-    for i, part in enumerate(parts):
+    for i, contour in enumerate(contours):
         probe = _inside_probe(polys[i]) if abs(areas[i]) >= 1e-9 else None
         if probe is None:
-            out.addPath(part.path)
+            out.addPath(contour)
             continue
         depth = sum(1 for j in containers if j != i and _contains(polys[j], probe))
         if (areas[i] > 0) == (depth % 2 == 0):
-            out.addPath(part.path)
+            out.addPath(contour)
         else:
-            out.reverseAddPath(part.path)
+            out.reverseAddPath(contour)
     out.setFillType(skia.PathFillType.kWinding)
     return out

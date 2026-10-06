@@ -114,6 +114,15 @@ def test_normalize_winding_alternates_nested_contours():
     assert Shape(normalize_winding(p)).to_path_data() == Shape(fixed).to_path_data()
 
 
+def test_normalize_winding_keeps_every_contours_verbs():
+    p = skia.Path()
+    p.addCircle(0, 0, 100)
+    p.addCircle(0, 0, 80)  # wound like the outline: normalize_winding reverses it
+    fixed = normalize_winding(p)
+    assert [v.name for v in fixed.getVerbs()] == [v.name for v in p.getVerbs()]  # conics stay conics, in the same order
+    assert Shape(fixed).anchor_count() == 8
+
+
 def test_normalize_winding_leaves_correct_paths_alone():
     p = skia.Path()
     p.addCircle(0, 0, 100)

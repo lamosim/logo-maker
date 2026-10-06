@@ -196,6 +196,17 @@ def test_anchor_count_within_limits_is_reported_as_info(project_root):
         assert 0 < f.data["anchors"] <= audit.ANCHOR_WARN and f.message == f"{f.data['output']}: symbol has {f.data['anchors']} anchors"
 
 
+def test_a_union_of_dots_counts_the_anchors_of_their_composite(project_root):
+    folder = install_concept(project_root, "good", name="17-dots")
+    counts = []
+    composite = "Composite([(circle(i * 100, 0, 30), 'primary') for i in range(10)])"
+    unioned = "union(*[circle(i * 100, 0, 30) for i in range(10)])"
+    for symbol in (composite, unioned):
+        write_concept(folder, f"return Mark(symbol={symbol})")
+        counts.append(findings(audit.audit_concept(project(), "keystone", "17-dots"), "anchors")[0].data["anchors"])
+    assert counts == [40, 40]
+
+
 def test_allow_complex_needs_a_reason(project_root):
     folder = install_concept(project_root, "good", name="08-complex")
     for reason, severity in (("", "fail"), ("an engraved seal meant to reward a close look", "warn")):
