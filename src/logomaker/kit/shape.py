@@ -5,6 +5,7 @@ Coordinates are in the kit frame (y up). `to_path_data` flips y for SVG.
 from __future__ import annotations
 
 import math
+from collections import Counter
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 
@@ -116,16 +117,19 @@ def _contains(poly: list[Point], point: Point) -> bool:
     return inside
 
 
-def _inside_probe(poly: list[Point], nudge: float = 1e-3) -> Point | None:
-    """A point just inside `poly`: its longest edge's midpoint, nudged across the edge. None if neither side is inside."""
-    (x0, y0), (x1, y1) = max(zip(poly, poly[1:] + poly[:1]), key=lambda edge: math.dist(*edge))
-    length = math.dist((x0, y0), (x1, y1))
-    mx, my = (x0 + x1) / 2, (y0 + y1) / 2
-    nx, ny = (y0 - y1) / length * nudge, (x1 - x0) / length * nudge
-    for probe in ((mx + nx, my + ny), (mx - nx, my - ny)):
-        if _contains(poly, probe):
-            return probe
-    return None
+def _inside_probes(poly: list[Point], count: int = 1, nudge: float = 1e-3) -> list[Point]:
+    """Points just inside `poly`: the midpoints of its `count` longest edges (longest first, ties in polygon order), each
+    nudged across its edge to whichever side is inside. An edge with neither side inside gives none."""
+    edges = sorted(zip(poly, poly[1:] + poly[:1]), key=lambda edge: -math.dist(*edge))
+    probes: list[Point] = []
+    for (x0, y0), (x1, y1) in edges[:count]:
+        length = math.dist((x0, y0), (x1, y1))
+        if length == 0:
+            continue
+        mx, my = (x0 + x1) / 2, (y0 + y1) / 2
+        nx, ny = (y0 - y1) / length * nudge, (x1 - x0) / length * nudge
+        probes += [probe for probe in ((mx + nx, my + ny), (mx - nx, my - ny)) if _contains(poly, probe)][:1]
+    return probes
 
 
 class Shape:
@@ -333,7 +337,7 @@ def normalize_winding(path: skia.Path) -> skia.Path:
     after it is dropped. The result has winding fill.
     """
     out = skia.Path()
-    for contour, area, depth in contour_nesting(path):
+    for contour, area, depth, _ in contour_nesting(path):
         if depth is None or (area > 0) == (depth % 2 == 0):
             out.addPath(contour)
         else:
@@ -342,16 +346,29 @@ def normalize_winding(path: skia.Path) -> skia.Path:
     return out
 
 
-def contour_nesting(path: skia.Path) -> list[tuple[skia.Path, float, int | None]]:
-    """Each contour of `path` (as `_contour_paths` splits it) with its signed area and its depth: how many other
-    contours enclose it, read as even-odd. The depth is None for a degenerate contour or one without an inside probe."""
+def contour_nesting(path: skia.Path, probes: int = 1) -> list[tuple[skia.Path, float, int | None, int | None]]:
+    """Each contour of `path` (as `_contour_paths` splits it) with its signed area, its depth (how many other contours
+    enclose it, read as even-odd) and its parent (the index of the innermost contour enclosing it, None at depth 0).
+    Depth and parent are None for a degenerate contour or one without an inside probe.
+
+    Containment is read at up to `probes` points just inside each contour, and the enclosing set most of them agree on
+    wins (the first probe's on a tie), so one probe landing where another contour touches this one is outvoted.
+    """
     contours = _contour_paths(path)
     polys = [Shape(contour).flatten()[0] for contour in contours]
     areas = [_signed_area_and_centroid(poly)[0] for poly in polys]
     containers = [j for j, a in enumerate(areas) if abs(a) >= 1e-9]
-    nesting: list[tuple[skia.Path, float, int | None]] = []
+    enclosing: list[list[int] | None] = []
+    for i in range(len(contours)):
+        points = _inside_probes(polys[i], probes) if abs(areas[i]) >= 1e-9 else []
+        votes = Counter(tuple(j for j in containers if j != i and _contains(polys[j], point)) for point in points)
+        enclosing.append(list(votes.most_common(1)[0][0]) if votes else None)
+    nesting: list[tuple[skia.Path, float, int | None, int | None]] = []
     for i, contour in enumerate(contours):
-        probe = _inside_probe(polys[i]) if abs(areas[i]) >= 1e-9 else None
-        depth = None if probe is None else sum(1 for j in containers if j != i and _contains(polys[j], probe))
-        nesting.append((contour, areas[i], depth))
+        around = enclosing[i]
+        if around is None:
+            nesting.append((contour, areas[i], None, None))
+            continue
+        parent = max(around, key=lambda j: len(enclosing[j] or ()), default=None)  # the most enclosed of its enclosers
+        nesting.append((contour, areas[i], len(around), parent))
     return nesting

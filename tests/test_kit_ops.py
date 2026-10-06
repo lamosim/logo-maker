@@ -100,6 +100,33 @@ def test_inward_offsets_shrink_by_the_distance_or_vanish():
     assert math.isclose(target.area, math.pi * (85**2 - 75**2), rel_tol=0.02) and len(target.subpaths()) == 2
 
 
+# Hole centres for the sweep: the hole grown to 3r stays inside the square inset by 2r while |x|, |y| <= 150, and at
+# 150 it touches the inset square's edge.
+HOLE_POSITIONS = [(0, 0), (0, 100), (100, 0), (-150, 0), (0, -150), (150, 150), (-150, 150), (75, -40), (-33.25, 120.5), (140, -137.75)]
+
+
+def test_insets_where_the_band_lands_on_a_hole():
+    # Inset by twice a hole's radius, the band's folded inner edge lands on the hole itself: the boolean leaves slivers
+    # and duplicate contours there, which must neither empty the inset nor fill the hole.
+    hole3 = subtract(rect_centered(0, 0, 300, 300), circle(0, 0, 3))
+    assert math.isclose(offset(hole3, -6).area, 288**2 - math.pi * 9**2, rel_tol=0.01)  # measured 82688.8
+    assert math.isclose(offset(ring(0, 0, 100, 90), -20).area, math.pi * (80**2 - 30**2), rel_tol=0.01)  # measured 17272.6
+    hole5 = subtract(rect_centered(0, 0, 200, 200), circle(0, 0, 5))
+    assert math.isclose(offset(hole5, -10).area, 180**2 - math.pi * 15**2, rel_tol=0.01)  # measured 31691.1
+    assert offset(ring(0, 0, 100, 80), -40).is_empty  # exactly twice the distance thick: nothing is left
+    raising = subtract(rect_centered(0, 0, 400, 400), circle(0, 100, 8))  # pathops raises on this band subtraction
+    assert math.isclose(offset(raising, -16).area, 368**2 - math.pi * 24**2, rel_tol=0.01)  # measured 133625.4
+    assert offset(Shape.empty(), -0.005).is_empty and offset(Shape.empty(), -5).is_empty  # the retry needs room to step back
+
+
+@pytest.mark.parametrize("r", [3, 4, 5, 6, 8, 10])
+def test_a_square_with_a_hole_insets_by_twice_the_hole_radius(r):
+    for cx, cy in HOLE_POSITIONS:
+        inset = offset(subtract(rect_centered(0, 0, 400, 400), circle(cx, cy, r)), -2 * r)
+        expected = (400 - 4 * r) ** 2 - math.pi * (3 * r) ** 2  # the square shrinks by 2r a side; the hole grows to 3r
+        assert not inset.is_empty and math.isclose(inset.area, expected, rel_tol=0.01), (r, cx, cy)
+
+
 def test_transforms():
     r = rect(0, 0, 10, 20)
     b = rotate(r, 90).bounds

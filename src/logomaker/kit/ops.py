@@ -65,24 +65,57 @@ def offset(shape: Shape, distance: float) -> Shape:
     return shape._with_path(result.path, shape.free_segments)  # derived from shape alone: count its free segments once
 
 
+_SLIVER_AREA = 1.0  # unit²: smaller than any hole a real inset has (one at least `distance` > 1 across)
+
+
 def _inset(shape: Shape, distance: float) -> Shape:
     """Everything in `shape` at least `distance` (> 0) from its outline.
 
-    Subtracting a round-joined stroke band of the outline is exact except behind a convex curve tighter than the
-    distance: skia's stroker folds there and its band misses an island of the shape (a dot of radius r < distance keeps
-    a dot of radius distance - r). A true inset region grown back by nearly `distance` still fits inside the shape; an
-    island does not, so islands are dropped, deepest first, so that an island in a ring's hole never condemns the ring.
-    The shortfall, max(2% of the distance, 1 unit), stays clear of the stroker's own error (about 0.25 units per
-    stroke on the 1000-unit canvas); an island under about half a unit across can survive it.
+    The base is the shape minus a round-joined stroke band of its outline (normalized like every stroke). Where that is
+    not exact, the result is rebuilt from regions: an outline (even depth) with its direct holes (depth + 1), so the
+    slivers and overlapping duplicates the boolean leaves where the band's edge lands on the outline (an inset of about
+    twice a hole's radius) are never part of one. A region stays only if, grown back by just under `distance`, it still
+    fits inside the shape; that drops the islands skia's stroker leaves behind a convex curve tighter than the distance
+    (a dot of radius r < distance keeps a dot of radius distance - r). The shortfall, max(2% of the distance, 1 unit),
+    stays clear of the stroker's own error (about 0.25 units per stroke on the 1000-unit canvas); an island with a
+    radius under about 0.5 units can survive it. The regions are read with five probes per contour, so a hole touching an
+    outline cannot pass for its parent. If pathops raises on the band subtraction or returns nothing, the inset is
+    retried a hundredth of a unit shallower; if a region test's boolean fails, the plain band subtraction stands.
     """
-    result = subtract(shape, stroke(shape, 2 * distance, join="round"))
+    retry = distance > 0.02  # a hundredth of a unit shallower must still be an inset
+    try:
+        result = subtract(shape, stroke(shape, 2 * distance, join="round"))
+    except ValueError:  # where the band's edge lands exactly on the outline pathops can give up, raising ...
+        if not retry:
+            raise
+        result = None
+    if retry and (result is None or result.is_empty):  # ... or returning nothing: a hundredth shallower it does not
+        distance -= 0.01
+        result = subtract(shape, stroke(shape, 2 * distance, join="round"))
     grow = distance - max(0.02 * distance, 1.0)
-    outlines = [(depth, contour) for contour, area, depth in contour_nesting(result.path) if area > 0 and depth is not None]
-    for _, outline in sorted(outlines, key=lambda item: -item[0]):
-        region = intersect(result, Shape(outline))
-        if grow > 0 and not subtract(offset(region, grow), shape).is_empty:
-            result = subtract(result, Shape(outline))
-    return result
+    if grow <= 0:
+        return result
+    try:
+        nesting = contour_nesting(result.path, probes=5)
+        kept: set[int] = set()
+        for i, (outline, _, depth, _) in enumerate(nesting):
+            if depth is None or depth % 2:
+                continue
+            holes = [j for j, (_, area, d, parent) in enumerate(nesting) if parent == i and d == depth + 1 and abs(area) >= _SLIVER_AREA]
+            region = skia.Path(outline)
+            for j in holes:
+                region.addPath(nesting[j][0])
+            if subtract(offset(Shape(region), grow), shape).is_empty:
+                kept |= {i, *holes}
+    except ValueError:  # a region test's boolean failed: the plain band subtraction stands
+        return result
+    if len(kept) == len(nesting):
+        return result
+    path = skia.Path()
+    for i, (contour, *_) in enumerate(nesting):
+        if i in kept:
+            path.addPath(contour)
+    return result._with_path(path, result.free_segments)
 
 
 def translate(shape: Shape, dx: float, dy: float) -> Shape:
