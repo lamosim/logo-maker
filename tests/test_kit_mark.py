@@ -3,6 +3,7 @@ import math
 import pytest
 
 from logomaker.kit.mark import Composite, Mark, fill_for
+from logomaker.kit.ops import subtract
 from logomaker.kit.primitives import circle, rect
 from logomaker.kit.text import text
 
@@ -28,6 +29,13 @@ def test_stacked_and_single_lockups(project_root):
     assert [p.name for p in m.with_lockup("symbol").layout()] == ["symbol"]
     assert [p.name for p in m.with_lockup("wordmark").layout()] == ["wordmark"]
     assert m.without_wordmark().lockup == "symbol" and m.without_wordmark().wordmark is None
+
+
+def test_a_notched_wordmark_keeps_its_metrics_in_the_mark(project_root):
+    word = text("Good", "Fira Code", weight=600, cap_height=180)
+    m = Mark(symbol=circle(0, 0, 100), wordmark=subtract(word, rect(0, 60, 40, 20)))
+    assert m.x_unit == 180
+    assert m.geometry()["wordmark"] == {"cap_height": 180, "x_height": round(word.x_height, 3), "advance": round(word.advance, 3), "font": word.font}
 
 
 def test_x_unit_without_wordmark_is_fifth_of_symbol_height():

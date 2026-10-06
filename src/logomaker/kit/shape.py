@@ -137,8 +137,13 @@ class Shape:
     def empty(cls) -> "Shape":
         return cls()
 
+    def _with_path(self, path: skia.Path, free_segments: int) -> "Shape":
+        """A shape of this kind on a new outline. Ops build every result through it, so a subclass that carries more
+        than an outline (TextShape's metrics) extends this one method instead of each op special-casing it."""
+        return Shape(path, free_segments)
+
     def copy(self) -> "Shape":
-        return Shape(skia.Path(self.path), self.free_segments)
+        return self._with_path(skia.Path(self.path), self.free_segments)
 
     @property
     def is_empty(self) -> bool:
@@ -246,7 +251,7 @@ class Shape:
     def transformed(self, matrix: skia.Matrix) -> "Shape":
         dst = skia.Path()
         self.path.transform(matrix, dst)
-        return Shape(dst, self.free_segments)
+        return self._with_path(dst, self.free_segments)
 
     def to_path_data(self, precision: int = 2, flip_y: bool = True) -> str:
         sign = -1.0 if flip_y else 1.0

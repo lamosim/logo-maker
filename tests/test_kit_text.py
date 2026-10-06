@@ -4,7 +4,8 @@ import shutil
 import pytest
 import skia
 
-from logomaker.kit.ops import translate
+from logomaker.kit.ops import intersect, mirror_x, offset, rotate, scale, stroke, subtract, translate, union, xor
+from logomaker.kit.primitives import rect
 from logomaker.kit.text import TextShape, glyph, text
 from logomaker.output import CliError
 
@@ -60,6 +61,29 @@ def test_transform_keeps_geometry(project_root):
     t = text("Go", "Fira Code", cap_height=100)
     moved = translate(t, 50, 0)
     assert math.isclose(moved.bounds.x0, t.bounds.x0 + 50, abs_tol=1e-3)  # skia stores points as float32
+
+
+def test_booleans_keep_the_first_operands_text_metrics(project_root):
+    word = text("Good", "Fira Code", weight=600, cap_height=180)
+    notch = rect(0, 60, 40, 20)
+    for result in (subtract(word, notch), union(word, notch), intersect(word, notch), xor(word, notch), offset(word, 4), stroke(word, 4)):
+        assert isinstance(result, TextShape), result
+        assert (result.cap_height, result.x_height, result.advance, result.font) == (word.cap_height, word.x_height, word.advance, word.font)
+    notched = subtract(word, notch)
+    assert notched.area < word.area and notched.glyph_bounds == word.glyph_bounds  # a notch does not move the letters
+    assert not isinstance(subtract(notch, word), TextShape)  # only the first operand carries its metrics
+
+
+def test_transforms_scale_text_metrics(project_root):
+    word = text("Good", "Fira Code", weight=600, cap_height=180)
+    doubled = scale(word, 2)
+    assert isinstance(doubled, TextShape) and doubled.font == word.font
+    assert math.isclose(doubled.cap_height, 360) and math.isclose(doubled.x_height, 2 * word.x_height) and math.isclose(doubled.advance, 2 * word.advance)
+    first, scaled = word.glyph_bounds[0], doubled.glyph_bounds[0]
+    assert all(math.isclose(s, 2 * v, abs_tol=1e-3) for s, v in zip((scaled.x0, scaled.y0, scaled.x1, scaled.y1), (first.x0, first.y0, first.x1, first.y1)))
+    turned = rotate(mirror_x(translate(word, 10, 5)), 30)  # moves, reflections and rotations keep the size
+    assert isinstance(turned, TextShape)  # skia matrices are float32, so a rotation's determinant is 1 to about 1e-8
+    assert math.isclose(turned.cap_height, 180, rel_tol=1e-6) and math.isclose(turned.x_height, word.x_height, rel_tol=1e-6)
 
 
 def test_counters_stay_open_under_nonzero_fill(project_root):

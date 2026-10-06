@@ -124,10 +124,15 @@ def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta, lenient: boo
 
 
 def _text_legibility(outputs: dict, geometries: dict, state) -> list[Finding]:
+    """Wordmark x-height in px at the brand's minimum lockup width; a wordmark without text metrics warns that it cannot be checked."""
     out: list[Finding] = []
     for name, min_px in (("full-horizontal", state.min_sizes.horizontal_px), ("full-stacked", state.min_sizes.stacked_px), ("full-wordmark", state.min_sizes.horizontal_px)):
         geo = geometries.get(name)
-        if not geo or not geo.get("wordmark"):
+        if not geo:
+            continue
+        if geo["wordmark"] is None:  # these lockups always show the wordmark, so it was drawn without text()
+            out.append(Finding(check="text_legibility", severity="warn", message=f"{name}: wordmark metrics unknown (not a TextShape); x-height cannot be checked — "
+                               "build the wordmark with text() and keep it the first operand of every op", data={"output": name}))
             continue
         px = geo["wordmark"]["x_height"] * min_px / geo["bounds"]["w"]
         if px < X_HEIGHT_MIN_PX:

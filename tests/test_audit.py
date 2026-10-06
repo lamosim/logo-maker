@@ -96,6 +96,36 @@ def test_text_legibility_fails_when_lockup_is_too_small(project_root):
     assert findings(result, "text_legibility")[0].severity == "fail" and not result.ok
 
 
+def write_concept(folder, build_body: str, tiers: str = "{'full': {}}") -> None:
+    """Replace `folder`'s concept.py with a one-tier module whose build(p) is `build_body` (one or more lines)."""
+    (folder / "concept.py").write_text(
+        "from logomaker.kit import *\n"
+        "META = Meta(slug='inline', idea='written by the test', logo_type='combination')\n"
+        f"PARAMS = Params()\nTIERS = {tiers}\n"
+        "def build(p):\n" + "".join(f"    {line}\n" for line in build_body.splitlines())
+    )
+
+
+def test_a_notched_wordmark_is_still_checked_for_legibility(project_root):
+    folder = install_concept(project_root, "good", name="14-notch")
+    # 27 characters at cap height 60 beside a 400-unit symbol: about 3 px of x-height at the 120 px minimum width.
+    write_concept(folder, "word = subtract(text('Keystone Invoicing Partners', 'Fira Code', weight=600, cap_height=60), rect(0, 20, 30, 10))\n"
+                          "return Mark(symbol=rect_centered(0, 0, 400, 400), wordmark=word)")
+    result = audit.audit_concept(project(), "keystone", "14-notch")
+    legibility = findings(result, "text_legibility")
+    assert [f.data["output"] for f in legibility] == ["full-horizontal", "full-stacked", "full-wordmark"]
+    assert all(f.severity == "fail" for f in legibility) and not result.ok
+
+
+def test_a_wordmark_without_text_metrics_warns_instead_of_skipping(project_root):
+    folder = install_concept(project_root, "good", name="15-blocks")
+    write_concept(folder, "return Mark(symbol=rect_centered(0, 0, 400, 400), wordmark=rect(0, 0, 900, 120))")
+    legibility = findings(audit.audit_concept(project(), "keystone", "15-blocks"), "text_legibility")
+    assert [(f.data["output"], f.severity) for f in legibility] == [("full-horizontal", "warn"), ("full-stacked", "warn"), ("full-wordmark", "warn")]
+    assert legibility[0].message == ("full-horizontal: wordmark metrics unknown (not a TextShape); x-height cannot be checked — "
+                                     "build the wordmark with text() and keep it the first operand of every op")
+
+
 def test_nondeterministic_concept_fails(project_root):
     install_concept(project_root, "random_concept", name="05-random")
     result = audit.audit_concept(project(), "keystone", "05-random")

@@ -1,4 +1,8 @@
-"""Boolean operations, strokes, transforms and alignment. Every function returns a new Shape."""
+"""Boolean operations, strokes, transforms and alignment. Every function returns a new Shape.
+
+A result has the kind of its first operand (Shape._with_path), so a TextShape wordmark keeps its metrics through a
+notch, a stroke or a move.
+"""
 from __future__ import annotations
 
 import skia
@@ -22,17 +26,19 @@ def _simplify(path: skia.Path) -> skia.Path:
 
 
 def union(*shapes: Shape) -> Shape:
+    if not shapes:
+        return Shape.empty()
     live = [s for s in shapes if not s.is_empty]
     if not live:
-        return Shape.empty()
+        return shapes[0]._with_path(skia.Path(), 0)
     acc = skia.Path(live[0].path)
     for s in live[1:]:
         acc = _op(acc, s.path, skia.PathOp.kUnion_PathOp)
-    return Shape(normalize_winding(_simplify(acc)), sum(s.free_segments for s in live))
+    return shapes[0]._with_path(normalize_winding(_simplify(acc)), sum(s.free_segments for s in live))
 
 
 def _binary(a: Shape, b: Shape, op: skia.PathOp) -> Shape:
-    return Shape(normalize_winding(_simplify(_op(a.path, b.path, op))), a.free_segments + b.free_segments)
+    return a._with_path(normalize_winding(_simplify(_op(a.path, b.path, op))), a.free_segments + b.free_segments)
 
 
 def subtract(a: Shape, b: Shape) -> Shape:
@@ -48,7 +54,7 @@ def xor(a: Shape, b: Shape) -> Shape:
 
 
 def stroke(shape: Shape, width: float, cap: str = "butt", join: str = "miter", miter_limit: float = 4) -> Shape:
-    return Shape(stroked_path(shape.path, width, cap, join, miter_limit), shape.free_segments)
+    return shape._with_path(stroked_path(shape.path, width, cap, join, miter_limit), shape.free_segments)
 
 
 def offset(shape: Shape, distance: float) -> Shape:
@@ -56,7 +62,7 @@ def offset(shape: Shape, distance: float) -> Shape:
         return shape.copy()
     band = stroke(shape, 2 * abs(distance), join="round")
     result = union(shape, band) if distance > 0 else subtract(shape, band)
-    return Shape(result.path, shape.free_segments)  # the band is derived from shape: count its free segments once
+    return shape._with_path(result.path, shape.free_segments)  # the band is derived from shape: count its free segments once
 
 
 def translate(shape: Shape, dx: float, dy: float) -> Shape:

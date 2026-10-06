@@ -1,6 +1,7 @@
 """Type set from real fonts: HarfBuzz shaping (kerning, ligatures, variations) and fontTools outlines into Skia paths."""
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -92,19 +93,36 @@ def _clamp_weight(tt: TTFont, weight: float) -> float:
 
 
 class TextShape(Shape):
+    """Set type: an outline plus the metrics the audit and the lockup need.
+
+    The metrics survive the kit's ops: a transform scales them by its uniform scale, and a boolean, stroke or offset
+    whose first operand is a TextShape keeps that operand's metrics (a notch does not change the x-height).
+    """
+
     __slots__ = ("advance", "cap_height", "x_height", "glyph_bounds", "font")
 
-    def __init__(self, path: skia.Path, *, advance: float, cap_height: float, x_height: float, glyph_bounds: list[Box], font: str):
-        super().__init__(path, 0)
+    def __init__(self, path: skia.Path, *, advance: float, cap_height: float, x_height: float, glyph_bounds: list[Box], font: str,
+                 free_segments: int = 0):
+        super().__init__(path, free_segments)
         self.advance = advance
         self.cap_height = cap_height
         self.x_height = x_height
         self.glyph_bounds = glyph_bounds
         self.font = font
 
-    def copy(self) -> "TextShape":
-        return TextShape(skia.Path(self.path), advance=self.advance, cap_height=self.cap_height, x_height=self.x_height,
-                         glyph_bounds=list(self.glyph_bounds), font=self.font)
+    def _with_path(self, path: skia.Path, free_segments: int) -> "TextShape":
+        return TextShape(path, advance=self.advance, cap_height=self.cap_height, x_height=self.x_height,
+                         glyph_bounds=list(self.glyph_bounds), font=self.font, free_segments=free_segments)
+
+    def transformed(self, matrix: skia.Matrix) -> "TextShape":
+        """The text moved, turned or resized: lengths scale by sqrt(|det|) of the matrix, glyph boxes map through it."""
+        dst = skia.Path()
+        self.path.transform(matrix, dst)
+        k = math.sqrt(abs(matrix.getScaleX() * matrix.getScaleY() - matrix.getSkewX() * matrix.getSkewY()))
+        boxes = [matrix.mapRect(skia.Rect.MakeLTRB(b.x0, b.y0, b.x1, b.y1)) for b in self.glyph_bounds]
+        return TextShape(dst, advance=self.advance * k, cap_height=self.cap_height * k, x_height=self.x_height * k,
+                         glyph_bounds=[Box(r.left(), r.top(), r.right(), r.bottom()) for r in boxes], font=self.font,
+                         free_segments=self.free_segments)
 
 
 def text(
