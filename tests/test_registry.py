@@ -146,6 +146,18 @@ def test_font_weight_must_be_a_number(project_root):
     assert payload["errors"] == ["--font weight must be a whole number, got 'bold' in 'wordmark=Sora:bold'"]
 
 
+def test_brand_set_takes_only_concept_folder_names_and_territory_slugs(project_root):
+    run("brand", "new", "Keystone")
+    for flag, value in (("--concept", "../x"), ("--concept", "foo/bar"), ("--concept", "final"), ("--concept", "3-keystone"),
+                        ("--territory", "../x"), ("--territory", "foo/bar"), ("--territory", "Forge Works")):
+        code, payload = run("brand", "set", "keystone", flag, value)
+        assert code == 2 and "traceback" not in payload and repr(value) in payload["errors"][0], (flag, value, payload)
+    state = registry.load_state(project(), "keystone")
+    assert state.concept is None and state.territory is None  # nothing was saved
+    code, payload = run("brand", "set", "keystone", "--concept", "03-keystone", "--territory", "forge-works")
+    assert code == 0 and (payload["brand"]["concept"], payload["brand"]["territory"]) == ("03-keystone", "forge-works")
+
+
 def test_list_brands(project_root):
     run("brand", "new", "Keystone")
     run("brand", "new", "Quill")

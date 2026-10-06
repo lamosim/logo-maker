@@ -11,7 +11,7 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from .output import CliError
-from .paths import ProjectPaths
+from .paths import CONCEPT_NAME, SLUG, ProjectPaths
 from .schemas import PHASE_ORDER, BrandState, Brief, Decision, FontChoice, Phase, Strategy, now_iso
 
 BRAND_SUBDIRS = ("inspiration", "territories", "concepts", "sheets", "final", "package")
@@ -123,6 +123,11 @@ def set_fields(paths: ProjectPaths, slug: str, **fields: Any) -> BrandState:
         elif key == "surfaces":
             state.surfaces = list(value)
         else:
+            # Both name folders the gates read (concepts/<concept>, the territories.json slug), so neither may be a path.
+            if key == "concept" and not CONCEPT_NAME.fullmatch(value):
+                raise CliError(f"--concept must be a concept folder name like 03-keystone (two digits, a hyphen, a slug), got {value!r}")
+            if key == "territory" and not SLUG.fullmatch(value):
+                raise CliError(f"--territory must be a territory slug (lowercase letters, digits and hyphens), got {value!r}")
             setattr(state, key, value)
     save_state(paths, state)
     return state

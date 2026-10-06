@@ -10,6 +10,7 @@ from .output import CliError
 
 MARKER = "[tool.logomaker]"
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")  # exactly the strings registry.slugify leaves unchanged
+CONCEPT_NAME = re.compile(r"[0-9]{2}-[a-z0-9]+(?:-[a-z0-9]+)*")  # a concept folder: NN-slug, e.g. 03-keystone
 
 
 @dataclass(frozen=True)

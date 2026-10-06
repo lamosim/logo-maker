@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 import sys
 import traceback
 import types
@@ -13,11 +12,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ..output import EXIT_RULE, CliError
-from ..paths import ProjectPaths
+from ..paths import CONCEPT_NAME, ProjectPaths
 from .mark import VARIANTS, Mark
 
 TIER_NAMES = ("full", "compact", "small", "favicon")
-CONCEPT_NAME = re.compile(r"[0-9]{2}-[a-z0-9]+(?:-[a-z0-9]+)*")  # NN-slug, e.g. 03-keystone
 
 
 @dataclass
