@@ -291,18 +291,28 @@ class Shape:
 
 
 def _contour_paths(path: skia.Path) -> list[skia.Path]:
-    """Each contour of `path` as a path of its own, verb for verb: a conic stays one conic with its weight. (Curves are
-    converted only for output, in `Shape.commands`.)"""
+    """Each contour of `path` that draws a segment, as a path of its own, verb for verb: a conic stays one conic with its
+    weight. A move with no segment after it (a trailing moveTo, say) draws nothing and is dropped. (Curves are converted
+    only for output, in `Shape.commands`.)"""
     contours: list[skia.Path] = []
+    start = None  # the latest move, until a segment starts a contour from it
     it = skia.Path.RawIter(path)
     while True:
         verb, pts = it.next()
         if verb == skia.Path.Verb.kDone_Verb:
             return contours
         if verb == skia.Path.Verb.kMove_Verb:
+            start = pts[0]
+            continue
+        if verb == skia.Path.Verb.kClose_Verb:
+            if start is None:  # otherwise the close follows a bare move and has nothing to close
+                contours[-1].close()
+            continue
+        if start is not None:
             contours.append(skia.Path())
-            contours[-1].moveTo(pts[0])
-        elif verb == skia.Path.Verb.kLine_Verb:
+            contours[-1].moveTo(start)
+            start = None
+        if verb == skia.Path.Verb.kLine_Verb:
             contours[-1].lineTo(pts[1])
         elif verb == skia.Path.Verb.kQuad_Verb:
             contours[-1].quadTo(pts[1], pts[2])
@@ -310,8 +320,6 @@ def _contour_paths(path: skia.Path) -> list[skia.Path]:
             contours[-1].conicTo(pts[1], pts[2], it.conicWeight())
         elif verb == skia.Path.Verb.kCubic_Verb:
             contours[-1].cubicTo(pts[1], pts[2], pts[3])
-        elif verb == skia.Path.Verb.kClose_Verb:
-            contours[-1].close()
 
 
 def normalize_winding(path: skia.Path) -> skia.Path:
@@ -321,7 +329,8 @@ def normalize_winding(path: skia.Path) -> skia.Path:
     (positive signed area) and those at odd depth clockwise, so fill-rule nonzero and even-odd agree and `Shape.area`
     is right. The input is read as even-odd and its contours must not cross each other (Simplify output or hand-built
     nested contours); overlapping contours are not merged. Contours keep their order and their own verbs (a conic stays
-    a conic); degenerate ones, and any without an inside probe point, pass through unchanged. The result has winding fill.
+    a conic); degenerate ones, and any without an inside probe point, pass through unchanged, while a move with no segment
+    after it is dropped. The result has winding fill.
     """
     contours = _contour_paths(path)
     polys = [Shape(contour).flatten()[0] for contour in contours]

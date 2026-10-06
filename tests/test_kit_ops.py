@@ -1,6 +1,7 @@
 import math
 
 import pytest
+import skia
 
 from logomaker.kit.ops import (
     align,
@@ -20,7 +21,7 @@ from logomaker.kit.ops import (
 )
 from logomaker.kit.optical import compensate_stroke, optical_center, overshoot
 from logomaker.kit.primitives import circle, polygon, rect, rect_centered, ring
-from logomaker.kit.shape import Shape
+from logomaker.kit.shape import Shape, normalize_winding
 from tests.test_kit_shape import signed_area
 
 
@@ -48,6 +49,16 @@ def test_ops_keep_the_curves_they_are_given():
     assert union(c, circle(300, 0, 100)).anchor_count() == 8
     assert subtract(ring(0, 0, 100, 20), rect(90, -5, 20, 10)).anchor_count() == 11  # pathops splits the outline at the notch
     assert stroke(c, 10).anchor_count() == 32  # skia's stroker draws each side of a circle as 16 quads
+
+
+def test_a_trailing_move_survives_rewinding():
+    p = skia.Path()
+    p.addRect(skia.Rect.MakeLTRB(0, 0, 10, 10))
+    p.moveTo(50, 50)  # a move with nothing after it draws nothing; Simplify returns a convex path like this verbatim
+    square = Shape(p)
+    assert math.isclose(Shape(normalize_winding(p)).area, 100)
+    for result in (mirror_x(square), mirror_y(square), union(square)):
+        assert math.isclose(result.area, 100) and result.anchor_count() == 4
 
 
 def test_failed_boolean_raises_value_error():
