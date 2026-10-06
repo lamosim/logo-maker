@@ -7,10 +7,12 @@ import platform
 import subprocess
 import sys
 import traceback
+from pathlib import Path
 
 import click
 
 from . import __version__, registry
+from . import color as colorlib
 from . import fonts as fontlib
 from .kit import concept as conceptlib
 from .kit.mark import VARIANTS
@@ -218,6 +220,34 @@ def fonts_fetch(family: str) -> None:
     emit({"manifest": fontlib.fetch(project(), family)})
 
 
+@main.group("color")
+def color_group() -> None:
+    """Colour conversions and token checks."""
+
+
+@color_group.command("info")
+@click.argument("value")
+@command
+def color_info(value: str) -> None:
+    emit(colorlib.info(value))
+
+
+@color_group.command("ramp")
+@click.argument("value")
+@click.option("--steps", default=9, type=int)
+@command
+def color_ramp(value: str, steps: int) -> None:
+    emit({"ramp": colorlib.ramp(value, steps)})
+
+
+@color_group.command("check")
+@click.argument("tokens_path", type=click.Path(exists=True, dir_okay=False))
+@command
+def color_check(tokens_path: str) -> None:
+    result = colorlib.check_tokens(colorlib.load_tokens(Path(tokens_path)))
+    emit(result.model_dump(), ok=result.ok, errors=result.failures, warnings=result.warnings, code=0 if result.ok else EXIT_RULE)
+
+
 @main.group("concept")
 def concept_group() -> None:
     """Build, audit and render concept modules."""
@@ -226,20 +256,29 @@ def concept_group() -> None:
 @concept_group.command("build")
 @click.argument("slug")
 @click.argument("concept")
-@click.option("--variants", default="black,white", help="Comma-separated: black,white,mono (color/reverse need --tokens, Task 8)")
+@click.option("--variants", default="black,white", help="Comma-separated subset of black,white,mono,color,reverse")
+@click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
 @command
-def concept_build(slug: str, concept: str, variants: str) -> None:
+def concept_build(slug: str, concept: str, variants: str, tokens_path: str | None) -> None:
     paths = project()
     folder = conceptlib.concept_folder(paths, slug, concept)
-    wanted = tuple(v.strip() for v in variants.split(",") if v.strip())
+    wanted = tuple(dict.fromkeys(v.strip() for v in variants.split(",") if v.strip()))
+    # Variants are checked before tokens are read, the concept is loaded or the build folder is touched.
+    if not wanted:
+        raise CliError(f"No variants to build; choose one or more of: {', '.join(VARIANTS)}")
     unknown = [v for v in wanted if v not in VARIANTS]
-    if unknown:  # checked before anything is loaded or the build folder is cleared
+    if unknown:
         raise CliError(f"Unknown variant {', '.join(map(repr, unknown))}; choose one of: {', '.join(VARIANTS)}")
-    if any(v in ("color", "reverse") for v in wanted):
-        raise CliError("color and reverse variants need --tokens (see Task 8)")
+    tokens_file = Path(tokens_path) if tokens_path else (folder / "tokens.json" if (folder / "tokens.json").is_file() else None)
+    palette = dark_palette = None
+    if tokens_file is not None:
+        tokens = colorlib.load_tokens(tokens_file)
+        palette, dark_palette = tokens.palette("light"), tokens.palette("dark")
+    if any(v in ("color", "reverse") for v in wanted) and palette is None:
+        raise CliError("color and reverse variants need --tokens or a tokens.json in the concept folder")
     module = conceptlib.load_concept(folder)
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
-    report = conceptlib.write_build(folder, outputs, variants=wanted)
+    report = conceptlib.write_build(folder, outputs, variants=wanted, palette=palette, dark_palette=dark_palette)
     emit({"concept": str(folder.relative_to(paths.root)), "build": report}, warnings=report["warnings"])
 
 

@@ -143,3 +143,19 @@ def test_list_brands(project_root):
     run("brand", "new", "Quill")
     code, payload = run("brand", "list")
     assert [b["slug"] for b in payload["brands"]] == ["keystone", "quill"]
+
+
+def test_final_tokens_must_validate(project_root):
+    from tests.test_color import good_tokens
+
+    run("brand", "new", "Keystone")
+    brand = project_root / "brands" / "keystone"
+    (brand / "final" / "concept.py").write_text("# concept\n")
+    (brand / "final" / "params.json").write_text("{}\n")
+    tokens = brand / "final" / "tokens.json"
+    tokens.write_text("{}")
+    state = registry.load_state(project(), "keystone")
+    missing = registry._check_final(brand, state)
+    assert len(missing) == 1 and "tokens.json" in missing[0]
+    tokens.write_text(json.dumps(good_tokens()))
+    assert registry._check_final(brand, state) == []

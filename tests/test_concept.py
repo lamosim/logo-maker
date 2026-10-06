@@ -158,3 +158,16 @@ def test_dropping_the_wordmark_needs_a_symbol(project_root):
     code, payload = run("concept", "build", "keystone", "05-wordonly")
     assert code == 2 and "traceback" not in payload and "05-wordonly/concept.py" in payload["errors"][0]
     assert "tier 'favicon' drops the wordmark but the concept has no symbol" in payload["errors"][0]
+
+
+def test_concept_build_with_tokens_writes_colour_variants(project_root):
+    from tests.test_color import good_tokens
+
+    folder = install_concept(project_root, "good")
+    (folder / "tokens.json").write_text(json.dumps(good_tokens()))
+    code, payload = run("concept", "build", "keystone", "01-good", "--variants", "black,white,color,reverse,mono")
+    assert code == 0, payload
+    build = folder / "build"
+    assert 'fill="#e8572a"' in (build / "full-lockup-color.svg").read_text()
+    assert 'fill="#ff9a6e"' in (build / "full-lockup-reverse.svg").read_text()
+    assert 'fill="currentColor"' in (build / "full-lockup-mono.svg").read_text()

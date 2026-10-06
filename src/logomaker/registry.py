@@ -182,10 +182,12 @@ def _check_concept(brand: Path, state: BrandState) -> list[str]:
 
 
 def _check_final(brand: Path, state: BrandState) -> list[str]:
+    from .color import Tokens  # imported here to keep registry import-light
+
     missing: list[str] = []
-    for name in ("concept.py", "params.json", "tokens.json"):
+    for name in ("concept.py", "params.json"):
         missing += _need(brand, brand / "final" / name)
-    return missing
+    return missing + _need(brand, brand / "final" / "tokens.json", model=Tokens)
 
 
 def _check_verify(brand: Path, state: BrandState) -> list[str]:
