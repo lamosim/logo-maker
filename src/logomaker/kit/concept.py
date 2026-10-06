@@ -6,7 +6,8 @@ import json
 import sys
 import traceback
 import types
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -60,6 +61,18 @@ def concept_folder(paths: ProjectPaths, slug: str, name: str) -> Path:
     return folder
 
 
+@contextmanager
+def _concept_code(failure: str) -> Iterator[None]:
+    """Run concept code. A CliError it raises keeps its exit code and data (a missing font stays exit 3 with its fetch
+    hint); any other exception becomes a CliError, exit 2, carrying the traceback. `failure` prefixes the message."""
+    try:
+        yield
+    except CliError as err:
+        raise CliError(f"{failure}: {err}", code=err.code, data=err.data) from err
+    except Exception as err:  # noqa: BLE001 - concept code can raise anything; the CLI reports it as JSON
+        raise CliError(f"{failure}: {type(err).__name__}: {err}", data={"traceback": traceback.format_exc()}) from err
+
+
 def load_concept(folder: Path) -> ConceptModule:
     source = folder / "concept.py"
     if not source.is_file():
@@ -67,15 +80,13 @@ def load_concept(folder: Path) -> ConceptModule:
     name = f"logomaker_concept_{hashlib.sha1(str(source.resolve()).encode()).hexdigest()[:12]}"
     module = types.ModuleType(name)
     module.__file__ = str(source)
-    try:
+    with _concept_code(f"{source} failed to import"):
         # Compile from source on every load, never via importlib's bytecode cache: a .pyc passes as fresh while the source
         # keeps its size and whole-second mtime, so a quick same-length edit would build stale geometry. Bytes plus
         # dont_inherit=True compile it as an import does (coding cookie and BOM honoured, no __future__ flags from here).
         code = compile(source.read_bytes(), str(source), "exec", dont_inherit=True)
         sys.modules[name] = module
         exec(code, module.__dict__)  # noqa: S102 - running the concept module is the point of loading it
-    except Exception as err:  # noqa: BLE001
-        raise CliError(f"{source} failed to import: {type(err).__name__}: {err}", data={"traceback": traceback.format_exc()}) from err
     for attr in ("META", "PARAMS", "TIERS", "build"):
         if not hasattr(module, attr):
             raise CliError(f"{source} must define {attr}")
@@ -97,11 +108,8 @@ def build_tiers(concept: ConceptModule, overrides: dict | None = None) -> dict[s
             raise CliError(f"unknown tier {tier!r}; use {TIER_NAMES}")
         drop_wordmark = tier_overrides.get("wordmark") is False
         p = concept.params.with_overrides(**(overrides or {})).with_overrides(**{k: v for k, v in tier_overrides.items() if k != "wordmark"})
-        try:
+        with _concept_code(f"{concept.path} build() failed for tier {tier!r}"):
             mark = concept.build(p)
-        except Exception as err:  # noqa: BLE001
-            raise CliError(f"{concept.path} build() failed for tier {tier!r}: {type(err).__name__}: {err}",
-                           data={"traceback": traceback.format_exc()}) from err
         if not isinstance(mark, Mark):
             raise CliError(f"{concept.path} build() must return a Mark, got {type(mark).__name__}")
         if drop_wordmark and mark.symbol is None:

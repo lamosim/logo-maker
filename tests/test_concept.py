@@ -61,6 +61,18 @@ def test_broken_concept_exits_2_with_traceback(project_root):
     assert code == 2 and "RuntimeError: boom" in payload["errors"][0] and "traceback" in payload
 
 
+def test_a_missing_font_inside_a_concept_exits_3_with_the_fetch_hint(project_root):
+    folder = install_concept(project_root, "good")
+    source = (folder / "concept.py").read_text()
+    in_build = source.replace('family="Fira Code"', 'family="Sora"')
+    at_import = source.replace("def build(p):", 'WORD = text("Good", family="Sora")\n\n\ndef build(p):')
+    for edited, where in ((in_build, "build() failed for tier 'full'"), (at_import, "failed to import")):
+        (folder / "concept.py").write_text(edited)
+        code, payload = run("concept", "build", "keystone", "01-good")
+        assert code == 3 and "traceback" not in payload, payload
+        assert where in payload["errors"][0] and "run: logomaker fonts fetch Sora" in payload["errors"][0]
+
+
 def test_concept_without_meta_exits_2(project_root):
     install_concept(project_root, "nometa", name="03-nometa")
     code, payload = run("concept", "build", "keystone", "03-nometa")
