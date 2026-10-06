@@ -239,7 +239,7 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
     findings += tier_findings
     for name, source in sources.items():
         findings += _geometry_findings(name, geometries[source], module.meta, lenient=name in lenient)
-    roles = [r for r in geometries["full-lockup"]["roles"] if r != "paper"]
+    roles = geometries["full-lockup"]["roles"]
     if len(roles) > MAX_ROLES:
         findings.append(Finding(check="colour_count", severity="warn", message=f"{len(roles)} colour roles in use (more than {MAX_ROLES})", data={"roles": roles}))
     findings += _text_legibility(outputs, geometries, state)

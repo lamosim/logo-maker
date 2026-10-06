@@ -8,10 +8,17 @@ from .ops import translate
 from .shape import Box, Shape, fmt
 from .text import TextShape
 
-ROLES = ("primary", "secondary", "accent", "ink", "paper")
+ROLES = ("primary", "secondary", "accent", "ink")  # paper is the background in tokens.json, never a part's colour
 LOCKUPS = ("horizontal", "stacked", "symbol", "wordmark")
 VARIANTS = ("color", "reverse", "black", "white", "mono")
 DEFAULT_ROLES = {"symbol": "primary", "wordmark": "ink", "tagline": "ink"}
+
+
+def _check_role(role: str) -> None:
+    if role == "paper":  # a paper-coloured part would turn to ink in the black, white and mono variants
+        raise ValueError("'paper' is the background role; knock shapes out with subtract() instead")
+    if role not in ROLES:
+        raise ValueError(f"role must be one of {ROLES}, got {role!r}")
 
 
 class Composite:
@@ -23,8 +30,7 @@ class Composite:
         for i, (shape, role) in enumerate(parts):
             if shape.is_empty:
                 raise ValueError(f"Composite part {i} ({role}) is empty")
-            if role not in ROLES:
-                raise ValueError(f"role must be one of {ROLES}, got {role!r}")
+            _check_role(role)
         self.parts = list(parts)
 
     @property
@@ -96,8 +102,7 @@ class Mark:
         self.align = align
         self.roles = {**DEFAULT_ROLES, **(roles or {})}
         for role in self.roles.values():
-            if role not in ROLES:
-                raise ValueError(f"role must be one of {ROLES}, got {role!r}")
+            _check_role(role)
 
     def _copy(self, **changes) -> "Mark":
         kwargs = dict(symbol=self.symbol, wordmark=self.wordmark, tagline=self.tagline, lockup=self.lockup, gap=self.gap, align=self.align, roles=self.roles)

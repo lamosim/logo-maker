@@ -187,18 +187,18 @@ def test_allow_complex_needs_a_reason(project_root):
         assert anchors[0].data["anchors"] == 200 and anchors[0].data["reason"] == reason and "over 150" in anchors[0].message
 
 
-def test_colour_count_counts_roles_other_than_paper(project_root):
+def test_colour_count_warns_over_three_roles(project_root):
     folder = install_concept(project_root, "good", name="10-roles")
     (folder / "concept.py").write_text(
         "from logomaker.kit import *\n"
-        "META = Meta(slug='roles', idea='five swatches', logo_type='abstract')\n"
+        "META = Meta(slug='roles', idea='four swatches', logo_type='abstract')\n"
         "PARAMS = Params()\nTIERS = {'full': {}}\n"
-        "ROLES = ['primary', 'secondary', 'accent', 'ink', 'paper']\n"
+        "ROLES = ['primary', 'secondary', 'accent', 'ink']\n"
         "def build(p):\n"
         "    return Mark(symbol=Composite([(circle(i * 300, 0, 100), role) for i, role in enumerate(ROLES)]))\n"
     )
     count = findings(audit.audit_concept(project(), "keystone", "10-roles"), "colour_count")
-    assert count[0].severity == "warn" and count[0].message.startswith("4 colour roles") and "paper" not in count[0].data["roles"]
+    assert count[0].severity == "warn" and count[0].message.startswith("4 colour roles") and count[0].data["roles"] == ["accent", "ink", "primary", "secondary"]
 
 
 def test_tokens_contrast_feeds_the_audit(project_root):

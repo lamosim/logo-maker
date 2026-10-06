@@ -89,6 +89,17 @@ def test_composite_roles_and_geometry():
     assert geo["roles"] == ["primary", "secondary"]
 
 
+def test_paper_is_not_a_part_role():
+    message = "'paper' is the background role; knock shapes out with subtract() instead"
+    with pytest.raises(ValueError) as err:
+        Composite([(circle(0, 0, 100), "primary"), (circle(0, 0, 50), "paper")])
+    assert str(err.value) == message
+    for roles in ({"symbol": "paper"}, {"wordmark": "paper"}):
+        with pytest.raises(ValueError) as err:
+            Mark(symbol=circle(0, 0, 100), roles=roles)
+        assert str(err.value) == message
+
+
 def test_empty_symbol_is_rejected():
     from logomaker.kit.shape import Shape
 
