@@ -271,7 +271,8 @@ def test_audit_reads_the_tokens_file_it_is_given(project_root):
     palette.write_text(json.dumps(low_contrast))
     assert not findings(audit.audit_concept(project(), "keystone", "01-good"), "contrast")  # the folder has no tokens.json
     result = audit.audit_concept(project(), "keystone", "01-good", tokens_path=palette)
-    assert findings(result, "contrast")[0].severity == "fail" and result.fingerprint == audit.concept_fingerprint(folder, palette)
+    assert findings(result, "contrast")[0].severity == "fail"
+    assert result.fingerprint == audit.concept_fingerprint(project(), "keystone", folder, palette)
     run = CliRunner().invoke(main, ["concept", "run", "keystone", "01-good", "--no-render", "--tokens", str(palette)])
     payload = json.loads(run.stdout)
     assert run.exit_code == 2 and {f["check"] for f in payload["audit"]["failures"]} == {"contrast"}
@@ -288,7 +289,8 @@ def test_concept_audit_takes_the_tokens_file_it_is_given(project_root):
     result = CliRunner().invoke(main, ["concept", "audit", "keystone", "01-good", "--no-render", "--tokens", str(palette)])
     payload = json.loads(result.stdout)
     assert result.exit_code == 2 and {f["check"] for f in payload["audit"]["failures"]} == {"contrast"}  # the folder has no tokens.json
-    assert json.loads((folder / "audit.json").read_text())["fingerprint"] == audit.concept_fingerprint(folder, palette)
+    saved = json.loads((folder / "audit.json").read_text())
+    assert saved["fingerprint"] == audit.concept_fingerprint(project(), "keystone", folder, palette)
 
 
 def test_broken_tokens_become_a_failure_not_an_abort(project_root):
@@ -405,8 +407,12 @@ def test_fingerprint_covers_concept_params_and_tokens(project_root):
     from tests.test_color import good_tokens
 
     folder = install_concept(project_root, "good")
-    first = audit.concept_fingerprint(folder)
-    assert len(first) == 64 and audit.concept_fingerprint(folder) == first
+
+    def fingerprint(tokens_path=None):
+        return audit.concept_fingerprint(project(), "keystone", folder, tokens_path)
+
+    first = fingerprint()
+    assert len(first) == 64 and fingerprint() == first
     assert audit.audit_concept(project(), "keystone", "01-good").fingerprint == first
     assert json.loads((folder / "audit.json").read_text())["fingerprint"] == first
     seen = {first}
@@ -414,13 +420,38 @@ def test_fingerprint_covers_concept_params_and_tokens(project_root):
              ("concept.py", (folder / "concept.py").read_text() + "# edited\n"))
     for name, content in edits:
         (folder / name).write_text(content)
-        seen.add(audit.concept_fingerprint(folder))
+        seen.add(fingerprint())
     assert len(seen) == 4  # each file changes it
     palette = project_root / "palette.json"
     palette.write_text(json.dumps(good_tokens()))
-    assert audit.concept_fingerprint(folder, palette) == audit.concept_fingerprint(folder)  # same tokens bytes, wherever they live
+    assert fingerprint(palette) == fingerprint()  # same tokens bytes, wherever they live
     palette.write_text("{}")
-    assert audit.concept_fingerprint(folder, palette) != audit.concept_fingerprint(folder)
+    assert fingerprint(palette) != fingerprint()
+
+
+def test_fingerprint_follows_the_brand_settings_the_audit_reads(project_root, brief_payload):
+    folder = install_concept(project_root, "good")
+    paths = project()
+
+    def fingerprint():
+        return audit.concept_fingerprint(paths, "keystone", folder)
+
+    first = audit.audit_concept(paths, "keystone", "01-good").fingerprint
+    registry.set_fields(paths, "keystone", concept="01-good", territory="forge", primary_lockup="stacked", surfaces=("app icon",))
+    assert fingerprint() == first  # brand.json changed, but nothing the audit reads
+    seen = {first}
+    registry.set_fields(paths, "keystone", industry="AI tooling")
+    seen.add(fingerprint())
+    state = registry.load_state(paths, "keystone")
+    state.min_sizes.horizontal_px = 90
+    registry.save_state(paths, state)
+    seen.add(fingerprint())
+    (project_root / "brands" / "keystone" / "brief.json").write_text(json.dumps({**brief_payload, "industry": "Dental clinic"}))
+    seen.add(fingerprint())
+    cliches = project_root / "assets" / "cliches.json"
+    cliches.write_text(cliches.read_text() + "\n")
+    seen.add(fingerprint())
+    assert len(seen) == 5  # the industry, the minimum sizes, the brief's industry and the cliché lists each count
 
 
 def test_a_failed_build_replaces_the_audit_with_a_failing_one(project_root):
@@ -430,7 +461,8 @@ def test_a_failed_build_replaces_the_audit_with_a_failing_one(project_root):
     with pytest.raises(CliError, match="RuntimeError: boom") as err:
         audit.audit_concept(project(), "keystone", "01-good")
     written = json.loads((folder / "audit.json").read_text())
-    assert written["ok"] is False and written["rendered"] is False and written["fingerprint"] == audit.concept_fingerprint(folder)
+    assert written["ok"] is False and written["rendered"] is False
+    assert written["fingerprint"] == audit.concept_fingerprint(project(), "keystone", folder)
     assert [(f["check"], f["severity"], f["message"]) for f in written["failures"]] == [("build", "fail", str(err.value))]
 
 

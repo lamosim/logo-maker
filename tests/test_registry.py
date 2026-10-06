@@ -171,7 +171,8 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
     folder = install_concept(project_root, "good")
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
-    stale = "01-good/audit.json is stale (concept.py, params.json or tokens.json changed); re-run concept audit"
+    stale = ("01-good/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, "
+             "or cliches.json changed); re-run concept audit")
 
     def audited(rendered: bool) -> None:
         """A fresh audit of the concept as it stands; `rendered` stands in for the raster checks (no Chrome needed)."""
@@ -227,6 +228,19 @@ def test_brand_list_rebuilds_a_missing_index_from_the_brand_folders(project_root
     assert code == 0 and listed == [("keystone", "Keystone", "intake"), ("quill", "Quill", "intake")]
     assert json.loads((project_root / "registry" / "brands.json").read_text())["brands"] == payload["brands"]
     assert "| quill | Quill | intake |" in (project_root / "registry" / "INDEX.md").read_text()
+
+
+def test_the_concept_gate_follows_only_the_brand_settings_the_audit_reads(project_root):
+    folder = install_concept(project_root, "good")
+    brand = project_root / "brands" / "keystone"
+    audit.audit_concept(project(), "keystone", "01-good")
+    saved = json.loads((folder / "audit.json").read_text())
+    (folder / "audit.json").write_text(json.dumps({**saved, "rendered": True}))
+    assert run("brand", "set", "keystone", "--concept", "01-good")[0] == 0  # brand.json changes; nothing the audit read does
+    assert registry._check_concept(brand, registry.load_state(project(), "keystone")) == []
+    assert run("brand", "set", "keystone", "--industry", "AI tooling")[0] == 0  # the cliché check reads the industry
+    stale = registry._check_concept(brand, registry.load_state(project(), "keystone"))
+    assert len(stale) == 1 and stale[0].startswith("01-good/audit.json is stale") and "industry" in stale[0]
 
 
 def test_final_tokens_must_validate(project_root):

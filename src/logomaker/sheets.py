@@ -136,7 +136,7 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
         audit = _saved_audit(folder)
     summary = None
     if audit is not None:
-        stale = audit.fingerprint != concept_fingerprint(folder, tokens_path)  # made from other files than this sheet shows
+        stale = audit.fingerprint != concept_fingerprint(paths, slug, folder, tokens_path)  # made from other inputs than this sheet's
         summary = {"ok": audit.ok, "rendered": audit.rendered, "stale": stale, "lines": _audit_lines(audit)}
     html = jinja(paths).get_template("sheets/critique.html").render(
         slug=slug, concept=concept_name, round_n=round_n, idea=module.meta.idea, panels=panels, audit=summary,

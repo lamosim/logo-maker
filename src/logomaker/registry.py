@@ -206,7 +206,7 @@ def _check_territories(brand: Path, state: BrandState) -> list[str]:
 
 
 def _check_concept(brand: Path, state: BrandState) -> list[str]:
-    """The chosen concept needs a passing, rendered audit of its current concept.py, params.json and tokens.json."""
+    """The chosen concept needs a passing, rendered audit of what it is now (see audit.concept_fingerprint)."""
     from .audit import concept_fingerprint  # imported here: audit imports registry
 
     if not state.concept:
@@ -218,8 +218,10 @@ def _check_concept(brand: Path, state: BrandState) -> list[str]:
         result, error = _read_json(brand, audit)
         if error:
             return missing + [error]
-        if result.get("fingerprint") != concept_fingerprint(folder):
-            missing.append(f"{state.concept}/audit.json is stale (concept.py, params.json or tokens.json changed); re-run concept audit")
+        paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
+        if result.get("fingerprint") != concept_fingerprint(paths, state.slug, folder):
+            missing.append(f"{state.concept}/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or "
+                           "minimum sizes, or cliches.json changed); re-run concept audit")
         if not result.get("rendered"):
             missing.append(f"{state.concept}/audit.json was made with --no-render; re-run concept audit without it")
         if not result.get("ok"):

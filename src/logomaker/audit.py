@@ -26,15 +26,21 @@ GENERIC_ASPECT = (0.72, 0.82)
 TIER_FALLBACKS = {"small": ("full-symbol", "full-lockup"), "favicon": ("small", "full-symbol", "full-lockup")}  # as exports fall back
 
 
-def concept_fingerprint(folder: Path, tokens_path: str | Path | None = None) -> str:
-    """sha256 (hex) of what an audit reads: concept.py, params.json and the tokens file (`tokens_path`, else
-    <folder>/tokens.json), each when present. Each enters as its name and byte count, then its bytes."""
-    digest = hashlib.sha256()
+def concept_fingerprint(paths: ProjectPaths, slug: str, folder: Path, tokens_path: str | Path | None = None) -> str:
+    """sha256 (hex) of what an audit of `folder` reads: its concept.py, params.json and tokens file (`tokens_path`,
+    else <folder>/tokens.json), each when present; the brand's industry and min_sizes from brand.json and the brief's
+    industry, as canonical JSON (brand.json's other fields, such as phase, concept or updated, change without changing
+    the audit); and assets/cliches.json. Each enters as its name and byte count, then its bytes."""
+    state = registry.load_state(paths, slug)
+    settings = {"industry": state.industry, "min_sizes": state.min_sizes.model_dump(), "brief_industry": _brief_industry(paths.brand(slug))}
     tokens = Path(tokens_path) if tokens_path else folder / "tokens.json"
-    for name, path in (("concept.py", folder / "concept.py"), ("params.json", folder / "params.json"), ("tokens.json", tokens)):
-        if path.is_file():
-            data = path.read_bytes()
-            digest.update(f"{name} {len(data)}\n".encode() + data)
+    files = (("concept.py", folder / "concept.py"), ("params.json", folder / "params.json"), ("tokens.json", tokens),
+             ("cliches.json", paths.cliches))
+    entries = [(name, path.read_bytes()) for name, path in files if path.is_file()]
+    entries.append(("brand settings", json.dumps(settings, sort_keys=True).encode()))
+    digest = hashlib.sha256()
+    for name, data in entries:
+        digest.update(f"{name} {len(data)}\n".encode() + data)
     return digest.hexdigest()
 
 
@@ -227,15 +233,21 @@ def _raster_findings(marks: dict, renderer: Renderer, lenient: frozenset[str] = 
     return out
 
 
+def _brief_industry(brand: Path) -> str | None:
+    """The `industry` of <brand>/brief.json, or None when there is no brief, or one the intake gate will reject anyway."""
+    try:
+        industry = json.loads((brand / "brief.json").read_text(encoding="utf-8")).get("industry")
+    except (OSError, ValueError, AttributeError):
+        return None
+    return industry if isinstance(industry, str) and industry.strip() else None
+
+
 def _industry(paths: ProjectPaths, state) -> tuple[str | None, str | None]:
     """The brand's industry and where it was found: brand.json, else the brief's `industry`, else (None, None)."""
     if state.industry:
         return state.industry, "brand.json"
-    try:
-        industry = json.loads((paths.brand(state.slug) / "brief.json").read_text(encoding="utf-8")).get("industry")
-    except (OSError, ValueError, AttributeError):  # no brief yet, or one the intake gate will reject anyway
-        return None, None
-    return (industry, "brief.json") if isinstance(industry, str) and industry.strip() else (None, None)
+    industry = _brief_industry(paths.brand(state.slug))
+    return (industry, "brief.json") if industry else (None, None)
 
 
 def _checked_outputs(outputs: dict) -> tuple[dict[str, str], list[Finding]]:
@@ -263,7 +275,7 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
     without a renderer the raster checks are skipped (rendered: false)."""
     folder = conceptlib.concept_folder(paths, slug, concept_name)
     state = registry.load_state(paths, slug)
-    fingerprint = concept_fingerprint(folder, tokens_path)
+    fingerprint = concept_fingerprint(paths, slug, folder, tokens_path)
     try:
         module = conceptlib.load_concept(folder)
         outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
