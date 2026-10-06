@@ -212,6 +212,19 @@ def test_tokens_contrast_feeds_the_audit(project_root):
     assert findings(result, "contrast")[0].severity == "fail"
 
 
+def test_wordmark_contrast_follows_the_role_the_wordmark_uses(project_root):
+    from tests.test_color import good_tokens
+
+    folder = install_concept(project_root, "good")
+    (folder / "tokens.json").write_text(json.dumps(good_tokens()))
+    assert not findings(audit.audit_concept(project(), "keystone", "01-good"), "contrast")  # ember passes as a symbol colour
+    source = (folder / "concept.py").read_text()
+    (folder / "concept.py").write_text(source.replace("gap=p.gap)", 'gap=p.gap, roles={"wordmark": "primary"})'))
+    contrast = findings(audit.audit_concept(project(), "keystone", "01-good"), "contrast")
+    assert contrast and all(f.severity == "fail" for f in contrast)
+    assert any(f.message.startswith("light: role primary (#e8572a) on paper #ffffff") and "need 4.5" in f.message for f in contrast)
+
+
 def test_broken_tokens_become_a_failure_not_an_abort(project_root):
     folder = install_concept(project_root, "good")
     (folder / "tokens.json").write_text("{}")

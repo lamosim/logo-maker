@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from decimal import ROUND_DOWN, Decimal
 from itertools import combinations
 from pathlib import Path
@@ -207,7 +208,13 @@ class CheckResult(BaseModel):
     palettes: dict[str, dict[str, str]] = Field(default_factory=dict)
 
 
-def check_tokens(tokens: Tokens) -> CheckResult:
+def check_tokens(tokens: Tokens, text_roles: Iterable[str] = ("ink",)) -> CheckResult:
+    """Contrast of every role on paper in both contexts, plus grayscale and CVD pair checks.
+
+    Roles in `text_roles` (those that colour type) need the text thresholds, WCAG 4.5 and APCA Lc 60; the others
+    the graphic thresholds, WCAG 3.0 and Lc 45.
+    """
+    text = set(text_roles)
     result = CheckResult(ok=True)
     for context in ("light", "dark"):
         palette = tokens.palette(context)
@@ -215,7 +222,7 @@ def check_tokens(tokens: Tokens) -> CheckResult:
         paper = palette["paper"]
         roles = {r: c for r, c in palette.items() if r != "paper"}
         for role, hex_value in roles.items():
-            need_wcag, need_apca = (4.5, 60.0) if role == "ink" else (3.0, 45.0)
+            need_wcag, need_apca = (4.5, 60.0) if role in text else (3.0, 45.0)
             wcag = wcag_contrast(hex_value, paper)
             apca = apca_lc(hex_value, paper)
             ok = wcag >= need_wcag and abs(apca) >= need_apca  # raw values: rounding must never lift a miss to a pass

@@ -255,8 +255,10 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
 
     tokens_file = folder / "tokens.json"
     if tokens_file.is_file():
+        # Type gets the text thresholds: whichever roles the wordmark and tagline are drawn in (ink when there is no type).
+        text_roles = sorted({p["role"] for geo in geometries.values() for p in geo["parts"] if p["name"] in ("wordmark", "tagline")}) or ["ink"]
         try:
-            check = check_tokens(load_tokens(tokens_file))
+            check = check_tokens(load_tokens(tokens_file), text_roles=text_roles)
         except CliError as err:  # a broken tokens file is a finding to fix, not a reason to skip the rest of the audit
             findings.append(Finding(check="tokens", severity="fail", message=str(err), data={}))
         else:

@@ -111,6 +111,17 @@ def test_color_cli(tmp_path):
     assert result.exit_code == 2 and not json.loads(result.stdout)["ok"]
 
 
+def test_text_thresholds_apply_to_the_text_roles_given():
+    tokens = color.Tokens.model_validate(good_tokens())
+    rows = {(r.context, r.role): r for r in color.check_tokens(tokens).contrast}
+    assert (rows[("light", "ink")].required_wcag, rows[("light", "primary")].required_wcag) == (4.5, 3.0)  # default: ink is the text
+    result = color.check_tokens(tokens, text_roles=("primary",))
+    rows = {(r.context, r.role): r for r in result.contrast}
+    assert (rows[("light", "primary")].required_wcag, rows[("light", "primary")].required_apca) == (4.5, 60.0)
+    assert (rows[("dark", "primary")].required_wcag, rows[("light", "ink")].required_wcag) == (4.5, 3.0)
+    assert not result.ok and any(f.startswith("light: role primary (#e8572a) on paper #ffffff") and "need 4.5" in f for f in result.failures)
+
+
 def test_contrast_thresholds_use_raw_values_and_rows_show_floored_ones():
     # True WCAG ratios 4.49968 and 2.99967 round up to their thresholds; they must still fail, and show below them.
     for role, hex_value, shown in (("ink", "#007bc8", 4.499), ("primary", "#00a5af", 2.999)):
