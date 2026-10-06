@@ -12,7 +12,7 @@ from typing import Callable
 
 from ..output import CliError
 from ..paths import ProjectPaths
-from .mark import Mark
+from .mark import VARIANTS, Mark
 
 TIER_NAMES = ("full", "compact", "small", "favicon")
 
@@ -104,6 +104,8 @@ def build_tiers(concept: ConceptModule, overrides: dict | None = None) -> dict[s
                            data={"traceback": traceback.format_exc()}) from err
         if not isinstance(mark, Mark):
             raise CliError(f"{concept.path} build() must return a Mark, got {type(mark).__name__}")
+        if drop_wordmark and mark.symbol is None:
+            raise CliError(f"{concept.path}: tier {tier!r} drops the wordmark but the concept has no symbol")
         marks[tier] = mark.without_wordmark() if drop_wordmark else mark
     return marks
 
@@ -126,25 +128,29 @@ def build_outputs(marks: dict[str, Mark]) -> dict[str, Mark]:
 
 def write_build(folder: Path, outputs: dict[str, Mark], variants: tuple[str, ...] = ("black", "white"),
                 palette: dict[str, str] | None = None, dark_palette: dict[str, str] | None = None) -> dict:
-    build_dir = folder / "build"
-    build_dir.mkdir(exist_ok=True)
-    for stale in build_dir.glob("*.svg"):
-        stale.unlink()
-    files: list[str] = []
+    variants = tuple(dict.fromkeys(variants))
+    if not variants:
+        raise CliError(f"No variants to build; choose one or more of: {', '.join(VARIANTS)}")
+    unknown = [v for v in variants if v not in VARIANTS]
+    if unknown:
+        raise CliError(f"Unknown variant {', '.join(map(repr, unknown))}; choose one of: {', '.join(VARIANTS)}")
+    # Render everything in memory first, so any failure (e.g. a palette missing a role) leaves the previous build intact.
+    svgs: dict[str, str] = {}
     geometry: dict[str, dict] = {}
-    warnings: list[str] = []
-    for tier in ("small", "favicon"):
-        if tier not in outputs:
-            warnings.append(f"tier {tier!r} missing; exports fall back to the next larger build")
     for name, mark in outputs.items():
         geometry[name] = mark.geometry()
         for variant in variants:
             chosen = dark_palette if variant == "reverse" else palette
-            svg = mark.to_svg(variant, palette=chosen)
-            filename = f"{name}-{variant}.svg"
-            (build_dir / filename).write_text(svg, encoding="utf-8")
-            files.append(filename)
-    (build_dir / "geometry.json").write_text(json.dumps(geometry, indent=2) + "\n", encoding="utf-8")
-    report = {"outputs": list(outputs), "variants": list(variants), "files": files, "warnings": warnings}
-    (build_dir / "build.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+            svgs[f"{name}-{variant}.svg"] = mark.to_svg(variant, palette=chosen)
+    warnings = [f"tier {tier!r} missing; exports fall back to the next larger build" for tier in ("small", "favicon") if tier not in outputs]
+    report = {"outputs": list(outputs), "variants": list(variants), "files": list(svgs), "warnings": warnings}
+    geometry_json, report_json = json.dumps(geometry, indent=2) + "\n", json.dumps(report, indent=2) + "\n"
+    build_dir = folder / "build"
+    build_dir.mkdir(exist_ok=True)
+    for stale in build_dir.glob("*.svg"):
+        stale.unlink()
+    for filename, svg in svgs.items():
+        (build_dir / filename).write_text(svg, encoding="utf-8")
+    (build_dir / "geometry.json").write_text(geometry_json, encoding="utf-8")
+    (build_dir / "build.json").write_text(report_json, encoding="utf-8")
     return report

@@ -88,3 +88,26 @@ def test_empty_symbol_is_rejected():
         Mark(symbol=Shape.empty())
     with pytest.raises(ValueError):
         Mark()
+    with pytest.raises(ValueError, match="empty"):
+        Composite([(circle(0, 0, 100), "primary"), (Shape.empty(), "secondary")])
+    with pytest.raises(ValueError, match="empty"):
+        Mark(symbol=circle(0, 0, 100), tagline=Shape.empty())
+
+
+def test_tagline_follows_the_wordmark(project_root):
+    m = good_mark(project_root, tagline=text("tag", "Fira Code", cap_height=60))
+    placed = {p.name: p.shape.bounds for p in m.layout()}
+    assert math.isclose(placed["tagline"].x0, placed["wordmark"].x0, abs_tol=0.01)
+    assert math.isclose(placed["tagline"].y1, placed["wordmark"].y0 - 180 / 2, abs_tol=0.01)  # gap defaults to x_unit, the cap height
+    stacked = {p.name: p.shape.bounds for p in m.with_lockup("stacked").layout()}
+    assert math.isclose(stacked["tagline"].cx, stacked["wordmark"].cx, abs_tol=0.01)
+
+
+def test_reverse_fills_from_the_given_palette(project_root):
+    svg = good_mark(project_root).to_svg("reverse", palette={"primary": "#ff7a45", "ink": "#f5efe6"})
+    assert 'fill="#ff7a45"' in svg and 'fill="#f5efe6"' in svg
+
+
+def test_palette_missing_a_role_names_it(project_root):
+    with pytest.raises(ValueError, match="ink"):
+        good_mark(project_root).to_svg("color", palette={"primary": "#111111"})

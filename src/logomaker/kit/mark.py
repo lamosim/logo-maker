@@ -20,7 +20,9 @@ class Composite:
     def __init__(self, parts: list[tuple[Shape, str]]):
         if not parts:
             raise ValueError("Composite needs at least one part")
-        for _, role in parts:
+        for i, (shape, role) in enumerate(parts):
+            if shape.is_empty:
+                raise ValueError(f"Composite part {i} ({role}) is empty")
             if role not in ROLES:
                 raise ValueError(f"role must be one of {ROLES}, got {role!r}")
         self.parts = list(parts)
@@ -76,6 +78,8 @@ class Mark:
             raise ValueError("symbol is empty")
         if wordmark is not None and wordmark.is_empty:
             raise ValueError("wordmark is empty")
+        if tagline is not None and tagline.is_empty:
+            raise ValueError("tagline is empty")
         if lockup not in LOCKUPS:
             raise ValueError(f"lockup must be one of {LOCKUPS}, got {lockup!r}")
         if lockup == "symbol" and symbol is None:

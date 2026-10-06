@@ -1,6 +1,7 @@
 import json
 import os
 
+import pytest
 from click.testing import CliRunner
 
 from logomaker.cli import main
@@ -13,6 +14,11 @@ from tests.conftest import install_concept
 def run(*args):
     result = CliRunner().invoke(main, list(args))
     return result.exit_code, json.loads(result.stdout)
+
+
+def snapshot(build):
+    """Every file in a build folder as {name: bytes}."""
+    return {p.name: p.read_bytes() for p in sorted(build.iterdir())}
 
 
 def test_load_and_build_tiers(project_root):
@@ -43,7 +49,9 @@ def test_concept_build_cli_writes_files(project_root):
     assert "full-symbol" in json.loads((build / "geometry.json").read_text())
     report = json.loads((build / "build.json").read_text())
     assert report["variants"] == ["black", "white"] and "favicon-black.svg" in report["files"]
-    assert (build / "full-lockup-black.svg").read_text() == (build / "full-lockup-black.svg").read_text()
+    first = snapshot(build)
+    assert run("concept", "build", "keystone", "01-good")[0] == 0
+    assert snapshot(build) == first  # deterministic: a rebuild reproduces every file byte for byte
 
 
 def test_broken_concept_exits_2_with_traceback(project_root):
@@ -104,3 +112,49 @@ def test_import_time_errors_exit_2_with_traceback(project_root):
         (folder / "concept.py").write_text(source)
         code, payload = run("concept", "build", "keystone", "01-good")
         assert code == 2 and "failed to import" in payload["errors"][0] and error in payload["errors"][0] and "traceback" in payload
+
+
+def test_empty_variants_exit_2_and_keep_previous_build(project_root):
+    install_concept(project_root, "good")
+    assert run("concept", "build", "keystone", "01-good")[0] == 0
+    build = project_root / "brands" / "keystone" / "concepts" / "01-good" / "build"
+    before = snapshot(build)
+    for variants in ("", ","):
+        code, payload = run("concept", "build", "keystone", "01-good", "--variants", variants)
+        assert snapshot(build) == before
+        assert code == 2 and all(v in payload["errors"][0] for v in VARIANTS)
+
+
+def test_duplicate_variants_render_once(project_root):
+    install_concept(project_root, "good")
+    code, payload = run("concept", "build", "keystone", "01-good", "--variants", "black,black")
+    assert code == 0, payload
+    assert payload["build"]["variants"] == ["black"] and payload["build"]["files"].count("full-lockup-black.svg") == 1
+    assert len(payload["build"]["files"]) == len(payload["build"]["outputs"])
+
+
+def test_write_build_renders_before_touching_the_folder(project_root):
+    folder = install_concept(project_root, "good")
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
+    conceptlib.write_build(folder, outputs)
+    before = snapshot(folder / "build")
+    with pytest.raises(ValueError, match="ink"):  # the wordmark's role has no colour in this palette
+        conceptlib.write_build(folder, outputs, variants=("color",), palette={"primary": "#111111"})
+    assert snapshot(folder / "build") == before
+
+
+def test_dropping_the_wordmark_needs_a_symbol(project_root):
+    folder = install_concept(project_root, "good")
+    wordonly = folder.parent / "05-wordonly"
+    wordonly.mkdir()
+    (wordonly / "concept.py").write_text(
+        "from logomaker.kit import *\n\n"
+        'META = Meta(slug="wordonly", idea="the name alone", logo_type="wordmark")\n'
+        "PARAMS = Params()\n"
+        'TIERS = {"full": {}, "favicon": {"wordmark": False}}\n\n\n'
+        "def build(p):\n"
+        '    return Mark(wordmark=text("Good", family="Fira Code", weight=600, cap_height=180))\n'
+    )
+    code, payload = run("concept", "build", "keystone", "05-wordonly")
+    assert code == 2 and "traceback" not in payload and "05-wordonly/concept.py" in payload["errors"][0]
+    assert "tier 'favicon' drops the wordmark but the concept has no symbol" in payload["errors"][0]
