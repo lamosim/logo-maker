@@ -285,7 +285,7 @@
         "swiss",
         "ui"
       ],
-      "google_dir": null
+      "google_dir": "ofl/roboto"
     },
     {
       "family": "Geist",
@@ -1061,7 +1061,7 @@
         "data",
         "retro-futurist"
       ],
-      "google_dir": null
+      "google_dir": "ofl/robotomono"
     },
     {
       "family": "Fira Code",

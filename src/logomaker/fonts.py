@@ -3,7 +3,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import shlex
+import shutil
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -66,7 +69,10 @@ def list_fonts(paths: ProjectPaths, category: str | None = None, personality: st
 
 
 def family_dir(paths: ProjectPaths, family: str) -> Path:
-    return paths.fonts / family_slug(family)
+    slug = family_slug(family)
+    if not slug:  # an empty slug would make assets/fonts itself the family's cache folder
+        raise CliError(f"Not a font family name: {family!r}")
+    return paths.fonts / slug
 
 
 def cached_files(paths: ProjectPaths, family: str) -> list[Path]:
@@ -75,11 +81,13 @@ def cached_files(paths: ProjectPaths, family: str) -> list[Path]:
 
 
 def _describe(path: Path) -> tuple[bool, bool, int | None]:
-    """(variable, italic, weight) from google/fonts file naming: Family[wght].ttf or Family-StyleItalic.ttf."""
-    stem = path.stem
-    if "[" in stem:
-        return True, "italic" in stem.lower().split("[")[0], None
-    style = stem.rsplit("-", 1)[1] if "-" in stem else "Regular"
+    """(variable, italic, weight) from google/fonts file naming: Family[wght].ttf or Family-StyleItalic.ttf.
+
+    Only a wght axis makes a file variable here; ClimateCrisis[YEAR].ttf is a static Regular."""
+    name, _, axes = path.stem.partition("[")
+    if "wght" in axes.rstrip("]").split(","):
+        return True, "italic" in name.lower(), None
+    style = name.rsplit("-", 1)[1] if "-" in name else "Regular"
     italic = style.lower().endswith("italic")
     base = style[:-6] if italic else style
     weight = 400 if base in ("", "Italic") else NAME_WEIGHTS.get(base.lower(), 400)
@@ -89,7 +97,7 @@ def _describe(path: Path) -> tuple[bool, bool, int | None]:
 def font_path(paths: ProjectPaths, family: str, weight: int = 400, italic: bool = False) -> FontFile:
     files = cached_files(paths, family)
     if not files:
-        raise CliError(f"Font family {family!r} is not cached. run: logomaker fonts fetch {family}", code=EXIT_EXTERNAL)
+        raise CliError(f"Font family {family!r} is not cached. run: logomaker fonts fetch {shlex.quote(family)}", code=EXIT_EXTERNAL)
     described = [(p, *_describe(p)) for p in files]
     variables = [d for d in described if d[1] and d[2] == italic]
     if variables:
@@ -124,8 +132,29 @@ def _github_error(family: str, folder: str, resp: httpx.Response) -> CliError:
     )
 
 
+def _download(client: httpx.Client, entry: dict, staging: Path) -> dict:
+    """Download one listed file into `staging` and return its manifest row.
+
+    The byte count must match the listing's `size`, and a .ttf must parse with fontTools."""
+    try:
+        data = client.get(entry["download_url"]).raise_for_status().content
+    except httpx.HTTPError as err:
+        raise CliError(f"Network error downloading {entry['name']}: {err}", code=EXIT_EXTERNAL) from err
+    if len(data) != entry["size"]:
+        raise CliError(f"{entry['name']}: downloaded {len(data)} bytes, GitHub lists {entry['size']}", code=EXIT_EXTERNAL)
+    target = staging / entry["name"]
+    target.write_bytes(data)
+    if target.suffix == ".ttf":
+        try:
+            TTFont(str(target)).close()
+        except Exception as err:  # noqa: BLE001
+            raise CliError(f"{entry['name']} is not a valid TrueType file: {err}", code=EXIT_EXTERNAL) from err
+    return {"name": entry["name"], "url": entry["download_url"], "sha256": hashlib.sha256(data).hexdigest()}
+
+
 def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
     folder = family_dir(paths, family)
+    staging = folder.with_name(folder.name + ".tmp")
     listing = None
     used_dir = None
     with httpx.Client(timeout=timeout, follow_redirects=True, headers={"User-Agent": "logomaker"}) as client:
@@ -144,24 +173,21 @@ def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
         wanted = [e for e in listing if e["name"].endswith(".ttf") or e["name"] in LICENCE_FILES]
         if not any(e["name"].endswith(".ttf") for e in wanted):
             raise CliError(f"No .ttf files listed for {family} in {used_dir}", code=EXIT_EXTERNAL)
-        folder.mkdir(parents=True, exist_ok=True)
-        files = []
-        for entry in wanted:
-            try:
-                data = client.get(entry["download_url"]).raise_for_status().content
-            except httpx.HTTPError as err:
-                raise CliError(f"Network error downloading {entry['name']}: {err}", code=EXIT_EXTERNAL) from err
-            target = folder / entry["name"]
-            target.write_bytes(data)
-            if target.suffix == ".ttf":
-                try:
-                    TTFont(str(target)).close()
-                except Exception as err:  # noqa: BLE001
-                    target.unlink()
-                    raise CliError(f"{entry['name']} is not a valid TrueType file: {err}", code=EXIT_EXTERNAL) from err
-            files.append({"name": entry["name"], "url": entry["download_url"], "sha256": hashlib.sha256(data).hexdigest()})
-    manifest = {"family": family, "google_dir": used_dir, "fetched_at": now_iso(), "files": files}
-    (folder / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        # Download into a sibling staging folder and swap it in only once every file checks out, so a failed
+        # fetch or re-fetch never leaves a partial or mixed cache behind.
+        if staging.exists():
+            shutil.rmtree(staging)
+        staging.mkdir(parents=True)
+        try:
+            files = [_download(client, entry, staging) for entry in wanted]
+            manifest = {"family": family, "google_dir": used_dir, "fetched_at": now_iso(), "files": files}
+            (staging / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+            if folder.exists():
+                shutil.rmtree(folder)
+            os.replace(staging, folder)
+        finally:
+            if staging.exists():
+                shutil.rmtree(staging)
     return manifest
 
 

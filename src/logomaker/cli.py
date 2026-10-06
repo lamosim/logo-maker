@@ -199,6 +199,10 @@ def fonts_group() -> None:
 @command
 def fonts_list(category: str | None, personality: str | None) -> None:
     paths = project()
+    if category:
+        categories = list(dict.fromkeys(f.category for f in fontlib.load_catalog(paths)))
+        if category not in categories:
+            raise CliError(f"Unknown category {category!r}; choose one of: {', '.join(categories)}")
     families = fontlib.list_fonts(paths, category, personality)
     emit({"families": [
         {**fontlib.family_to_dict(f), "cached": bool(fontlib.cached_files(paths, f.family))} for f in families

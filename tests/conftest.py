@@ -8,6 +8,13 @@ REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
 
 
+def _skip_font_caches(directory: str, names: list[str]) -> set[str]:
+    """copytree ignore: leave out every family folder fetched into the repo's assets/fonts/, keep catalog.json."""
+    if Path(directory) != REPO / "assets" / "fonts":
+        return set()
+    return {name for name in names if (Path(directory) / name).is_dir()}
+
+
 @pytest.fixture
 def project_root(tmp_path: Path, monkeypatch) -> Path:
     """A throwaway logo-maker project: marker pyproject, assets, templates, fixture fonts."""
@@ -19,7 +26,7 @@ def project_root(tmp_path: Path, monkeypatch) -> Path:
     if (REPO / "templates").exists():
         shutil.copytree(REPO / "templates", root / "templates", dirs_exist_ok=True)
     if (REPO / "assets").exists():
-        shutil.copytree(REPO / "assets", root / "assets", dirs_exist_ok=True)
+        shutil.copytree(REPO / "assets", root / "assets", dirs_exist_ok=True, ignore=_skip_font_caches)
     fixture_fonts = FIXTURES / "fonts"
     if fixture_fonts.exists():
         shutil.copytree(fixture_fonts, root / "assets" / "fonts", dirs_exist_ok=True)

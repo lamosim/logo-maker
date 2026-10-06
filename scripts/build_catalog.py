@@ -18,7 +18,10 @@ BASE_TAGS = {
     "rounded": ["friendly", "playful", "kids", "food", "wellness"],
 }
 
-# (family, category, google_dir or None to probe ofl/apache/ufl, extra personality tags)
+# The top folder of a family's google/fonts directory names its licence.
+LICENCES = {"ofl": "OFL", "apache": "Apache", "ufl": "UFL"}
+
+# (family, category, google_dir in google/fonts, extra personality tags)
 FAMILIES = [
     ("Montserrat", "geometric sans", "ofl/montserrat", []),
     ("Poppins", "geometric sans", "ofl/poppins", ["rounded-geometric"]),
@@ -39,7 +42,7 @@ FAMILIES = [
     ("Instrument Sans", "grotesk", "ofl/instrumentsans", []),
     ("Public Sans", "grotesk", "ofl/publicsans", ["civic"]),
     ("IBM Plex Sans", "grotesk", "ofl/ibmplexsans", ["corporate"]),
-    ("Roboto", "grotesk", None, ["ui"]),
+    ("Roboto", "grotesk", "ofl/roboto", ["ui"]),
     ("Geist", "grotesk", "ofl/geist", ["ui", "tech"]),
     ("Open Sans", "humanist sans", "ofl/opensans", []),
     ("Source Sans 3", "humanist sans", "ofl/sourcesans3", []),
@@ -95,7 +98,7 @@ FAMILIES = [
     ("IBM Plex Mono", "mono", "ofl/ibmplexmono", ["corporate"]),
     ("Azeret Mono", "mono", "ofl/azeretmono", []),
     ("DM Mono", "mono", "ofl/dmmono", []),
-    ("Roboto Mono", "mono", None, []),
+    ("Roboto Mono", "mono", "ofl/robotomono", []),
     ("Fira Code", "mono", "ofl/firacode", ["ligatures", "code"]),
     ("Geist Mono", "mono", "ofl/geistmono", ["tech"]),
     ("Martian Mono", "mono", "ofl/martianmono", ["wide"]),
@@ -116,7 +119,9 @@ def slug(family: str) -> str:
 def main() -> None:
     entries = []
     for family, category, google_dir, extra in FAMILIES:
-        licence = "Apache" if (google_dir or "").startswith("apache/") else "UFL" if (google_dir or "").startswith("ufl/") else "OFL"
+        licence = LICENCES.get((google_dir or "").split("/", 1)[0])
+        if licence is None:
+            raise ValueError(f"{family}: google_dir must be ofl/<dir>, apache/<dir> or ufl/<dir>, not {google_dir!r}")
         entries.append({
             "family": family,
             "slug": slug(family),
