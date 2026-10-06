@@ -283,6 +283,12 @@ def concept_build(slug: str, concept: str, variants: str, tokens_path: str | Non
     emit({"concept": str(folder.relative_to(paths.root)), "build": report}, warnings=report["warnings"])
 
 
+def _emit_audit(payload: dict, result, warnings: list[str] | None = None) -> None:
+    """Emit `payload` with the audit's verdict on top, as `color check` does: failures are errors and exit 2."""
+    emit(payload, ok=result.ok, errors=[f.message for f in result.failures], warnings=(warnings or []) + [f.message for f in result.warnings],
+         code=0 if result.ok else EXIT_RULE)
+
+
 @concept_group.command("audit")
 @click.argument("slug")
 @click.argument("concept")
@@ -295,7 +301,7 @@ def concept_audit(slug: str, concept: str, no_render: bool) -> None:
     else:
         with Renderer() as renderer:
             result = auditlib.audit_concept(paths, slug, concept, renderer=renderer)
-    emit({"audit": result.model_dump()}, warnings=[f.message for f in result.warnings])
+    _emit_audit({"audit": result.model_dump()}, result)
 
 
 @concept_group.command("render")
@@ -327,8 +333,9 @@ def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tok
         with Renderer() as renderer:
             result = auditlib.audit_concept(paths, slug, concept, renderer=renderer)
             critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result, tokens_path=tokens_path)
-    emit({"concept": str(folder.relative_to(paths.root)), "build": report, "audit": result.model_dump(), "critique": critique},
-         warnings=report["warnings"] + [f.message for f in result.warnings])
+    # Everything is written before the verdict: a failing audit still leaves the build, audit.json and the sheet.
+    _emit_audit({"concept": str(folder.relative_to(paths.root)), "build": report, "audit": result.model_dump(), "critique": critique},
+                result, warnings=report["warnings"])
 
 
 if __name__ == "__main__":  # pragma: no cover

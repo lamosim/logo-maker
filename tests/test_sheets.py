@@ -130,11 +130,26 @@ def test_concept_run_without_render_builds_and_audits_only(project_root):
     (folder / "tokens.json").write_text('{"colors": ')  # a draft: black and white builds never read it
     result = CliRunner().invoke(main, ["concept", "run", "keystone", "01-good", "--no-render"])
     payload = json.loads(result.stdout)
-    assert result.exit_code == 0, payload
+    assert result.exit_code == 2 and payload["ok"] is False, payload  # the audit fails, so the run does
     assert payload["concept"] == "brands/keystone/concepts/01-good" and "full-lockup-black.svg" in payload["build"]["files"]
     assert payload["critique"] is None and payload["audit"]["rendered"] is False
     assert [f["check"] for f in payload["audit"]["failures"]] == ["tokens"]  # the audit still reports the draft
+    assert payload["errors"] == [f["message"] for f in payload["audit"]["failures"]]
     assert not (folder / "renders").exists()
+
+
+@requires_chrome
+@pytest.mark.render
+def test_a_failing_rendered_run_still_writes_everything_and_exits_2(project_root):
+    folder = install_concept(project_root, "thin_stroke", name="07-thin")
+    result = CliRunner().invoke(main, ["concept", "run", "keystone", "07-thin"])
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 2 and payload["ok"] is False, payload
+    failures = payload["audit"]["failures"]
+    assert failures and payload["errors"] == [f["message"] for f in failures]
+    assert all(f["message"] in payload["warnings"] for f in payload["audit"]["warnings"])
+    assert payload["critique"]["round"] == 1 and Path(payload["critique"]["critique_png"]).is_file()
+    assert (folder / "build" / "full-symbol-black.svg").is_file() and not json.loads((folder / "audit.json").read_text())["ok"]
 
 
 def test_round_must_be_positive(project_root):

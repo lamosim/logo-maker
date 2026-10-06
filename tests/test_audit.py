@@ -344,3 +344,14 @@ def test_concept_audit_cli(project_root):
     result = CliRunner().invoke(main, ["concept", "audit", "keystone", "01-good", "--no-render"])
     payload = json.loads(result.stdout)
     assert result.exit_code == 0 and payload["ok"] and payload["audit"]["ok"] and payload["audit"]["rendered"] is False
+    assert payload["errors"] == [] and payload["warnings"] == [f["message"] for f in payload["audit"]["warnings"]]
+
+
+def test_a_failing_audit_fails_the_command(project_root):
+    install_concept(project_root, "tiny_part", name="03-tiny")
+    result = CliRunner().invoke(main, ["concept", "audit", "keystone", "03-tiny", "--no-render"])
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 2 and payload["ok"] is False and payload["audit"]["ok"] is False
+    assert payload["errors"] == [f["message"] for f in payload["audit"]["failures"]]
+    assert {f["check"] for f in payload["audit"]["failures"]} == {"tiny_parts"}
+    assert payload["warnings"] == [f["message"] for f in payload["audit"]["warnings"]]
