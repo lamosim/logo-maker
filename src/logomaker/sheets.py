@@ -1,12 +1,16 @@
 """Sheets rendered through Chrome. Part 1: the per-concept critique sheet Claude reads; Part 2 adds owner-facing sheets."""
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from pydantic import ValidationError
 
+from .audit import concept_fingerprint
 from .color import load_tokens
 from .kit import concept as conceptlib
+from .output import CliError
 from .paths import ProjectPaths
 from .render import Renderer, svg_size, with_size
 from .schemas import AuditResult
@@ -24,14 +28,19 @@ def jinja(paths: ProjectPaths) -> Environment:
     return Environment(loader=FileSystemLoader(str(paths.templates)), autoescape=select_autoescape(default=False))
 
 
+def _first_present(outputs: dict, chain: Iterable[str]) -> str:
+    """The first output in `chain` that was built, else full-lockup (every build has one): how exports fall back."""
+    return next((name for name in chain if name in outputs), "full-lockup")
+
+
 def pick_output(outputs: dict, size: int) -> str:
     if size >= 96:
-        order = ("full-symbol", "full-lockup")
+        chain = ("full-symbol", "full-lockup")
     elif size > 32:
-        order = ("small", "full-symbol", "full-lockup")
+        chain = ("small", "full-symbol", "full-lockup")
     else:
-        order = ("favicon", "small", "full-symbol", "full-lockup")
-    return next((name for name in order if name in outputs), "full-lockup")
+        chain = ("favicon", "small", "full-symbol", "full-lockup")
+    return _first_present(outputs, chain)
 
 
 def fit_box(svg: str, box_w: int, box_h: int) -> str:
@@ -48,7 +57,7 @@ def next_round(folder: Path) -> int:
 
 
 def _one_colour_outputs(outputs: dict) -> list[tuple[int, str]]:
-    return [(size, next((name for name in chain if name in outputs), "full-lockup")) for size, chain in ONE_COLOUR]
+    return [(size, _first_present(outputs, chain)) for size, chain in ONE_COLOUR]
 
 
 def _audit_lines(audit: AuditResult, budget: int = AUDIT_LINES) -> list[dict]:
@@ -62,6 +71,21 @@ def _audit_lines(audit: AuditResult, budget: int = AUDIT_LINES) -> list[dict]:
     if len(lines) > budget:
         lines = lines[: budget - 1] + [{"kind": "more", "text": f"+{len(lines) - budget + 1} more (see audit.json)"}]
     return lines
+
+
+def _saved_audit(folder: Path) -> AuditResult | None:
+    """<concept>/audit.json if there is one; a file that is not a valid audit is a CliError naming it."""
+    path = folder / "audit.json"
+    if not path.is_file():
+        return None
+    try:
+        return AuditResult.model_validate_json(path.read_text(encoding="utf-8"))
+    except ValidationError as err:  # malformed JSON or the wrong fields
+        first = err.errors()[0]
+        loc = ".".join(str(p) for p in first["loc"]) or "root"
+        raise CliError(f"{path} is not a valid audit ({loc}: {first['msg']}); re-run concept audit") from err
+    except ValueError as err:  # bytes that are not UTF-8
+        raise CliError(f"{path} is not a valid audit ({err}); re-run concept audit") from err
 
 
 def _palettes(folder: Path, tokens_path: str | Path | None = None):
@@ -78,18 +102,23 @@ def _palettes(folder: Path, tokens_path: str | Path | None = None):
 
 
 def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: int | None = None,
-                   renderer: Renderer | None = None, audit: AuditResult | None = None, tokens_path: str | Path | None = None) -> dict:
+                   renderer: Renderer | None = None, audit: AuditResult | None = None, tokens_path: str | Path | None = None,
+                   outputs: dict | None = None) -> dict:
     """Write <concept>/renders/round-N/critique.{html,png}.
 
-    `audit` defaults to the concept's audit.json, if there is one, and `tokens_path` (for the colour panels) to its tokens.json.
+    `audit` defaults to the concept's audit.json, if there is one, and `tokens_path` (for the colour panels) to its
+    tokens.json. An audit whose fingerprint no longer matches the concept and tokens is marked stale. `outputs` are the
+    concept's built outputs when the caller has them already (concept run); otherwise the sheet builds them.
     """
     folder = conceptlib.concept_folder(paths, slug, concept_name)
     module = conceptlib.load_concept(folder)
-    outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
+    if outputs is None:
+        outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
     light, dark = _palettes(folder, tokens_path)
     round_n = round_n or next_round(folder)
     lockup = outputs["full-lockup"]
     big = outputs[pick_output(outputs, 256)].to_svg("black")
+    ladder = [(size, pick_output(outputs, size)) for size in LADDER]
     panels = {
         "black": fit_box(lockup.to_svg("black"), 512, 512),
         "white": fit_box(lockup.to_svg("white"), 512, 512),
@@ -97,14 +126,17 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
         "reverse": fit_box(lockup.to_svg("reverse", palette=dark), 384, 384) if dark else None,
         "paper_light": light["paper"] if light else "#ffffff",
         "paper_dark": dark["paper"] if dark else "#000000",
-        "ladder": [{"size": s, "output": pick_output(outputs, s), "svg": fit_box(outputs[pick_output(outputs, s)].to_svg("black"), s, s)} for s in LADDER],
+        "ladder": [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)} for s, name in ladder],
         "mirror": fit_box(big, 256, 256),
         "rotate": fit_box(big, 256, 256),
         "one_colour": [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)} for s, name in _one_colour_outputs(outputs)],
     }
-    if audit is None and (folder / "audit.json").is_file():
-        audit = AuditResult.model_validate_json((folder / "audit.json").read_text(encoding="utf-8"))
-    summary = None if audit is None else {"ok": audit.ok, "rendered": audit.rendered, "lines": _audit_lines(audit)}
+    if audit is None:
+        audit = _saved_audit(folder)
+    summary = None
+    if audit is not None:
+        stale = audit.fingerprint != concept_fingerprint(folder, tokens_path)  # made from other files than this sheet shows
+        summary = {"ok": audit.ok, "rendered": audit.rendered, "stale": stale, "lines": _audit_lines(audit)}
     html = jinja(paths).get_template("sheets/critique.html").render(
         slug=slug, concept=concept_name, round_n=round_n, idea=module.meta.idea, panels=panels, audit=summary,
         audit_rows=AUDIT_ROWS, width=SHEET_W, height=SHEET_H,

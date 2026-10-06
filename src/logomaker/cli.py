@@ -298,7 +298,7 @@ def _build_concept(paths, slug: str, concept: str, variants: str, tokens_path: s
         palette, dark_palette = tokens.palette("light"), tokens.palette("dark")
     module = conceptlib.load_concept(folder)
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
-    return folder, conceptlib.write_build(folder, outputs, variants=wanted, palette=palette, dark_palette=dark_palette)
+    return folder, outputs, conceptlib.write_build(folder, outputs, variants=wanted, palette=palette, dark_palette=dark_palette)
 
 
 @concept_group.command("build")
@@ -310,7 +310,7 @@ def _build_concept(paths, slug: str, concept: str, variants: str, tokens_path: s
 def concept_build(slug: str, concept: str, variants: str, tokens_path: str | None) -> None:
     """Build a concept's tiers into build/. SVGs per output and variant, plus geometry.json and build.json."""
     paths = project()
-    folder, report = _build_concept(paths, slug, concept, variants, tokens_path)
+    folder, _, report = _build_concept(paths, slug, concept, variants, tokens_path)
     emit({"concept": str(folder.relative_to(paths.root)), "build": report}, warnings=report["warnings"])
 
 
@@ -368,14 +368,14 @@ def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tok
     from .render import Renderer
 
     paths = project()
-    folder, report = _build_concept(paths, slug, concept, variants, tokens_path)
+    folder, outputs, report = _build_concept(paths, slug, concept, variants, tokens_path)
     critique = None
     if no_render:
         result = auditlib.audit_concept(paths, slug, concept, tokens_path=tokens_path)
     else:
         with Renderer() as renderer:
             result = auditlib.audit_concept(paths, slug, concept, renderer=renderer, tokens_path=tokens_path)
-            critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result, tokens_path=tokens_path)
+            critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result, tokens_path=tokens_path, outputs=outputs)
     # Everything is written before the verdict: a failing audit still leaves the build, audit.json and the sheet.
     _emit_audit({"concept": str(folder.relative_to(paths.root)), "build": report, "audit": result.model_dump(), "critique": critique},
                 result, warnings=report["warnings"])

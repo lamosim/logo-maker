@@ -2,7 +2,7 @@
 <html><head><meta charset="utf-8">
 <style>
   body{margin:0;width:{{ width }}px;height:{{ height }}px;font:14px/1.3 -apple-system,Helvetica,Arial,sans-serif;background:#e9e9e9;color:#222;overflow:hidden}
-  header{height:40px;padding:10px 20px;box-sizing:border-box;font-weight:600}
+  header{height:40px;padding:10px 20px;box-sizing:border-box;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .row{display:flex;gap:16px;padding:0 20px;align-items:flex-start}
   .panel{background:#fff;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;margin:0}
   .panel.dark{background:#000}
@@ -38,7 +38,7 @@
   {% endfor %}
   <div class="audit">
     {% if audit %}
-    <div><b>audit {{ 'ok' if audit.ok else 'FAILED' }}</b>{% if not audit.rendered %} (no raster checks){% endif %}</div>
+    <div><b>audit {{ 'ok' if audit.ok else 'FAILED' }}{% if audit.stale %} (stale — re-run concept audit){% endif %}</b>{% if not audit.rendered %} (no raster checks){% endif %}</div>
     <div class="lines">{% for line in audit.lines %}<div class="{{ line.kind }}">{{ line.text }}</div>{% endfor %}</div>
     {% else %}<b>no audit yet</b>{% endif %}
   </div>

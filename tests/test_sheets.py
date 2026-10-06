@@ -7,8 +7,10 @@ import pytest
 from click.testing import CliRunner
 from PIL import Image
 
+from logomaker import audit as auditlib
 from logomaker import sheets
 from logomaker.cli import main
+from logomaker.kit import concept as conceptlib
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.raster import ink_mask
@@ -189,6 +191,80 @@ def test_concept_run_passes_its_tokens_to_the_sheet(project_root):
     assert "full-lockup-color.svg" in payload["build"]["files"]
     html = Path(payload["critique"]["critique_html"]).read_text()
     assert "colour on light paper" in html and "info: favicon: thinnest feature" in html
+
+
+def heading(info: dict) -> str:
+    """The audit box's bold heading in a sheet's HTML."""
+    return re.search(r"<b>(audit [^<]*)</b>", Path(info["critique_html"]).read_text()).group(1)
+
+
+def test_a_broken_audit_json_stops_the_sheet_and_names_it(project_root):
+    folder = install_concept(project_root, "good")
+    for content in ("{not json", '{"ok": "maybe"}', b"\xff\xfe"):
+        path = folder / "audit.json"
+        path.write_bytes(content) if isinstance(content, bytes) else path.write_text(content)
+        with pytest.raises(CliError) as err:
+            sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer())
+        message = str(err.value)
+        assert err.value.code == 2 and message.startswith(f"{path} is not a valid audit (") and message.endswith("; re-run concept audit")
+    assert not (folder / "renders").exists()
+
+
+def test_the_sheet_marks_an_audit_that_no_longer_matches_the_concept(project_root):
+    folder = install_concept(project_root, "good")
+    auditlib.audit_concept(project(), "keystone", "01-good")
+
+    def sheet(**kwargs):
+        return sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer(), **kwargs)
+
+    assert heading(sheet()) == "audit ok"
+    (folder / "concept.py").write_text((folder / "concept.py").read_text() + "# edited after the audit\n")
+    assert heading(sheet()) == "audit ok (stale — re-run concept audit)"
+    assert heading(sheet(audit=AuditResult(ok=False, fingerprint="0" * 64))) == "audit FAILED (stale — re-run concept audit)"
+    fresh = auditlib.audit_concept(project(), "keystone", "01-good")
+    assert heading(sheet(audit=fresh)) == "audit ok"  # concept run hands the sheet its own fresh audit
+
+
+def test_the_sheet_draws_the_outputs_it_is_given_without_rebuilding(project_root, monkeypatch):
+    folder = install_concept(project_root, "good")
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
+
+    def no_rebuild(*args, **kwargs):
+        raise AssertionError("the sheet rebuilt the concept")
+
+    monkeypatch.setattr(conceptlib, "build_tiers", no_rebuild)
+    info = sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer(), outputs=outputs)
+    assert "16 favicon" in Path(info["critique_html"]).read_text()
+
+
+@requires_chrome
+@pytest.mark.render
+def test_concept_run_builds_the_concept_three_times_not_four(project_root, monkeypatch):
+    install_concept(project_root, "good")
+    calls = []
+    build_tiers = conceptlib.build_tiers
+    monkeypatch.setattr(conceptlib, "build_tiers", lambda *args, **kwargs: calls.append(1) or build_tiers(*args, **kwargs))
+    result = CliRunner().invoke(main, ["concept", "run", "keystone", "01-good"])
+    assert result.exit_code == 0, result.stdout
+    assert len(calls) == 3  # the build, then the audit's two (the determinism check); the sheet reuses the build
+
+
+def test_the_ladder_picks_each_steps_output_once(project_root, monkeypatch):
+    install_concept(project_root, "good")
+    sizes = []
+    pick_output = sheets.pick_output
+    monkeypatch.setattr(sheets, "pick_output", lambda outputs, size: sizes.append(size) or pick_output(outputs, size))
+    sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer())
+    assert sorted(sizes) == sorted([256, *sheets.LADDER])  # the mirrored and rotated source, then each step once
+    assert sheets._first_present({"full-lockup": 1, "small": 1}, ("favicon", "small")) == "small"
+    assert sheets._first_present({"full-lockup": 1}, ("favicon", "small")) == "full-lockup"
+
+
+def test_a_long_idea_stays_on_one_header_line(project_root):
+    install_concept(project_root, "good")
+    html = Path(sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer())["critique_html"]).read_text()
+    header = re.search(r"header\{([^}]*)\}", html).group(1)
+    assert all(rule in header for rule in ("white-space:nowrap", "overflow:hidden", "text-overflow:ellipsis"))
 
 
 def test_one_colour_test_draws_the_audited_tiers_with_fallbacks():
