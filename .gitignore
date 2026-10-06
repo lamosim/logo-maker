@@ -20,6 +20,8 @@ build/
 assets/fonts/*/*.ttf
 assets/fonts/*/*.otf
 assets/fonts/*/instances/
+# Staging folders of fetches in progress (or killed): assets/fonts/<slug>.<random>.tmp
+assets/fonts/*.tmp/
 
 # Local Claude settings
 .claude/settings.local.json

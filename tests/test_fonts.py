@@ -30,6 +30,14 @@ def test_catalog_is_valid(project_root):
     assert fonts.find_family(project(), "fira code").google_dir == "ofl/firacode"
 
 
+def test_catalogue_families_are_hashable(project_root):
+    families = fonts.load_catalog(project())
+    assert all(isinstance(f.personality, tuple) for f in families)
+    assert len(set(families)) == len(families)  # frozen dataclasses with tuple fields hash
+    payload = json.loads(CliRunner().invoke(main, ["fonts", "list", "--category", "mono"]).stdout)
+    assert all(isinstance(f["personality"], list) for f in payload["families"])  # still a JSON list
+
+
 def test_fixture_project_fonts_are_catalogue_and_fixtures_only(project_root):
     fonts_dir = project_root / "assets" / "fonts"
     assert {p.name for p in fonts_dir.iterdir() if p.is_dir()} == {"firacode"}
@@ -185,6 +193,32 @@ def test_fetch_stages_in_a_folder_of_its_own(project_root, monkeypatch):
     serve_google_fonts(monkeypatch, {"Test[wght].ttf": FIXTURE_TTF.read_bytes(), "OFL.txt": b"licence"})
     fonts.fetch(project(), "Test")
     assert (other_run / "OFL.txt").read_bytes() == b"another run"
+
+
+def test_fetch_sweeps_its_family_s_stale_staging_and_leaves_a_readable_cache(project_root, monkeypatch):
+    fonts_dir = project_root / "assets" / "fonts"
+    stale, other_family = fonts_dir / "test.k3x9q.tmp", fonts_dir / "testing.k3x9q.tmp"
+    for folder in (stale, other_family):  # left behind by fetches that were killed
+        folder.mkdir()
+        (folder / "OFL.txt").write_bytes(b"orphan")
+    serve_google_fonts(monkeypatch, {"Test[wght].ttf": FIXTURE_TTF.read_bytes(), "OFL.txt": b"licence"})
+    fonts.fetch(project(), "Test")
+    assert not stale.exists() and other_family.exists()
+    assert (fonts_dir / "test").stat().st_mode & 0o777 == 0o755  # mkdtemp's 0o700 would hide the cache from other users
+
+
+def test_a_failed_final_rename_is_an_external_error_naming_both_paths(project_root, monkeypatch):
+    serve_google_fonts(monkeypatch, {"Test[wght].ttf": FIXTURE_TTF.read_bytes(), "OFL.txt": b"licence"})
+
+    def refuse(src, dst):
+        raise PermissionError(13, "Permission denied")
+
+    monkeypatch.setattr(fonts.os, "replace", refuse)
+    with pytest.raises(CliError) as exc:
+        fonts.fetch(project(), "Test")
+    message = str(exc.value)
+    assert exc.value.code == 3 and str(project_root / "assets" / "fonts" / "test") + ":" in message
+    assert ".tmp" in message and "Permission denied" in message and leftover_staging(project_root) == []
 
 
 def test_fetch_rejects_a_name_without_letters_or_digits(project_root, monkeypatch):

@@ -33,7 +33,7 @@ class FontFamily:
     slug: str
     category: str
     license: str
-    personality: list[str]
+    personality: tuple[str, ...]  # a tuple, so the frozen dataclass hashes
     google_dir: str | None
 
 
@@ -52,7 +52,7 @@ def family_slug(family: str) -> str:
 
 def load_catalog(paths: ProjectPaths) -> list[FontFamily]:
     data = json.loads((paths.fonts / "catalog.json").read_text(encoding="utf-8"))
-    return [FontFamily(**entry) for entry in data["families"]]
+    return [FontFamily(**{**entry, "personality": tuple(entry["personality"])}) for entry in data["families"]]
 
 
 def find_family(paths: ProjectPaths, family: str) -> FontFamily | None:
@@ -155,6 +155,9 @@ def _download(client: httpx.Client, entry: dict, staging: Path) -> dict:
 
 def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
     folder = family_dir(paths, family)
+    for stale in paths.fonts.glob(f"{folder.name}.*.tmp"):  # staging left by an earlier fetch of this family that was killed
+        if stale.is_dir():
+            shutil.rmtree(stale)
     listing = None
     used_dir = None
     with httpx.Client(timeout=timeout, follow_redirects=True, headers={"User-Agent": "logomaker"}) as client:
@@ -176,13 +179,17 @@ def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
         # Download into a staging folder of this run's own (<slug>.<random>.tmp) beside the cache and swap it in
         # only once every file checks out, so a failed fetch or re-fetch never leaves a partial or mixed cache.
         staging = Path(tempfile.mkdtemp(prefix=f"{folder.name}.", suffix=".tmp", dir=paths.fonts))
+        os.chmod(staging, 0o755)  # mkdtemp makes it 0o700; the cache it becomes should read like any other folder
         try:
             files = [_download(client, entry, staging) for entry in wanted]
             manifest = {"family": family, "google_dir": used_dir, "fetched_at": now_iso(), "files": files}
             (staging / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
             if folder.exists():
                 shutil.rmtree(folder)
-            os.replace(staging, folder)
+            try:
+                os.replace(staging, folder)
+            except OSError as err:
+                raise CliError(f"Could not move the fetched files from {staging} to {folder}: {err}", code=EXIT_EXTERNAL) from err
         finally:
             if staging.exists():
                 shutil.rmtree(staging)
