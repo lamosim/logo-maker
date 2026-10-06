@@ -111,6 +111,19 @@ def _candidate_dirs(paths: ProjectPaths, family: str) -> list[str]:
     return list(dict.fromkeys(dirs))
 
 
+def _github_error(family: str, folder: str, resp: httpx.Response) -> CliError:
+    """Exit-3 error for a listing that is neither 200 nor 404: the HTTP status plus GitHub's JSON `message`."""
+    try:
+        body = resp.json()
+    except ValueError:  # not JSON, e.g. an HTML error page from GitHub's edge
+        body = None
+    message = body.get("message") if isinstance(body, dict) else None
+    return CliError(
+        f"Could not fetch {family}: GitHub returned {resp.status_code} for {folder}: {message or resp.reason_phrase}",
+        code=EXIT_EXTERNAL,
+    )
+
+
 def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
     folder = family_dir(paths, family)
     listing = None
@@ -124,6 +137,8 @@ def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
             if resp.status_code == 200:
                 listing, used_dir = resp.json(), d
                 break
+            if resp.status_code != 404:  # only a 404 means "not in this folder"; a rate limit or outage stops the probe
+                raise _github_error(family, d, resp)
         if listing is None:
             raise CliError(f"Family {family!r} not found in google/fonts (tried {', '.join(_candidate_dirs(paths, family))})", code=EXIT_EXTERNAL)
         wanted = [e for e in listing if e["name"].endswith(".ttf") or e["name"] in LICENCE_FILES]

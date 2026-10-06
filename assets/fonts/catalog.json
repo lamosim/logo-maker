@@ -732,7 +732,7 @@
       "family": "Roboto Slab",
       "slug": "robotoslab",
       "category": "slab",
-      "license": "OFL",
+      "license": "Apache",
       "personality": [
         "sturdy",
         "craft",
@@ -740,7 +740,7 @@
         "americana",
         "outdoors"
       ],
-      "google_dir": null
+      "google_dir": "apache/robotoslab"
     },
     {
       "family": "Zilla Slab",
@@ -971,7 +971,7 @@
       "family": "Ultra",
       "slug": "ultra",
       "category": "display",
-      "license": "OFL",
+      "license": "Apache",
       "personality": [
         "loud",
         "distinctive",
@@ -980,7 +980,7 @@
         "streetwear",
         "heavy"
       ],
-      "google_dir": "ofl/ultra"
+      "google_dir": "apache/ultra"
     },
     {
       "family": "Space Mono",

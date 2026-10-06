@@ -1,5 +1,6 @@
 import json
 
+import httpx
 import pytest
 from click.testing import CliRunner
 
@@ -57,6 +58,21 @@ def test_fonts_list_cli(project_root):
     result = CliRunner().invoke(main, ["fonts", "list", "--category", "mono"])
     payload = json.loads(result.stdout)
     assert result.exit_code == 0 and any(f["family"] == "Fira Code" for f in payload["families"])
+
+
+def test_fetch_reports_github_errors(project_root, monkeypatch):
+    calls = []
+
+    def rate_limited(self, url, **kwargs):
+        calls.append(url)
+        return httpx.Response(403, json={"message": "API rate limit exceeded"}, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx.Client, "get", rate_limited)
+    with pytest.raises(CliError) as exc:
+        fonts.fetch(project(), "Sora")
+    message = str(exc.value)
+    assert exc.value.code == 3 and "403" in message and "rate limit" in message and "Sora" in message
+    assert calls == [fonts.GITHUB_CONTENTS.format(dir="ofl/sora")]  # a non-404 stops the probe
 
 
 @pytest.mark.live
