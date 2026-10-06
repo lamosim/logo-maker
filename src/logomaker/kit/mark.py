@@ -211,7 +211,8 @@ class Mark:
             })
         wordmark = None
         if isinstance(self.wordmark, TextShape) and self.lockup != "symbol":
-            wordmark = {"cap_height": self.wordmark.cap_height, "x_height": round(self.wordmark.x_height, 3),
-                        "advance": round(self.wordmark.advance, 3), "font": self.wordmark.font}
+            # Two decimals: enough for the audit, and free of the float32 noise a rotated wordmark's metrics carry.
+            wordmark = {"cap_height": round(self.wordmark.cap_height, 2), "x_height": round(self.wordmark.x_height, 2),
+                        "advance": round(self.wordmark.advance, 2), "font": self.wordmark.font}
         return {"lockup": self.lockup, "x_unit": round(self.x_unit, 3), "bounds": _box_dict(self.bounds()),
                 "parts": parts, "wordmark": wordmark, "roles": sorted({p.role for p in placed})}

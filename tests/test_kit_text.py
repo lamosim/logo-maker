@@ -84,6 +84,11 @@ def test_transforms_scale_text_metrics(project_root):
     first, scaled = word.glyph_bounds[0], doubled.glyph_bounds[0]
     corners = zip((scaled.x0, scaled.y0, scaled.x1, scaled.y1), (first.x0, first.y0, first.x1, first.y1))
     assert all(math.isclose(s, 2 * v, abs_tol=1e-3) for s, v in corners)
+    wider = scale(word, 2, 1)  # heights follow the vertical stretch, the advance the horizontal one
+    assert math.isclose(wider.advance, 2 * word.advance) and math.isclose(wider.x_height, word.x_height) and wider.cap_height == 180
+    taller = scale(word, 1, 3)
+    assert math.isclose(taller.cap_height, 540) and math.isclose(taller.x_height, 3 * word.x_height)
+    assert math.isclose(taller.advance, word.advance)
     turned = rotate(mirror_x(translate(word, 10, 5)), 30)  # moves, reflections and rotations keep the size
     assert isinstance(turned, TextShape)  # skia matrices are float32, so a rotation's determinant is 1 to about 1e-8
     assert math.isclose(turned.cap_height, 180, rel_tol=1e-6) and math.isclose(turned.x_height, word.x_height, rel_tol=1e-6)

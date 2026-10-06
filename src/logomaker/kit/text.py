@@ -95,8 +95,9 @@ def _clamp_weight(tt: TTFont, weight: float) -> float:
 class TextShape(Shape):
     """Set type: an outline plus the metrics the audit and the lockup need.
 
-    The metrics survive the kit's ops: a transform scales them by its uniform scale, and a boolean, stroke or offset
-    whose first operand is a TextShape keeps that operand's metrics (a notch does not change the x-height).
+    The metrics survive the kit's ops: a transform scales the heights by its vertical stretch and the advance by its
+    horizontal stretch, and a boolean, stroke or offset whose first operand is a TextShape keeps that operand's metrics
+    (a notch does not change the x-height).
     """
 
     __slots__ = ("advance", "cap_height", "x_height", "glyph_bounds", "font")
@@ -115,12 +116,15 @@ class TextShape(Shape):
                          glyph_bounds=list(self.glyph_bounds), font=self.font, free_segments=free_segments)
 
     def transformed(self, matrix: skia.Matrix) -> TextShape:
-        """The text moved, turned or resized: lengths scale by sqrt(|det|) of the matrix, glyph boxes map through it."""
+        """The text moved, turned or resized. Cap and x-height scale by the length of the matrix's image of the unit
+        y vector, the advance by that of the unit x vector (so scale(word, 2, 1) leaves the x-height alone); glyph
+        boxes map through the matrix."""
         dst = skia.Path()
         self.path.transform(matrix, dst)
-        k = math.sqrt(abs(matrix.getScaleX() * matrix.getScaleY() - matrix.getSkewX() * matrix.getSkewY()))
+        across, up = matrix.mapVector(1, 0), matrix.mapVector(0, 1)
+        kx, ky = math.hypot(across.x(), across.y()), math.hypot(up.x(), up.y())
         boxes = [matrix.mapRect(skia.Rect.MakeLTRB(b.x0, b.y0, b.x1, b.y1)) for b in self.glyph_bounds]
-        return TextShape(dst, advance=self.advance * k, cap_height=self.cap_height * k, x_height=self.x_height * k,
+        return TextShape(dst, advance=self.advance * kx, cap_height=self.cap_height * ky, x_height=self.x_height * ky,
                          glyph_bounds=[Box(r.left(), r.top(), r.right(), r.bottom()) for r in boxes], font=self.font,
                          free_segments=self.free_segments)
 

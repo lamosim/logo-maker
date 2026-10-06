@@ -35,8 +35,17 @@ def test_a_notched_wordmark_keeps_its_metrics_in_the_mark(project_root):
     word = text("Good", "Fira Code", weight=600, cap_height=180)
     m = Mark(symbol=circle(0, 0, 100), wordmark=subtract(word, rect(0, 60, 40, 20)))
     assert m.x_unit == 180
-    expected = {"cap_height": 180, "x_height": round(word.x_height, 3), "advance": round(word.advance, 3), "font": word.font}
+    expected = {"cap_height": 180, "x_height": round(word.x_height, 2), "advance": round(word.advance, 2), "font": word.font}
     assert m.geometry()["wordmark"] == expected
+
+
+def test_geometry_rounds_wordmark_metrics_past_float32_noise(project_root):
+    from logomaker.kit.ops import rotate
+
+    word = rotate(text("Good", "Fira Code", weight=600, cap_height=180), 30)
+    assert word.cap_height != 180  # a float32 rotation matrix leaves 179.99999...
+    metrics = Mark(symbol=circle(0, 0, 100), wordmark=word).geometry()["wordmark"]
+    assert (metrics["cap_height"], metrics["x_height"], metrics["advance"]) == (180.0, round(word.x_height, 2), round(word.advance, 2))
 
 
 def test_x_unit_without_wordmark_is_fifth_of_symbol_height():
