@@ -8,4 +8,4 @@ TIERS = {"full": {}}
 
 
 def build(p):
-    return Mark(symbol=circle(0, 0, random.randint(100, 300)))
+    return Mark(symbol=circle(0, 0, random.uniform(100.0, 300.0), free=True))
