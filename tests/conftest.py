@@ -108,6 +108,8 @@ requires_chrome = pytest.mark.skipif(not CHROME.exists(), reason="Google Chrome 
 
 @pytest.fixture
 def renderer():
+    if not CHROME.exists():
+        pytest.skip("Google Chrome is not installed")
     from logomaker.render import Renderer
 
     with Renderer() as r:

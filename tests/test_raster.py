@@ -28,10 +28,18 @@ def test_component_count_and_min_feature():
     mask[50:70, 50:70] = True  # a separate 20 px square
     assert component_count(mask) == 2
     assert 9 <= min_feature_px(mask) <= 11
+    assert min_feature_px(mask.astype(np.uint8)) == min_feature_px(mask)  # a 0/1 integer mask measures like a bool one
     assert min_feature_px(np.zeros((5, 5), dtype=bool)) == 0.0
     thin = np.zeros((40, 40), dtype=bool)
     thin[20, 5:35] = True
     assert min_feature_px(thin) == 1.0
+
+
+def test_component_count_joins_shapes_touching_at_a_corner():
+    mask = np.zeros((20, 20), dtype=bool)
+    mask[2:6, 2:6] = True
+    mask[6:10, 6:10] = True  # meets the first square only at a corner
+    assert component_count(mask) == 1
 
 
 def test_min_feature_stops_when_any_original_component_vanishes():

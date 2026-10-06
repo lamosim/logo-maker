@@ -33,6 +33,7 @@ def min_feature_px(mask: np.ndarray) -> float:
 
     A thin part attached to a thicker body is not measured, since it vanishes without its whole component vanishing.
     """
+    mask = np.asarray(mask, dtype=bool)
     if not mask.any():
         return 0.0
     # Track the original labels, not the count: a component splitting under erosion must not hide another vanishing.
