@@ -82,6 +82,27 @@ def test_self_crossing_stroke_excludes_its_hole():
     assert math.isclose(looped.area, 3900, rel_tol=0.01)
 
 
+def test_ring_width_must_be_finite_and_less_than_the_radius():
+    for width in (100, 150):  # a full ring would become a disc; a sector would run a negative inner radius
+        for sector in ({}, {"start": 0, "end": 90}):
+            with pytest.raises(ValueError, match="ring width must be less than the radius"):
+                ring(0, 0, 100, width, **sector)
+    for width in (math.nan, math.inf):
+        for free in (False, True):
+            with pytest.raises(ValueError, match="ring width must be finite"):
+                ring(0, 0, 100, width, free=free)
+
+
+def test_non_finite_stroke_widths_are_rejected_even_when_free():
+    from logomaker.kit.ops import stroke
+
+    for width in (math.nan, math.inf):
+        with pytest.raises(ValueError, match="stroke width must be finite"):
+            line(0, 0, 100, 0, width, free=True)
+        with pytest.raises(ValueError, match="stroke width must be finite"):
+            stroke(rect(0, 0, 10, 10), width)
+
+
 def test_non_positive_widths_are_rejected():
     with pytest.raises(ValueError, match="stroke width must be positive"):
         polyline([(0, 0), (100, 0), (100, 100)], 0.1)  # snaps to 0

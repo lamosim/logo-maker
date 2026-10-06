@@ -110,7 +110,7 @@ def test_empty_symbol_is_rejected():
     with pytest.raises(ValueError, match="empty"):
         Composite([(circle(0, 0, 100), "primary"), (Shape.empty(), "secondary")])
     with pytest.raises(ValueError, match="empty"):
-        Mark(symbol=circle(0, 0, 100), tagline=Shape.empty())
+        Mark(symbol=circle(0, 0, 100), wordmark=rect(0, 0, 300, 60), tagline=Shape.empty())
 
 
 def test_parts_without_finite_width_and_height_are_refused():
@@ -126,6 +126,11 @@ def test_parts_without_finite_width_and_height_are_refused():
             Mark(symbol=part)
         with pytest.raises(ValueError, match="wordmark is empty or non-finite"):
             Mark(symbol=circle(0, 0, 100), wordmark=part)
+
+
+def test_a_tagline_needs_a_wordmark():
+    with pytest.raises(ValueError, match="tagline needs a wordmark"):
+        Mark(symbol=circle(0, 0, 100), tagline=rect(0, 0, 300, 40))
 
 
 def test_tagline_follows_the_wordmark(project_root):

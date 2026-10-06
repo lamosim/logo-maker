@@ -82,7 +82,8 @@ def scale(shape: Shape, sx: float, sy: float | None = None, cx: float = 0, cy: f
     Exactly one negative factor is a reflection, and a reflection reverses every contour's direction (against the
     convention `normalize_winding` sets up). That is harmless for a shape on its own (nonzero fill and `Shape.area` are
     unaffected) and for boolean inputs (results are re-wound), but a mirrored and an unmirrored path must not be joined
-    into one Shape without a boolean. Two negative factors are a 180-degree rotation and keep directions.
+    into one Shape without a boolean; mirror_x and mirror_y re-wind their results. Two negative factors are a
+    180-degree rotation and keep directions.
     """
     m = skia.Matrix.Translate(cx, cy)
     m.preScale(sx, sx if sy is None else sy)
@@ -90,14 +91,18 @@ def scale(shape: Shape, sx: float, sy: float | None = None, cx: float = 0, cy: f
     return shape.transformed(m)
 
 
+def _rewound(shape: Shape) -> Shape:
+    return shape._with_path(normalize_winding(shape.path), shape.free_segments)
+
+
 def mirror_x(shape: Shape, axis: float = 0.0) -> Shape:
-    """Mirror across the vertical line x = axis. Contour directions reverse (see `scale`)."""
-    return scale(shape, -1, 1, cx=axis)
+    """Mirror across the vertical line x = axis, re-wound so contour directions follow the kit's convention."""
+    return _rewound(scale(shape, -1, 1, cx=axis))
 
 
 def mirror_y(shape: Shape, axis: float = 0.0) -> Shape:
-    """Mirror across the horizontal line y = axis. Contour directions reverse (see `scale`)."""
-    return scale(shape, 1, -1, cy=axis)
+    """Mirror across the horizontal line y = axis, re-wound so contour directions follow the kit's convention."""
+    return _rewound(scale(shape, 1, -1, cy=axis))
 
 
 def align(shape: Shape, to: Shape | Box, edge: str) -> Shape:
@@ -126,6 +131,8 @@ def center(shape: Shape, cx: float = 0, cy: float = 0, optical: bool = False) ->
 
 
 def fit(shape: Shape, w: float, h: float, cx: float = 0, cy: float = 0) -> Shape:
+    if not (w > 0 and h > 0):  # zero collapses the shape, a negative size flips it, NaN poisons it
+        raise ValueError(f"fit needs a positive target width and height, got {w} x {h}")
     b = shape.bounds
     if b.w <= 0 or b.h <= 0:
         raise ValueError("fit needs a shape with non-zero width and height")

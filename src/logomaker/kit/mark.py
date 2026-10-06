@@ -87,6 +87,8 @@ class Mark:
     ):
         if symbol is None and wordmark is None:
             raise ValueError("Mark needs a symbol or a wordmark")
+        if tagline is not None and wordmark is None:
+            raise ValueError("a tagline needs a wordmark: it is placed under the wordmark, so without one it would never be drawn")
         for label, part in (("symbol", symbol), ("wordmark", wordmark), ("tagline", tagline)):
             if part is not None:
                 _check_part(part, label)

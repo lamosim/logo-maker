@@ -6,6 +6,7 @@ from logomaker.kit.ops import align, center, fit, intersect, mirror_x, mirror_y,
 from logomaker.kit.optical import compensate_stroke, optical_center, overshoot
 from logomaker.kit.primitives import circle, polygon, rect, rect_centered, ring
 from logomaker.kit.shape import Shape
+from tests.test_kit_shape import signed_area
 
 
 def test_booleans():
@@ -93,6 +94,19 @@ def test_align_center_fit():
     assert math.isclose(f.x0, -15, abs_tol=0.01) and math.isclose(f.y1, 35, abs_tol=0.01)
     with pytest.raises(ValueError, match="fit needs a shape with non-zero width and height"):
         fit(Shape.empty(), 50, 50)
+    for w, h in ((0, 50), (50, -1), (math.nan, 50)):
+        with pytest.raises(ValueError, match="fit needs a positive target width and height"):
+            fit(circle(0, 0, 100), w, h)
+
+
+def test_mirrors_keep_the_kits_contour_directions():
+    def directions(shape):
+        return [signed_area(part.flatten()[0]) > 0 for part in shape.subpaths()]
+
+    original = ring(0, 0, 100, 20)
+    assert directions(original) == [True, False]  # outline counter-clockwise, hole clockwise
+    assert directions(mirror_x(original, 30)) == directions(mirror_y(original, -5)) == [True, False]
+    assert math.isclose(mirror_x(original).area, original.area, rel_tol=1e-6)  # skia stores points as float32
 
 
 def test_optical_helpers():
