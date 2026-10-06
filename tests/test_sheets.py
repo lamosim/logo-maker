@@ -1,5 +1,6 @@
 import io
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -11,9 +12,12 @@ from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.raster import ink_mask
+from logomaker.schemas import AuditResult, Finding
 from tests.conftest import install_concept, requires_chrome
 
 SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><rect width="200" height="100"/></svg>'
+SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
+AUDIT_LINE_DIV = re.compile(r'<div class="(fail|warn|info|more)">(.*?)</div>')
 
 
 def test_pick_output_tier_rule():
@@ -78,6 +82,26 @@ class FailingRenderer:
         raise CliError("Chrome failed while rendering: boom", code=3)
 
 
+class StubRenderer:
+    """Returns placeholder bytes, so a test can read the sheet's HTML without Chrome."""
+
+    def html_to_png(self, *args, **kwargs):
+        return b"png"
+
+
+def finding(check: str, severity: str, message: str) -> Finding:
+    return Finding(check=check, severity=severity, message=message)
+
+
+def write_palette(project_root):
+    """good_tokens() outside the concept folder, so it can reach a sheet only when passed as a tokens path."""
+    from tests.test_color import good_tokens
+
+    palette = project_root / "palette.json"
+    palette.write_text(json.dumps(good_tokens()))
+    return palette
+
+
 def test_next_round_never_reuses_an_existing_round(project_root):
     folder = install_concept(project_root, "good")
     (folder / "renders" / "round-1").mkdir(parents=True)
@@ -123,15 +147,75 @@ def test_round_must_be_positive(project_root):
 
 @requires_chrome
 @pytest.mark.render
-def test_concept_render_cli_draws_the_requested_round_with_the_saved_audit(project_root):
+def test_concept_render_cli_takes_round_and_tokens_and_shows_the_saved_audit(project_root):
     folder = install_concept(project_root, "good")
+    palette = write_palette(project_root)
     runner = CliRunner()
     assert runner.invoke(main, ["concept", "audit", "keystone", "01-good", "--no-render"]).exit_code == 0
-    result = runner.invoke(main, ["concept", "render", "keystone", "01-good", "--round", "3"])
+    result = runner.invoke(main, ["concept", "render", "keystone", "01-good", "--round", "3", "--tokens", str(palette)])
     payload = json.loads(result.stdout)
     assert result.exit_code == 0, payload
     round_dir = folder / "renders" / "round-3"
     assert payload["round"] == 3 and (round_dir / "critique.png").is_file()
     html = (round_dir / "critique.html").read_text()
-    assert "audit ok" in html and "(no raster checks)" in html
+    assert "audit ok" in html and "(no raster checks)" in html and "info: full-symbol: symbol has" in html
+    assert "reverse on dark paper" in html
     assert sheets.next_round(folder) == 4
+
+
+@requires_chrome
+@pytest.mark.render
+def test_concept_run_passes_its_tokens_to_the_sheet(project_root):
+    install_concept(project_root, "good")
+    palette = write_palette(project_root)
+    result = CliRunner().invoke(main, ["concept", "run", "keystone", "01-good", "--variants", "black,color", "--tokens", str(palette)])
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 0, payload
+    assert "full-lockup-color.svg" in payload["build"]["files"]
+    html = Path(payload["critique"]["critique_html"]).read_text()
+    assert "colour on light paper" in html and "info: favicon: thinnest feature" in html
+
+
+def test_one_colour_test_draws_the_audited_tiers_with_fallbacks():
+    assert sheets._one_colour_outputs({"full-lockup": 1, "full-symbol": 1, "small": 1, "favicon": 1}) == [(64, "full-symbol"), (32, "small")]
+    assert sheets._one_colour_outputs({"full-lockup": 1, "full-symbol": 1}) == [(64, "full-symbol"), (32, "full-symbol")]
+    assert sheets._one_colour_outputs({"full-lockup": 1}) == [(64, "full-lockup"), (32, "full-lockup")]
+
+
+def test_audit_lines_put_failures_then_warnings_then_measurements_within_budget():
+    result = AuditResult(
+        ok=False,
+        failures=[finding("min_feature", "fail", "f1"), finding("tokens", "fail", "f2")],
+        warnings=[finding("tiers", "warn", "w1")],
+        info=[finding("bounds", "info", "b1"), finding("anchors", "info", "a1"), finding("industry", "info", "i1"), finding("min_feature", "info", "m1")],
+    )
+    lines = sheets._audit_lines(result, budget=5)  # exactly fits
+    assert [(line["kind"], line["text"]) for line in lines] == [
+        ("fail", "fail: f1"), ("fail", "fail: f2"), ("warn", "warn: w1"), ("info", "info: a1"), ("info", "info: m1"),
+    ]
+    assert [line["text"] for line in sheets._audit_lines(result, budget=3)] == ["fail: f1", "fail: f2", "+3 more (see audit.json)"]
+
+
+def test_palettes_prefer_an_explicit_tokens_file(project_root):
+    folder = install_concept(project_root, "good")
+    palette = write_palette(project_root)
+    assert sheets._palettes(folder) == (None, None)
+    (folder / "tokens.json").write_text("{}")  # broken, but an explicit file takes its place
+    light, dark = sheets._palettes(folder, palette)
+    assert light["primary"] == "#e8572a" and dark["paper"] == "#1f1b18"
+    with pytest.raises(CliError, match="01-good/tokens.json is invalid"):
+        sheets._palettes(folder)
+
+
+def test_sheet_draws_spec_sizes_and_never_drops_audit_lines_silently(project_root):
+    install_concept(project_root, "good")
+    many = AuditResult(ok=False, failures=[finding("min_feature", "fail", f"problem {i}") for i in range(60)])
+    info = sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer(), audit=many, tokens_path=write_palette(project_root))
+    html = Path(info["critique_html"]).read_text()
+    longest = [max(int(w), int(h)) for w, h in SVG_SIZES.findall(html)]
+    # Lockups black, white, colour, reverse; the ladder; mirrored and rotated; the one-colour test.
+    assert longest == [512, 512, 384, 384, *sheets.LADDER, 256, 256, 64, 32]
+    assert "one colour 64 full-symbol" in html and "one colour 32 small" in html
+    lines = AUDIT_LINE_DIV.findall(html)
+    assert len(lines) == sheets.AUDIT_LINES and lines[0] == ("fail", "fail: problem 0")
+    assert lines[-1] == ("more", f"+{60 - (sheets.AUDIT_LINES - 1)} more (see audit.json)")

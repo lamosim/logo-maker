@@ -9,17 +9,20 @@
   .panel figcaption{position:absolute;left:6px;bottom:4px;font-size:11px;color:#888}
   .panel.dark figcaption{color:#aaa}
   .mirror svg{transform:scaleX(-1)} .rotate svg{transform:rotate(90deg)}
-  .audit{width:600px;height:200px;background:#fff;border:1px solid #ccc;padding:10px;box-sizing:border-box;font-size:12px;overflow:hidden}
-  .audit .fail{color:#b00020} .audit .warn{color:#9a6a00}
+  /* Sized to fit its rows exactly: 10 px padding and a 1 px border each side, the heading line, then audit_rows lines of 16 px. */
+  .audit{flex:1;height:{{ 22 + 16 * (audit_rows + 1) }}px;background:#fff;border:1px solid #ccc;padding:10px;box-sizing:border-box;font-size:12px;line-height:16px;overflow:hidden}
+  .audit .lines{display:grid;grid-template-rows:repeat({{ audit_rows }},16px);grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:24px}
+  .audit .lines div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .audit .fail{color:#b00020} .audit .warn{color:#9a6a00} .audit .info{color:#555}
 </style></head>
 <body>
 <header>{{ slug }} / {{ concept }} / round {{ round_n }} &mdash; {{ idea }}</header>
-<section class="row" style="height:400px">
-  <figure class="panel" style="width:600px;height:400px">{{ panels.black|safe }}<figcaption>black on white</figcaption></figure>
-  <figure class="panel dark" style="width:600px;height:400px">{{ panels.white|safe }}<figcaption>white on black</figcaption></figure>
+<section class="row" style="height:552px">
+  <figure class="panel" style="width:536px;height:552px">{{ panels.black|safe }}<figcaption>black on white</figcaption></figure>
+  <figure class="panel dark" style="width:536px;height:552px">{{ panels.white|safe }}<figcaption>white on black</figcaption></figure>
   {% if panels.color %}
-  <figure class="panel" style="width:340px;height:400px;background:{{ panels.paper_light }}">{{ panels.color|safe }}<figcaption>colour on light paper</figcaption></figure>
-  <figure class="panel dark" style="width:340px;height:400px;background:{{ panels.paper_dark }}">{{ panels.reverse|safe }}<figcaption>reverse on dark paper</figcaption></figure>
+  <figure class="panel" style="width:408px;height:552px;background:{{ panels.paper_light }}">{{ panels.color|safe }}<figcaption>colour on light paper</figcaption></figure>
+  <figure class="panel dark" style="width:408px;height:552px;background:{{ panels.paper_dark }}">{{ panels.reverse|safe }}<figcaption>reverse on dark paper</figcaption></figure>
   {% endif %}
 </section>
 <section class="row" style="height:320px;margin-top:20px">
@@ -29,14 +32,14 @@
   <figure class="panel mirror" style="width:300px;height:300px">{{ panels.mirror|safe }}<figcaption>mirrored</figcaption></figure>
   <figure class="panel rotate" style="width:300px;height:300px">{{ panels.rotate|safe }}<figcaption>rotated 90</figcaption></figure>
 </section>
-<section class="row" style="height:220px;margin-top:20px">
-  <figure class="panel" style="width:440px;height:200px">{{ panels.one_colour[0]|safe }}<figcaption>one colour, lockup 400 wide</figcaption></figure>
-  <figure class="panel" style="width:240px;height:200px">{{ panels.one_colour[1]|safe }}<figcaption>one colour, lockup 200 wide</figcaption></figure>
+<section class="row" style="margin-top:20px;align-items:stretch">
+  {% for step in panels.one_colour %}
+  <figure class="panel" style="width:150px">{{ step.svg|safe }}<figcaption>one colour {{ step.size }} {{ step.output }}</figcaption></figure>
+  {% endfor %}
   <div class="audit">
     {% if audit %}
-    <b>audit {{ 'ok' if audit.ok else 'FAILED' }}</b>{% if not audit.rendered %} (no raster checks){% endif %}
-    {% for m in audit.failures %}<div class="fail">fail: {{ m }}</div>{% endfor %}
-    {% for m in audit.warnings %}<div class="warn">warn: {{ m }}</div>{% endfor %}
+    <div><b>audit {{ 'ok' if audit.ok else 'FAILED' }}</b>{% if not audit.rendered %} (no raster checks){% endif %}</div>
+    <div class="lines">{% for line in audit.lines %}<div class="{{ line.kind }}">{{ line.text }}</div>{% endfor %}</div>
     {% else %}<b>no audit yet</b>{% endif %}
   </div>
 </section>

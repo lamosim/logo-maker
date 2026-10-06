@@ -133,6 +133,14 @@ def test_anchor_ceiling(project_root):
     assert findings(result, "anchors")[0].severity == "fail"
 
 
+def test_anchor_count_within_limits_is_reported_as_info(project_root):
+    install_concept(project_root, "good")
+    anchors = findings(audit.audit_concept(project(), "keystone", "01-good"), "anchors")
+    assert [(f.data["output"], f.severity) for f in anchors] == [("full-symbol", "info"), ("small", "info"), ("favicon", "info")]
+    for f in anchors:
+        assert 0 < f.data["anchors"] <= audit.ANCHOR_WARN and f.message == f"{f.data['output']}: symbol has {f.data['anchors']} anchors"
+
+
 def test_allow_complex_needs_a_reason(project_root):
     folder = install_concept(project_root, "good", name="08-complex")
     for reason, severity in (("", "fail"), ("an engraved seal meant to reward a close look", "warn")):

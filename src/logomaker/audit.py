@@ -93,6 +93,8 @@ def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta, lenient: boo
     elif anchors > ANCHOR_WARN:
         out.append(Finding(check="anchors", severity="warn", message=f"{name}: symbol has {anchors} anchors (over {ANCHOR_WARN})",
                            data={"output": name, "anchors": anchors, "limit": ANCHOR_WARN, "reason": meta.complex_reason}))
+    else:
+        out.append(Finding(check="anchors", severity="info", message=f"{name}: symbol has {anchors} anchors", data={"output": name, "anchors": anchors}))
     near = []
     for p in parts:
         for seg in p["straight_segments"]:

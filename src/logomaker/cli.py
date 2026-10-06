@@ -302,10 +302,11 @@ def concept_audit(slug: str, concept: str, no_render: bool) -> None:
 @click.argument("slug")
 @click.argument("concept")
 @click.option("--round", "round_n", type=click.IntRange(min=1), default=None, help="Write renders/round-N (default: one past the highest existing round)")
+@click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
 @command
-def concept_render(slug: str, concept: str, round_n: int | None) -> None:
+def concept_render(slug: str, concept: str, round_n: int | None, tokens_path: str | None) -> None:
     # No renderer passed: the sheet launches Chrome itself, only once the concept has loaded and built.
-    emit(sheetlib.critique_sheet(project(), slug, concept, round_n))
+    emit(sheetlib.critique_sheet(project(), slug, concept, round_n, tokens_path=tokens_path))
 
 
 @concept_group.command("run")
@@ -325,7 +326,7 @@ def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tok
     else:
         with Renderer() as renderer:
             result = auditlib.audit_concept(paths, slug, concept, renderer=renderer)
-            critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result)
+            critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result, tokens_path=tokens_path)
     emit({"concept": str(folder.relative_to(paths.root)), "build": report, "audit": result.model_dump(), "critique": critique},
          warnings=report["warnings"] + [f.message for f in result.warnings])
 
