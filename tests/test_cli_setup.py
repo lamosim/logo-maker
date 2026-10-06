@@ -101,7 +101,8 @@ def test_concept_commands_share_their_option_definitions():
     def info(command, name):
         return json.dumps(next(p for p in commands[command].params if p.name == name).to_info_dict(), sort_keys=True, default=str)
 
-    for name, users in (("tokens_path", ("build", "render", "run")), ("variants", ("build", "run")), ("round_n", ("render", "run"))):
+    shared = {"tokens_path": ("build", "audit", "render", "run"), "variants": ("build", "run"), "round_n": ("render", "run")}
+    for name, users in shared.items():
         assert len({info(command, name) for command in users}) == 1, name
 
 

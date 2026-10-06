@@ -325,18 +325,19 @@ def _emit_audit(payload: dict, result, warnings: list[str] | None = None) -> Non
 @click.argument("slug")
 @click.argument("concept")
 @click.option("--no-render", is_flag=True, help="Skip the raster checks (no Chrome needed).")
+@TOKENS_OPTION
 @command
-def concept_audit(slug: str, concept: str, no_render: bool) -> None:
+def concept_audit(slug: str, concept: str, no_render: bool, tokens_path: str | None) -> None:
     """Audit a concept and write audit.json. The raster checks need Chrome unless --no-render; a failing audit exits 2."""
     from . import audit as auditlib
     from .render import Renderer
 
     paths = project()
     if no_render:
-        result = auditlib.audit_concept(paths, slug, concept)
+        result = auditlib.audit_concept(paths, slug, concept, tokens_path=tokens_path)
     else:
         with Renderer() as renderer:
-            result = auditlib.audit_concept(paths, slug, concept, renderer=renderer)
+            result = auditlib.audit_concept(paths, slug, concept, renderer=renderer, tokens_path=tokens_path)
     _emit_audit({"audit": result.model_dump()}, result)
 
 

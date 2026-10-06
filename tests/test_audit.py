@@ -266,6 +266,20 @@ def test_audit_reads_the_tokens_file_it_is_given(project_root):
     assert run.exit_code == 2 and {f["check"] for f in payload["audit"]["failures"]} == {"contrast"}
 
 
+def test_concept_audit_takes_the_tokens_file_it_is_given(project_root):
+    from tests.test_color import good_tokens
+
+    folder = install_concept(project_root, "good")
+    low_contrast = good_tokens()
+    low_contrast["colors"]["coal"]["hex"] = "#777777"
+    palette = project_root / "palette.json"
+    palette.write_text(json.dumps(low_contrast))
+    result = CliRunner().invoke(main, ["concept", "audit", "keystone", "01-good", "--no-render", "--tokens", str(palette)])
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 2 and {f["check"] for f in payload["audit"]["failures"]} == {"contrast"}  # the folder has no tokens.json
+    assert json.loads((folder / "audit.json").read_text())["fingerprint"] == audit.concept_fingerprint(folder, palette)
+
+
 def test_broken_tokens_become_a_failure_not_an_abort(project_root):
     folder = install_concept(project_root, "good")
     (folder / "tokens.json").write_text("{}")
