@@ -77,6 +77,27 @@ def test_concept_run_cli_builds_audits_renders_and_increments_rounds(project_roo
     assert payload["critique"]["round"] == 2
 
 
+@requires_chrome
+@pytest.mark.render
+def test_a_rendered_run_with_broken_tokens_names_them_and_leaves_the_build_and_audit(project_root):
+    folder = install_concept(project_root, "good")
+    (folder / "tokens.json").write_text("{}")
+    runner = CliRunner()
+    result = runner.invoke(main, ["concept", "run", "keystone", "01-good"])  # black and white: the build never reads tokens
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 2 and "01-good/tokens.json is invalid" in payload["errors"][0]
+    assert (folder / "build" / "full-lockup-black.svg").is_file() and not (folder / "renders").exists()
+    saved = json.loads((folder / "audit.json").read_text())  # the audit ran, rendered, and recorded the broken tokens
+    assert saved["rendered"] and [f["check"] for f in saved["failures"]] == ["tokens"]
+    build = {p.name: p.read_bytes() for p in sorted((folder / "build").iterdir())}
+    audit_json = (folder / "audit.json").read_text()
+    result = runner.invoke(main, ["concept", "run", "keystone", "01-good", "--variants", "black,white,color"])  # colour needs the tokens
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 2 and "01-good/tokens.json is invalid" in payload["errors"][0]
+    assert {p.name: p.read_bytes() for p in sorted((folder / "build").iterdir())} == build
+    assert (folder / "audit.json").read_text() == audit_json and not (folder / "renders").exists()
+
+
 class FailingRenderer:
     """Stands in for Chrome failing mid-render (Renderer raises CliError exit 3)."""
 
