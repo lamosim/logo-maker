@@ -139,6 +139,13 @@ def test_set_updates_fields(project_root):
     assert b["surfaces"] == ["app icon", "merch"] and b["fonts"]["wordmark"] == {"family": "Sora", "weight": 650, "italic": False}
 
 
+def test_font_weight_must_be_a_number(project_root):
+    run("brand", "new", "Keystone")
+    code, payload = run("brand", "set", "keystone", "--font", "wordmark=Sora:bold")
+    assert code == 2 and "traceback" not in payload
+    assert payload["errors"] == ["--font weight must be a whole number, got 'bold' in 'wordmark=Sora:bold'"]
+
+
 def test_list_brands(project_root):
     run("brand", "new", "Keystone")
     run("brand", "new", "Quill")

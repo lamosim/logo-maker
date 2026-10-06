@@ -33,7 +33,7 @@ def test_playwright_start_failure_exits_3(tmp_path, monkeypatch):
         def start(self):
             raise PlaywrightError("driver failed to start")
 
-    monkeypatch.setattr("logomaker.render.sync_playwright", FailingPlaywright)
+    monkeypatch.setattr("playwright.sync_api.sync_playwright", FailingPlaywright)
     with pytest.raises(CliError) as exc, Renderer(chrome_app=tmp_path):  # tmp_path exists, so the launch path runs
         pass
     assert exc.value.code == 3

@@ -1,15 +1,20 @@
-"""Rendering through the installed Google Chrome via Playwright (channel "chrome"; never `playwright install`)."""
+"""Rendering through the installed Google Chrome via Playwright (channel "chrome"; never `playwright install`).
+
+Playwright is imported only when a Renderer opens, so CHROME_APP and the size helpers load without it and
+`setup --check` can report it missing.
+"""
 from __future__ import annotations
 
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-
-from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import Page, sync_playwright
+from typing import TYPE_CHECKING
 
 from .output import EXIT_EXTERNAL, CliError
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
 
 CHROME_APP = Path("/Applications/Google Chrome.app")
 PAPER = {"letter": {"width": "8.5in", "height": "11in"}, "a4": {"format": "A4"}}
@@ -46,6 +51,9 @@ class Renderer:
     def __enter__(self) -> "Renderer":
         if not self.chrome_app.exists():
             raise CliError(f"Google Chrome not found at {self.chrome_app}; install it to render", code=EXIT_EXTERNAL)
+        from playwright.sync_api import Error as PlaywrightError
+        from playwright.sync_api import sync_playwright
+
         try:
             self._pw = sync_playwright().start()
             self._browser = self._pw.chromium.launch(channel="chrome", headless=True)
@@ -69,6 +77,8 @@ class Renderer:
     @contextmanager
     def _page(self, **options) -> Iterator[Page]:
         """A fresh page, closed afterwards; a Chrome failure on the way (crash, disconnect, timeout) exits 3."""
+        from playwright.sync_api import Error as PlaywrightError
+
         try:
             page = self._browser.new_page(**options)
             try:

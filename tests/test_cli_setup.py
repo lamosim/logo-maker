@@ -62,11 +62,17 @@ def test_setup_check_fails_without_chrome_but_plain_setup_only_warns(project_roo
     assert payload["warnings"] == ["Google Chrome not found at /nowhere/Google Chrome.app; render commands will exit 3"]
 
 
+def test_setup_finds_chrome_where_the_renderer_looks(project_root, monkeypatch, tmp_path):
+    monkeypatch.setattr("logomaker.render.CHROME_APP", tmp_path / "Nowhere.app")
+    payload = json.loads(CliRunner().invoke(main, ["setup", "--check"]).stdout)
+    assert payload["chrome"] == {"found": False, "path": str(tmp_path / "Nowhere.app"), "version": None}
+
+
 def test_setup_check_runs_and_reports_a_missing_module(project_root):
-    # A fresh interpreter where skia cannot be imported: the CLI must still load and say so.
+    # A fresh interpreter where skia and Playwright cannot be imported: the CLI must still load and say so.
     script = (
         "import sys\n"
-        "sys.modules['skia'] = None\n"
+        "sys.modules['skia'] = sys.modules['playwright'] = None\n"
         "from click.testing import CliRunner\n"
         "from logomaker.cli import main\n"
         "result = CliRunner().invoke(main, ['setup', '--check'])\n"
@@ -78,14 +84,25 @@ def test_setup_check_runs_and_reports_a_missing_module(project_root):
     exit_code, _, stdout = proc.stdout.partition("\n")
     payload = json.loads(stdout)
     assert int(exit_code) == 3 and payload["ok"] is False
-    assert payload["modules"]["skia"] is False and payload["modules"]["pypdf"] is True
-    assert list(payload["module_errors"]) == ["skia"] and "skia" in payload["module_errors"]["skia"]
-    assert any(e.startswith("missing modules: skia") for e in payload["errors"])
+    assert payload["modules"]["skia"] is False and payload["modules"]["playwright"] is False and payload["modules"]["pypdf"] is True
+    assert list(payload["module_errors"]) == ["skia", "playwright"] and "skia" in payload["module_errors"]["skia"]
+    assert any(e.startswith("missing modules: skia, playwright") for e in payload["errors"])
+    assert payload["chrome"]["path"] == "/Applications/Google Chrome.app"  # still checked without Playwright
 
 
 def test_setup_check_adds_module_errors_only_when_an_import_fails(project_root):
     payload = json.loads(CliRunner().invoke(main, ["setup", "--check"]).stdout)
     assert "pypdf" in payload["modules"] and all(payload["modules"].values()) and "module_errors" not in payload
+
+
+def test_concept_commands_share_their_option_definitions():
+    commands = main.commands["concept"].commands
+
+    def info(command, name):
+        return json.dumps(next(p for p in commands[command].params if p.name == name).to_info_dict(), sort_keys=True, default=str)
+
+    for name, users in (("tokens_path", ("build", "render", "run")), ("variants", ("build", "run")), ("round_n", ("render", "run"))):
+        assert len({info(command, name) for command in users}) == 1, name
 
 
 def test_every_command_has_a_one_line_description():

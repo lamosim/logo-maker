@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from logomaker.render import CHROME_APP, Renderer
+
 REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
 
@@ -102,15 +104,12 @@ def install_concept(project_root: Path, fixture: str, slug: str = "keystone", na
     return target
 
 
-CHROME = Path("/Applications/Google Chrome.app")
-requires_chrome = pytest.mark.skipif(not CHROME.exists(), reason="Google Chrome is not installed")
+requires_chrome = pytest.mark.skipif(not CHROME_APP.exists(), reason="Google Chrome is not installed")
 
 
 @pytest.fixture
 def renderer():
-    if not CHROME.exists():
+    if not CHROME_APP.exists():
         pytest.skip("Google Chrome is not installed")
-    from logomaker.render import Renderer
-
     with Renderer() as r:
         yield r

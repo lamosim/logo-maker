@@ -20,8 +20,6 @@ from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
 from .schemas import Phase
 
-CHROME_APP = "/Applications/Google Chrome.app"
-CHROME_BIN = CHROME_APP + "/Contents/MacOS/Google Chrome"
 MODULES = ["skia", "fontTools", "uharfbuzz", "coloraide", "reportlab", "playwright", "PIL", "numpy", "scipy", "jinja2", "httpx", "pydantic", "pypdf"]
 
 
@@ -56,6 +54,14 @@ class JsonGroup(click.Group):
             emit(ok=False, errors=["aborted"], code=EXIT_RULE)
 
 
+# Options the concept commands share, declared once.
+TOKENS_OPTION = click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False),
+                             help="tokens.json to use instead of <concept>/tokens.json (for the colour variants, panels and checks)")
+VARIANTS_OPTION = click.option("--variants", default="black,white", help="Comma-separated subset of black,white,mono,color,reverse")
+ROUND_OPTION = click.option("--round", "round_n", type=click.IntRange(min=1), default=None,
+                            help="Write renders/round-N (default: one past the highest existing round)")
+
+
 @click.group(cls=JsonGroup)
 @click.version_option(__version__)
 def main() -> None:
@@ -63,17 +69,19 @@ def main() -> None:
 
 
 def chrome_status() -> dict:
-    import os
+    """render.check_chrome on render.CHROME_APP (where the Renderer looks), plus the version its binary reports."""
+    from .render import CHROME_APP, check_chrome
 
-    found = os.path.isfile(CHROME_BIN)
+    status = check_chrome(CHROME_APP)
+    binary = CHROME_APP / "Contents" / "MacOS" / "Google Chrome"
     version = None
-    if found:
+    if status["found"] and binary.is_file():
         try:
-            out = subprocess.run([CHROME_BIN, "--version"], capture_output=True, text=True, timeout=20)
+            out = subprocess.run([str(binary), "--version"], capture_output=True, text=True, timeout=20)
             version = out.stdout.strip() or None
         except (OSError, subprocess.SubprocessError):
             version = None
-    return {"found": found, "path": CHROME_APP, "version": version}
+    return {**status, "version": version}
 
 
 @main.command("setup")
@@ -296,8 +304,8 @@ def _build_concept(paths, slug: str, concept: str, variants: str, tokens_path: s
 @concept_group.command("build")
 @click.argument("slug")
 @click.argument("concept")
-@click.option("--variants", default="black,white", help="Comma-separated subset of black,white,mono,color,reverse")
-@click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
+@VARIANTS_OPTION
+@TOKENS_OPTION
 @command
 def concept_build(slug: str, concept: str, variants: str, tokens_path: str | None) -> None:
     """Build a concept's tiers into build/. SVGs per output and variant, plus geometry.json and build.json."""
@@ -334,8 +342,8 @@ def concept_audit(slug: str, concept: str, no_render: bool) -> None:
 @concept_group.command("render")
 @click.argument("slug")
 @click.argument("concept")
-@click.option("--round", "round_n", type=click.IntRange(min=1), default=None, help="Write renders/round-N (default: one past the highest existing round)")
-@click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
+@ROUND_OPTION
+@TOKENS_OPTION
 @command
 def concept_render(slug: str, concept: str, round_n: int | None, tokens_path: str | None) -> None:
     """Render the concept's critique sheet. It goes into <concept>/renders/round-N/."""
@@ -348,9 +356,9 @@ def concept_render(slug: str, concept: str, round_n: int | None, tokens_path: st
 @concept_group.command("run")
 @click.argument("slug")
 @click.argument("concept")
-@click.option("--round", "round_n", type=click.IntRange(min=1), default=None, help="Write renders/round-N (default: one past the highest existing round)")
-@click.option("--variants", default="black,white", help="Comma-separated subset of black,white,mono,color,reverse")
-@click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
+@ROUND_OPTION
+@VARIANTS_OPTION
+@TOKENS_OPTION
 @click.option("--no-render", is_flag=True, help="Build and audit only (no Chrome).")
 @command
 def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tokens_path: str | None, no_render: bool) -> None:

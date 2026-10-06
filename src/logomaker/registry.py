@@ -119,6 +119,8 @@ def set_fields(paths: ProjectPaths, slug: str, **fields: Any) -> BrandState:
                 family, _, weight = rest.partition(":")
                 if not role or not family:
                     raise CliError(f"--font must look like ROLE=FAMILY[:WEIGHT], got {spec!r}")
+                if weight and not weight.isdecimal():
+                    raise CliError(f"--font weight must be a whole number, got {weight!r} in {spec!r}")
                 state.fonts[role] = FontChoice(family=family, weight=int(weight) if weight else 400)
         elif key == "surfaces":
             state.surfaces = list(value)

@@ -166,6 +166,12 @@ def test_unknown_variant_exits_2_and_keeps_previous_build(project_root):
     assert "'blak'" in payload["errors"][0] and all(v in payload["errors"][0] for v in VARIANTS)
 
 
+def test_a_repeated_unknown_variant_is_named_once(project_root):
+    install_concept(project_root, "good")
+    code, payload = run("concept", "build", "keystone", "01-good", "--variants", "blak,black,blak")
+    assert code == 2 and payload["errors"][0].count("'blak'") == 1, payload
+
+
 def test_import_time_errors_exit_2_with_traceback(project_root):
     folder = install_concept(project_root, "good")
     for source, error in (("def build(p:\n", "SyntaxError"), ("raise ValueError('at import')\n", "ValueError: at import")):
