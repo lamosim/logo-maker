@@ -73,6 +73,24 @@ def test_a_missing_font_inside_a_concept_exits_3_with_the_fetch_hint(project_roo
         assert where in payload["errors"][0] and "run: logomaker fonts fetch Sora" in payload["errors"][0]
 
 
+def test_concept_prints_go_to_stderr_so_stdout_stays_one_json_object(project_root):
+    folder = install_concept(project_root, "good")
+    source = (folder / "concept.py").read_text()
+    (folder / "concept.py").write_text(source.replace("def build(p):\n", "print('loading')\n\n\ndef build(p):\n    print('building', p.stroke)\n"))
+    result = CliRunner().invoke(main, ["concept", "build", "keystone", "01-good"])
+    assert result.exit_code == 0 and json.loads(result.stdout)["ok"]  # json.loads refuses anything beside the one object
+    assert "loading" in result.stderr and "building 90" in result.stderr
+
+
+def test_sys_exit_in_a_concept_is_an_error_not_an_exit(project_root):
+    folder = install_concept(project_root, "good")
+    source = (folder / "concept.py").read_text()
+    for edited in (source.replace("def build(p):\n", "def build(p):\n    import sys\n    sys.exit(0)\n"), "import sys\nsys.exit(0)\n"):
+        (folder / "concept.py").write_text(edited)
+        code, payload = run("concept", "build", "keystone", "01-good")
+        assert code == 2 and payload["ok"] is False and "concept called sys.exit(); return the Mark instead" in payload["errors"][0]
+
+
 def test_concept_without_meta_exits_2(project_root):
     install_concept(project_root, "nometa", name="03-nometa")
     code, payload = run("concept", "build", "keystone", "03-nometa")

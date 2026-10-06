@@ -7,11 +7,11 @@ import sys
 import traceback
 import types
 from collections.abc import Callable, Iterable, Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stdout
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ..output import CliError
+from ..output import EXIT_RULE, CliError
 from ..paths import ProjectPaths
 from .mark import VARIANTS, Mark
 
@@ -63,10 +63,14 @@ def concept_folder(paths: ProjectPaths, slug: str, name: str) -> Path:
 
 @contextmanager
 def _concept_code(failure: str) -> Iterator[None]:
-    """Run concept code. A CliError it raises keeps its exit code and data (a missing font stays exit 3 with its fetch
-    hint); any other exception becomes a CliError, exit 2, carrying the traceback. `failure` prefixes the message."""
+    """Run concept code. Its prints go to stderr, since stdout carries only the CLI's JSON, and sys.exit() is an error,
+    not an exit. A CliError it raises keeps its exit code and data (a missing font stays exit 3 with its fetch hint);
+    any other exception becomes a CliError, exit 2, carrying the traceback. `failure` prefixes the message."""
     try:
-        yield
+        with redirect_stdout(sys.stderr):
+            yield
+    except SystemExit as err:
+        raise CliError(f"{failure}: concept called sys.exit(); return the Mark instead", code=EXIT_RULE) from err
     except CliError as err:
         raise CliError(f"{failure}: {err}", code=err.code, data=err.data) from err
     except Exception as err:  # noqa: BLE001 - concept code can raise anything; the CLI reports it as JSON
