@@ -4,7 +4,8 @@ import pytest
 
 from logomaker.kit.ops import align, center, fit, intersect, mirror_x, mirror_y, offset, rotate, scale, stroke, subtract, translate, union, xor
 from logomaker.kit.optical import compensate_stroke, optical_center, overshoot
-from logomaker.kit.primitives import circle, polygon, rect, rect_centered
+from logomaker.kit.primitives import circle, polygon, rect, rect_centered, ring
+from logomaker.kit.shape import Shape
 
 
 def test_booleans():
@@ -18,12 +19,19 @@ def test_booleans():
     assert union(polygon([(0, 0), (10, 0), (0, 10)], free=True), b).free_segments == 3
     assert union().is_empty
     assert math.isclose(subtract(circle(0, 0, 100), circle(0, 0, 80)).area, math.pi * (100**2 - 80**2), rel_tol=0.005)
+    assert math.isclose(union(ring(0, 0, 100, 20), circle(0, 0, 50)).area, math.pi * (100**2 - 80**2 + 50**2), rel_tol=0.005)
+    frame = union(rect(0, 0, 100, 10), rect(0, 90, 100, 10), rect(0, 0, 10, 100), rect(90, 0, 10, 100))
+    assert math.isclose(frame.area, 100**2 - 80**2)  # skia winds a hole the union creates like the outline
 
 
 def test_failed_boolean_raises_value_error():
     broken = polygon([(0, 0), (math.inf, 0), (0, 10)], free=True)  # pathops rejects non-finite paths
-    with pytest.raises(ValueError, match="boolean path operation failed"):
+    with pytest.raises(ValueError, match="boolean path operation failed") as excinfo:
         union(rect(0, 0, 10, 10), broken)
+    assert isinstance(excinfo.value.__cause__, RuntimeError)
+    with pytest.raises(ValueError, match="boolean path operation failed") as excinfo:
+        union(broken)  # one shape: no Op, straight to Simplify
+    assert isinstance(excinfo.value.__cause__, RuntimeError)
 
 
 def test_stroke_and_offset():
@@ -33,6 +41,14 @@ def test_stroke_and_offset():
     assert (grown.bounds.x0, grown.bounds.y0, grown.bounds.x1, grown.bounds.y1) == (-10, -10, 110, 110)
     shrunk = offset(rect(0, 0, 100, 100), -10)
     assert (shrunk.bounds.x0, shrunk.bounds.x1) == (10, 90) and math.isclose(shrunk.area, 6400, rel_tol=0.001)
+    tri = polygon([(0, 0), (10, 0), (0, 10)], free=True)
+    assert offset(tri, 5).free_segments == 3  # the band derived from tri is not counted again
+    assert offset(tri, -5).free_segments == 3
+    s = rect(0, 0, 100, 100)
+    same = offset(s, 0)
+    assert same is not s and same.path is not s.path and same.to_path_data() == s.to_path_data()
+    with pytest.raises(ValueError, match="stroke width must be positive"):
+        stroke(s, 0)
 
 
 def test_transforms():
@@ -44,6 +60,19 @@ def test_transforms():
     assert mirror_x(r).bounds.x0 == -10 and mirror_x(r).bounds.x1 == 0
     assert mirror_y(r).bounds.y0 == -20
     assert r.bounds.x0 == 0  # inputs are not mutated
+
+
+def test_pivots_and_axes():
+    r = rect(0, 0, 10, 20)
+    cases = [
+        (rotate(r, 90, cx=5, cy=10), (-5, 5, 15, 15)),
+        (scale(r, 2, 3, cx=10, cy=20), (-10, -40, 10, 20)),
+        (mirror_x(r, 20), (30, 0, 40, 20)),
+        (mirror_y(r, 20), (0, 20, 10, 40)),
+    ]
+    for shape, expected in cases:
+        b = shape.bounds
+        assert all(math.isclose(v, e, abs_tol=0.01) for v, e in zip((b.x0, b.y0, b.x1, b.y1), expected)), (b, expected)
 
 
 def test_align_center_fit():
@@ -62,6 +91,8 @@ def test_align_center_fit():
     assert abs(cx) < 0.01 and abs(cy) < 0.01
     f = fit(circle(0, 0, 100), 50, 50, cx=10, cy=10).bounds
     assert math.isclose(f.x0, -15, abs_tol=0.01) and math.isclose(f.y1, 35, abs_tol=0.01)
+    with pytest.raises(ValueError, match="fit needs a shape with non-zero width and height"):
+        fit(Shape.empty(), 50, 50)
 
 
 def test_optical_helpers():

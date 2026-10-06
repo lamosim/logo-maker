@@ -14,6 +14,13 @@ def _op(a: skia.Path, b: skia.Path, op: skia.PathOp) -> skia.Path:
         raise ValueError("boolean path operation failed") from err
 
 
+def _simplify(path: skia.Path) -> skia.Path:
+    try:
+        return skia.Simplify(path)
+    except RuntimeError as err:
+        raise ValueError("boolean path operation failed") from err
+
+
 def union(*shapes: Shape) -> Shape:
     live = [s for s in shapes if not s.is_empty]
     if not live:
@@ -21,11 +28,11 @@ def union(*shapes: Shape) -> Shape:
     acc = skia.Path(live[0].path)
     for s in live[1:]:
         acc = _op(acc, s.path, skia.PathOp.kUnion_PathOp)
-    return Shape(normalize_winding(skia.Simplify(acc)), sum(s.free_segments for s in live))
+    return Shape(normalize_winding(_simplify(acc)), sum(s.free_segments for s in live))
 
 
 def _binary(a: Shape, b: Shape, op: skia.PathOp) -> Shape:
-    return Shape(normalize_winding(skia.Simplify(_op(a.path, b.path, op))), a.free_segments + b.free_segments)
+    return Shape(normalize_winding(_simplify(_op(a.path, b.path, op))), a.free_segments + b.free_segments)
 
 
 def subtract(a: Shape, b: Shape) -> Shape:
@@ -48,7 +55,8 @@ def offset(shape: Shape, distance: float) -> Shape:
     if distance == 0:
         return shape.copy()
     band = stroke(shape, 2 * abs(distance), join="round")
-    return union(shape, band) if distance > 0 else subtract(shape, band)
+    result = union(shape, band) if distance > 0 else subtract(shape, band)
+    return Shape(result.path, shape.free_segments)  # the band is derived from shape: count its free segments once
 
 
 def translate(shape: Shape, dx: float, dy: float) -> Shape:
@@ -63,6 +71,13 @@ def rotate(shape: Shape, degrees: float, cx: float = 0, cy: float = 0) -> Shape:
 
 
 def scale(shape: Shape, sx: float, sy: float | None = None, cx: float = 0, cy: float = 0) -> Shape:
+    """Scale about (cx, cy); sy defaults to sx.
+
+    Exactly one negative factor is a reflection, and a reflection reverses every contour's direction (against the
+    convention `normalize_winding` sets up). That is harmless for a shape on its own (nonzero fill and `Shape.area` are
+    unaffected) and for boolean inputs (results are re-wound), but a mirrored and an unmirrored path must not be joined
+    into one Shape without a boolean. Two negative factors are a 180-degree rotation and keep directions.
+    """
     m = skia.Matrix.Translate(cx, cy)
     m.preScale(sx, sx if sy is None else sy)
     m.preTranslate(-cx, -cy)
@@ -70,12 +85,12 @@ def scale(shape: Shape, sx: float, sy: float | None = None, cx: float = 0, cy: f
 
 
 def mirror_x(shape: Shape, axis: float = 0.0) -> Shape:
-    """Mirror across the vertical line x = axis."""
+    """Mirror across the vertical line x = axis. Contour directions reverse (see `scale`)."""
     return scale(shape, -1, 1, cx=axis)
 
 
 def mirror_y(shape: Shape, axis: float = 0.0) -> Shape:
-    """Mirror across the horizontal line y = axis."""
+    """Mirror across the horizontal line y = axis. Contour directions reverse (see `scale`)."""
     return scale(shape, 1, -1, cy=axis)
 
 
@@ -106,5 +121,7 @@ def center(shape: Shape, cx: float = 0, cy: float = 0, optical: bool = False) ->
 
 def fit(shape: Shape, w: float, h: float, cx: float = 0, cy: float = 0) -> Shape:
     b = shape.bounds
+    if b.w <= 0 or b.h <= 0:
+        raise ValueError("fit needs a shape with non-zero width and height")
     factor = min(w / b.w, h / b.h)
     return center(scale(shape, factor, cx=b.cx, cy=b.cy), cx, cy)
