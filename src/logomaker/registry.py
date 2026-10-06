@@ -67,33 +67,30 @@ def _entry(state: BrandState) -> dict[str, Any]:
     return {"slug": state.slug, "name": state.name, "phase": state.phase.value, "updated": state.updated}
 
 
-def _rebuilt_entries(paths: ProjectPaths) -> tuple[list[dict[str, Any]], list[str]]:
-    """Index entries for every brands/*/brand.json, and a warning naming each one skipped: a file that cannot be read
-    or does not validate, or one in a folder that is not its brand's slug."""
-    entries: list[dict[str, Any]] = []
-    warnings: list[str] = []
-    for state_file in sorted(paths.brands.glob("*/brand.json")):
-        folder = state_file.parent.name
-        try:
-            state = load_state(paths, folder)
-        except (CliError, OSError) as err:
-            warnings.append(f"registry rebuild skipped {state_file}: {err}")
-            continue
-        if state.slug != folder:
-            warnings.append(f"registry rebuild skipped {state_file}: it belongs to brand {state.slug!r}, not {folder!r}")
-            continue
-        entries.append(_entry(state))
-    return entries, warnings
+def _indexable(paths: ProjectPaths, state_file: Path) -> tuple[BrandState | None, str]:
+    """The brand in `state_file` (brands/<folder>/brand.json), or None and why the index cannot list it: the folder is
+    not a slug, the file cannot be read or does not validate, or it belongs to another slug. Each reason names the file."""
+    folder = state_file.parent.name
+    if not SLUG.fullmatch(folder):
+        return None, f"{state_file} is in a folder whose name is not a slug"
+    try:
+        state = load_state(paths, folder)
+    except (CliError, OSError) as err:  # load_state's messages, and OSError's, name the file
+        return None, str(err)
+    if state.slug != folder:
+        return None, f"{state_file} belongs to brand {state.slug!r}, not {folder!r}"
+    return state, ""
 
 
-def list_brands(paths: ProjectPaths) -> tuple[list[dict[str, Any]], list[str]]:
-    """The registry index, registry/brands.json, and warnings. A missing index is rebuilt from brands/*/brand.json and
-    written back, skipping (with a warning naming each) brand files it cannot use; a malformed index is a CliError."""
+def list_brands(paths: ProjectPaths) -> list[dict[str, Any]]:
+    """The registry index, registry/brands.json. A missing index is rebuilt from every brand folder it can list (see
+    unindexed_warnings for the rest) and written back; a malformed one is a CliError naming it."""
     path = paths.registry / "brands.json"
     if not path.is_file():
-        entries, warnings = _rebuilt_entries(paths)
+        states = (_indexable(paths, state_file)[0] for state_file in sorted(paths.brands.glob("*/brand.json")))
+        entries = [_entry(state) for state in states if state is not None]
         _write_registry(paths, entries)
-        return entries, warnings
+        return entries
     rebuild = "; delete it and run `logomaker brand list` to rebuild it from the brand folders"
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -102,7 +99,22 @@ def list_brands(paths: ProjectPaths) -> tuple[list[dict[str, Any]], list[str]]:
     entries = data.get("brands") if isinstance(data, dict) else None
     if not isinstance(entries, list) or not all(isinstance(e, dict) and "slug" in e for e in entries):
         raise CliError(f'{path} must hold {{"brands": [...]}} with a slug in every entry{rebuild}')
-    return entries, []
+    return entries
+
+
+def unindexed_warnings(paths: ProjectPaths) -> list[str]:
+    """A warning for each brands/*/brand.json the registry index leaves out, with the reason, so a brand a rebuild had
+    to skip (or one the index never heard of) is never out of sight. Brand commands that save, and `brand list`, emit
+    them."""
+    indexed = {entry["slug"] for entry in list_brands(paths)}
+    warnings = []
+    for state_file in sorted(paths.brands.glob("*/brand.json")):
+        if state_file.parent.name in indexed:
+            continue
+        _, problem = _indexable(paths, state_file)
+        reason = problem or f"{state_file} is a valid brand missing from the index; delete registry/brands.json to rebuild it"
+        warnings.append(f"left out of the registry index: {reason}")
+    return warnings
 
 
 def _write_registry(paths: ProjectPaths, entries: list[dict[str, Any]]) -> None:
@@ -115,8 +127,7 @@ def _write_registry(paths: ProjectPaths, entries: list[dict[str, Any]]) -> None:
 
 
 def _update_registry(paths: ProjectPaths, state: BrandState) -> None:
-    entries, _ = list_brands(paths)  # a rebuild's warnings reach the user through `brand list` and `brand new`
-    _write_registry(paths, [e for e in entries if e["slug"] != state.slug] + [_entry(state)])
+    _write_registry(paths, [e for e in list_brands(paths) if e["slug"] != state.slug] + [_entry(state)])
 
 
 def decide(paths: ProjectPaths, slug: str, phase: Phase, by: str, note: str) -> BrandState:

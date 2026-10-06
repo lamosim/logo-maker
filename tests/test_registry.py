@@ -265,6 +265,28 @@ def test_a_registry_rebuild_skips_brand_files_it_cannot_use_and_says_which(proje
     assert code == 2 and "traceback" not in payload and payload["errors"][0].startswith(f"{alpha} is invalid: ")
 
 
+def test_every_brand_command_reports_brands_the_index_leaves_out(project_root):
+    run("brand", "new", "Alpha")
+    run("brand", "new", "Gamma")
+    alpha = project_root / "brands" / "alpha" / "brand.json"
+    alpha.write_text(alpha.read_text()[:40])  # truncated mid-object
+    (project_root / "registry" / "brands.json").unlink()
+    code, payload = run("brand", "set", "gamma", "--industry", "fintech")  # saving gamma rebuilds the index without alpha
+    assert code == 0 and payload["brand"]["industry"] == "fintech"
+    assert len(payload["warnings"]) == 1 and str(alpha) in payload["warnings"][0]
+    code, payload = run("brand", "list")  # the index exists again and still leaves alpha out: the warning stays
+    assert code == 0 and [b["slug"] for b in payload["brands"]] == ["gamma"]
+    assert len(payload["warnings"]) == 1 and str(alpha) in payload["warnings"][0]
+    for args in (("decide", "gamma", "--phase", "intake", "--note", "kept"), ("rename", "gamma", "--name", "Gamma Co")):
+        code, payload = run("brand", *args)
+        assert code == 0 and [str(alpha) in w for w in payload["warnings"]] == [True], args
+    delta = project_root / "brands" / "delta" / "brand.json"  # a valid brand the index never heard of
+    delta.parent.mkdir()
+    delta.write_text(json.dumps({**json.loads((project_root / "brands" / "gamma" / "brand.json").read_text()), "slug": "delta"}))
+    warnings = run("brand", "list")[1]["warnings"]
+    assert len(warnings) == 2 and str(delta) in warnings[1] and "missing from the index" in warnings[1]
+
+
 def test_territories_json_must_use_slugs(project_root):
     run("brand", "new", "Keystone")
     brand = project_root / "brands" / "keystone"

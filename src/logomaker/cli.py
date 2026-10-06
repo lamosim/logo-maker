@@ -130,6 +130,11 @@ def _brand_payload(state) -> dict:
     return {"brand": state.model_dump(mode="json")}
 
 
+def _emit_brand(paths, state) -> None:
+    """A command's JSON for the brand it saved, warning about any brand folder the registry index leaves out."""
+    emit(_brand_payload(state), warnings=registry.unindexed_warnings(paths))
+
+
 @brand.command("new")
 @click.argument("name")
 @click.option("--slug", default=None, help="Override the generated slug.")
@@ -138,16 +143,16 @@ def _brand_payload(state) -> dict:
 def brand_new(name: str, slug: str | None, unnamed: bool) -> None:
     """Create a brand folder and its brand.json. The registry index gets an entry."""
     paths = project()
-    _, warnings = registry.list_brands(paths)  # a missing index is rebuilt first, so the brand files it skips are reported
-    emit(_brand_payload(registry.new_brand(paths, name, slug, unnamed)), warnings=warnings)
+    registry.list_brands(paths)  # rebuild a missing index, or stop on a malformed one, before the brand folder exists
+    _emit_brand(paths, registry.new_brand(paths, name, slug, unnamed))
 
 
 @brand.command("list")
 @command
 def brand_list() -> None:
     """List the brands in the registry. A missing index is rebuilt from the brand folders."""
-    brands, warnings = registry.list_brands(project())
-    emit({"brands": brands}, warnings=warnings)
+    paths = project()
+    emit({"brands": registry.list_brands(paths)}, warnings=registry.unindexed_warnings(paths))
 
 
 @brand.command("status")
@@ -170,7 +175,8 @@ def brand_status(slug: str) -> None:
 @command
 def brand_advance(slug: str, target: str) -> None:
     """Move a brand to its next phase. Every earlier phase's artifacts must check out."""
-    emit(_brand_payload(registry.advance(project(), slug, Phase(target))))
+    paths = project()
+    _emit_brand(paths, registry.advance(paths, slug, Phase(target)))
 
 
 @brand.command("decide")
@@ -181,7 +187,8 @@ def brand_advance(slug: str, target: str) -> None:
 @command
 def brand_decide(slug: str, phase: str, by: str, note: str) -> None:
     """Append a decision to the brand's log."""
-    emit(_brand_payload(registry.decide(project(), slug, Phase(phase), by, note)))
+    paths = project()
+    _emit_brand(paths, registry.decide(paths, slug, Phase(phase), by, note))
 
 
 @brand.command("rename")
@@ -190,7 +197,8 @@ def brand_decide(slug: str, phase: str, by: str, note: str) -> None:
 @command
 def brand_rename(slug: str, name: str) -> None:
     """Set the brand's chosen name. The slug never changes."""
-    emit(_brand_payload(registry.rename(project(), slug, name)))
+    paths = project()
+    _emit_brand(paths, registry.rename(paths, slug, name))
 
 
 @brand.command("set")
@@ -204,10 +212,9 @@ def brand_rename(slug: str, name: str) -> None:
 @command
 def brand_set(slug: str, territory, concept, primary_lockup, industry, surfaces, fonts) -> None:
     """Record choices in brand.json. Territory, concept, primary lockup, industry, surfaces, fonts."""
-    emit(_brand_payload(registry.set_fields(
-        project(), slug, territory=territory, concept=concept, primary_lockup=primary_lockup,
-        industry=industry, surfaces=surfaces, fonts=fonts,
-    )))
+    paths = project()
+    _emit_brand(paths, registry.set_fields(paths, slug, territory=territory, concept=concept, primary_lockup=primary_lockup,
+                                           industry=industry, surfaces=surfaces, fonts=fonts))
 
 
 @main.group("fonts")
