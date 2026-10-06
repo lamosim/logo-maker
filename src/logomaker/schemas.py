@@ -1,14 +1,14 @@
 """Pydantic models for brand state, brief, strategy and audit results. Token models live in color.py."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-class Phase(str, Enum):
+class Phase(str, Enum):  # noqa: UP042 - StrEnum would change str() and format() of members
     intake = "intake"
     naming = "naming"
     strategy = "strategy"
@@ -23,7 +23,7 @@ PHASE_ORDER: list[Phase] = list(Phase)
 
 
 def now_iso() -> str:
-    return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+    return datetime.now(UTC).astimezone().isoformat(timespec="seconds")
 
 
 class Decision(BaseModel):

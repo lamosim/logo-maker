@@ -110,15 +110,16 @@ class Mark:
         for role in self.roles.values():
             _check_role(role)
 
-    def _copy(self, **changes) -> "Mark":
-        kwargs = dict(symbol=self.symbol, wordmark=self.wordmark, tagline=self.tagline, lockup=self.lockup, gap=self.gap, align=self.align, roles=self.roles)
+    def _copy(self, **changes) -> Mark:
+        kwargs = dict(symbol=self.symbol, wordmark=self.wordmark, tagline=self.tagline, lockup=self.lockup, gap=self.gap,
+                      align=self.align, roles=self.roles)
         kwargs.update(changes)
         return Mark(**kwargs)
 
-    def with_lockup(self, lockup: str) -> "Mark":
+    def with_lockup(self, lockup: str) -> Mark:
         return self._copy(lockup=lockup)
 
-    def without_wordmark(self) -> "Mark":
+    def without_wordmark(self) -> Mark:
         return self._copy(wordmark=None, tagline=None, lockup="symbol")
 
     def _symbol_bounds(self) -> Box:
@@ -172,7 +173,8 @@ class Mark:
     def bounds(self) -> Box:
         return Box.union(p.shape.bounds for p in self.layout())
 
-    def to_svg(self, variant: str = "color", palette: dict[str, str] | None = None, padding: float = 0.0, dark_palette: dict[str, str] | None = None) -> str:
+    def to_svg(self, variant: str = "color", palette: dict[str, str] | None = None, padding: float = 0.0,
+               dark_palette: dict[str, str] | None = None) -> str:
         if variant not in VARIANTS:
             raise ValueError(f"variant must be one of {VARIANTS}, got {variant!r}")
         placed = self.layout()
@@ -189,7 +191,8 @@ class Mark:
             rules = "".join(f".r-{role}{{fill:{colour}}}" for role, colour in dark_palette.items())
             style = f"<style>@media (prefers-color-scheme: dark){{{rules}}}</style>"
         body = "".join(f'<g id="{gid}">{"".join(paths)}</g>' for gid, paths in groups.items())
-        return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{fmt(view[0])} {fmt(view[1])} {fmt(view[2])} {fmt(view[3])}">{style}{body}</svg>'
+        view_box = " ".join(fmt(v) for v in view)
+        return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{view_box}">{style}{body}</svg>'
 
     def geometry(self) -> dict:
         placed = self.layout()

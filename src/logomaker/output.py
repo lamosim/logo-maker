@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import Any, Iterable, NoReturn
+from collections.abc import Iterable
+from typing import Any, NoReturn
 
 EXIT_OK = 0
 EXIT_RULE = 2

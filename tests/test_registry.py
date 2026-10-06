@@ -171,7 +171,9 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
     assert registry._check_concept(brand, state) == ["01-good/audit.json was made with --no-render; re-run concept audit without it"]
     audited(rendered=True)
     assert registry._check_concept(brand, state) == []
-    for name, content in (("params.json", '{"stroke": 80}'), ("tokens.json", json.dumps(good_tokens())), ("concept.py", (folder / "concept.py").read_text() + "# edited\n")):
+    edits = (("params.json", '{"stroke": 80}'), ("tokens.json", json.dumps(good_tokens())),
+             ("concept.py", (folder / "concept.py").read_text() + "# edited\n"))
+    for name, content in edits:
         (folder / name).write_text(content)
         assert registry._check_concept(brand, state) == [stale], name
         audited(rendered=True)
@@ -209,7 +211,8 @@ def test_brand_list_rebuilds_a_missing_index_from_the_brand_folders(project_root
     (project_root / "registry" / "brands.json").unlink()
     (project_root / "registry" / "INDEX.md").unlink()
     code, payload = run("brand", "list")
-    assert code == 0 and [(b["slug"], b["name"], b["phase"]) for b in payload["brands"]] == [("keystone", "Keystone", "intake"), ("quill", "Quill", "intake")]
+    listed = [(b["slug"], b["name"], b["phase"]) for b in payload["brands"]]
+    assert code == 0 and listed == [("keystone", "Keystone", "intake"), ("quill", "Quill", "intake")]
     assert json.loads((project_root / "registry" / "brands.json").read_text())["brands"] == payload["brands"]
     assert "| quill | Quill | intake |" in (project_root / "registry" / "INDEX.md").read_text()
 

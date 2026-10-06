@@ -34,6 +34,17 @@ packages = ["src/logomaker"]
 [tool.logomaker]
 root = true
 
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Concept modules start with `from logomaker.kit import *`: the star import is their contract (spec section 6.3).
+"tests/fixtures/concepts/*/concept.py" = ["F403", "F405"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [

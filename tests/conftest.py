@@ -1,4 +1,3 @@
-import os
 import shutil
 from pathlib import Path
 
@@ -84,8 +83,15 @@ def strategy_payload() -> dict:
             {"adjective": "direct", "principle": "one dominant silhouette", "test": "drawable from memory in 5 strokes"},
             {"adjective": "warm", "principle": "rounded outer corners, warm hue", "test": "corner radius >= 4% of symbol height"},
         ],
-        "category_uniform": {"type_classes": ["geometric sans"], "colours": ["blue"], "motifs": ["upward arrow", "shield", "coin"], "competitors": ["FreshBooks", "Wave", "Bonsai", "HoneyBook", "Invoice Ninja"]},
-        "targets": {"shape": 0.4, "symmetry": 0.8, "complexity": "low", "weight": "heavy", "hue_family": "orange", "saturation": "medium", "lightness": "mid", "typeface_class": "grotesk", "frame": "open", "dynamism": 0.2, "descriptive_cue": True, "name_sound": "back vowel 'o', hard stops: heavy, round-ish"},
+        "category_uniform": {
+            "type_classes": ["geometric sans"], "colours": ["blue"], "motifs": ["upward arrow", "shield", "coin"],
+            "competitors": ["FreshBooks", "Wave", "Bonsai", "HoneyBook", "Invoice Ninja"],
+        },
+        "targets": {
+            "shape": 0.4, "symmetry": 0.8, "complexity": "low", "weight": "heavy", "hue_family": "orange", "saturation": "medium",
+            "lightness": "mid", "typeface_class": "grotesk", "frame": "open", "dynamism": 0.2, "descriptive_cue": True,
+            "name_sound": "back vowel 'o', hard stops: heavy, round-ish",
+        },
         "logo_type": "combination",
         "logo_type_reason": "new brand with a short distinctive name",
         "constraints": {"min_lockup_px": 120, "one_colour": True},

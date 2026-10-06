@@ -172,7 +172,8 @@ def fetch(paths: ProjectPaths, family: str, timeout: float = 30.0) -> dict:
             if resp.status_code != 404:  # only a 404 means "not in this folder"; a rate limit or outage stops the probe
                 raise _github_error(family, d, resp)
         if listing is None:
-            raise CliError(f"Family {family!r} not found in google/fonts (tried {', '.join(_candidate_dirs(paths, family))})", code=EXIT_EXTERNAL)
+            tried = ", ".join(_candidate_dirs(paths, family))
+            raise CliError(f"Family {family!r} not found in google/fonts (tried {tried})", code=EXIT_EXTERNAL)
         wanted = [e for e in listing if e["name"].endswith(".ttf") or e["name"] in LICENCE_FILES]
         if not any(e["name"].endswith(".ttf") for e in wanted):
             raise CliError(f"No .ttf files listed for {family} in {used_dir}", code=EXIT_EXTERNAL)

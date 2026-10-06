@@ -1,7 +1,6 @@
 """Colour maths: conversions, WCAG and APCA contrast, colour-vision-deficiency simulation, OKLCH ramps, tokens checks."""
 from __future__ import annotations
 
-import json
 from collections.abc import Iterable
 from decimal import ROUND_DOWN, Decimal
 from itertools import combinations
@@ -122,7 +121,7 @@ class ColorEntry(BaseModel):
     cmyk: list[float] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def normalise(self) -> "ColorEntry":
+    def normalise(self) -> ColorEntry:
         self.hex = normalize_hex(self.hex)
         return self
 
@@ -136,7 +135,7 @@ class Tokens(BaseModel):
     paper: dict[Context, str]
 
     @model_validator(mode="after")
-    def roles_point_at_colours(self) -> "Tokens":
+    def roles_point_at_colours(self) -> Tokens:
         for context in ("light", "dark"):
             if context not in self.roles or context not in self.paper:
                 raise ValueError(f"roles and paper must define both light and dark (missing {context})")
@@ -230,11 +229,13 @@ def check_tokens(tokens: Tokens, text_roles: Iterable[str] = ("ink",)) -> CheckR
             result.contrast.append(ContrastRow(context=context, role=role, color=hex_value, against=paper, wcag=shown_wcag, apca=shown_apca,
                                                required_wcag=need_wcag, required_apca=need_apca, ok=ok))
             if not ok:
-                result.failures.append(f"{context}: role {role} ({hex_value}) on paper {paper}: WCAG {shown_wcag} (need {need_wcag}), APCA {shown_apca} (need {need_apca})")
+                result.failures.append(f"{context}: role {role} ({hex_value}) on paper {paper}: "
+                                       f"WCAG {shown_wcag} (need {need_wcag}), APCA {shown_apca} (need {need_apca})")
         for (ra, ca), (rb, cb) in combinations(roles.items(), 2):
             delta = abs(_lightness(ca) - _lightness(cb))
             if delta < 0.15:
-                result.warnings.append(f"grayscale: {context} roles {ra} and {rb} differ by {_shown(delta, 3)} in OKLCH lightness (under 0.15)")
+                result.warnings.append(f"grayscale: {context} roles {ra} and {rb} differ by {_shown(delta, 3)} "
+                                       "in OKLCH lightness (under 0.15)")
             for kind in CVD_KINDS:
                 contrast = wcag_contrast(simulate_cvd(ca, kind), simulate_cvd(cb, kind))
                 ok = contrast >= 1.5

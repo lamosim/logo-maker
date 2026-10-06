@@ -5,8 +5,8 @@ Coordinates are in the kit frame (y up). `to_path_data` flips y for SVG.
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from typing import Iterable, Iterator
 
 import skia
 
@@ -38,7 +38,7 @@ class Box:
         return (self.y0 + self.y1) / 2
 
     @classmethod
-    def union(cls, boxes: Iterable["Box"]) -> "Box":
+    def union(cls, boxes: Iterable[Box]) -> Box:
         boxes = list(boxes)
         return cls(min(b.x0 for b in boxes), min(b.y0 for b in boxes), max(b.x1 for b in boxes), max(b.y1 for b in boxes))
 
@@ -136,15 +136,15 @@ class Shape:
         self.free_segments = free_segments
 
     @classmethod
-    def empty(cls) -> "Shape":
+    def empty(cls) -> Shape:
         return cls()
 
-    def _with_path(self, path: skia.Path, free_segments: int) -> "Shape":
+    def _with_path(self, path: skia.Path, free_segments: int) -> Shape:
         """A shape of this kind on a new outline. Ops build every result through it, so a subclass that carries more
         than an outline (TextShape's metrics) extends this one method instead of each op special-casing it."""
         return Shape(path, free_segments)
 
-    def copy(self) -> "Shape":
+    def copy(self) -> Shape:
         return self._with_path(skia.Path(self.path), self.free_segments)
 
     @property
@@ -232,7 +232,7 @@ class Shape:
                 current = start
         return segments
 
-    def subpaths(self) -> list["Shape"]:
+    def subpaths(self) -> list[Shape]:
         groups: list[list[Command]] = []
         for cmd in self.commands():
             if cmd[0] == "M":
@@ -273,7 +273,7 @@ class Shape:
             return (b.cx, b.cy)
         return (cx / total, cy / total)
 
-    def transformed(self, matrix: skia.Matrix) -> "Shape":
+    def transformed(self, matrix: skia.Matrix) -> Shape:
         dst = skia.Path()
         self.path.transform(matrix, dst)
         return self._with_path(dst, self.free_segments)

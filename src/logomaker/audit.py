@@ -87,7 +87,8 @@ def check_cliches(motifs: list[str], cliches: dict, industry: str | None) -> lis
         m = motif.lower().strip()
         for term, source in terms:
             if m == term.lower().strip() or _words(term).search(m):
-                out.append(Finding(check="cliche", severity="warn", message=f"motif {motif!r} matches the {source} cliché blacklist ({term}); twist it hard or kill it",
+                out.append(Finding(check="cliche", severity="warn",
+                                   message=f"motif {motif!r} matches the {source} cliché blacklist ({term}); twist it hard or kill it",
                                    data={"motif": motif, "term": term, "source": source}))
                 break
     return out
@@ -109,13 +110,15 @@ def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta) -> list[Find
         reason = (meta.complex_reason or "").strip()
         justified = meta.allow_complex and bool(reason)  # allow_complex alone, without a reason, does not excuse the ceiling
         advice = f"allowed as complex: {reason}" if justified else "simplify, or set allow_complex with a complex_reason"
-        out.append(Finding(check="anchors", severity="warn" if justified else "fail", message=f"{name}: symbol has {anchors} anchors (over {ANCHOR_FAIL}); {advice}",
+        out.append(Finding(check="anchors", severity="warn" if justified else "fail",
+                           message=f"{name}: symbol has {anchors} anchors (over {ANCHOR_FAIL}); {advice}",
                            data={"output": name, "anchors": anchors, "limit": ANCHOR_FAIL, "reason": meta.complex_reason}))
     elif anchors > ANCHOR_WARN:
         out.append(Finding(check="anchors", severity="warn", message=f"{name}: symbol has {anchors} anchors (over {ANCHOR_WARN})",
                            data={"output": name, "anchors": anchors, "limit": ANCHOR_WARN, "reason": meta.complex_reason}))
     else:
-        out.append(Finding(check="anchors", severity="info", message=f"{name}: symbol has {anchors} anchors", data={"output": name, "anchors": anchors}))
+        out.append(Finding(check="anchors", severity="info", message=f"{name}: symbol has {anchors} anchors",
+                           data={"output": name, "anchors": anchors}))
     near = []
     for p in parts:
         for seg in p["straight_segments"]:
@@ -124,18 +127,25 @@ def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta) -> list[Find
             if NEAR_MISS_RANGE[0] <= dist <= NEAR_MISS_RANGE[1]:
                 near.append(seg)
     if near:
-        out.append(Finding(check="near_miss_angles", severity="warn", message=f"{name}: {len(near)} straight segment(s) are 0.3-3 degrees off a 15-degree angle", data={"output": name, "count": len(near), "segments": near[:5]}))
+        out.append(Finding(check="near_miss_angles", severity="warn",
+                           message=f"{name}: {len(near)} straight segment(s) are 0.3-3 degrees off a 15-degree angle",
+                           data={"output": name, "count": len(near), "segments": near[:5]}))
     free = sum(p["free_segments"] for p in parts)
     if free:
-        out.append(Finding(check="free_segments", severity="info", message=f"{name}: {free} segment(s) built with free=True", data={"output": name, "count": free}))
+        out.append(Finding(check="free_segments", severity="info", message=f"{name}: {free} segment(s) built with free=True",
+                           data={"output": name, "count": free}))
     b = geo["bounds"]
     aspect = b["h"] / b["w"] if b["w"] else 0
     cx, cy = (sum(p["centroid"][0] * p["area"] for p in parts) / max(sum(p["area"] for p in parts), 1e-9),
               sum(p["centroid"][1] * p["area"] for p in parts) / max(sum(p["area"] for p in parts), 1e-9))
-    out.append(Finding(check="bounds", severity="info", message=f"{name}: aspect {aspect:.2f}; centroid offset ({cx - (b['x0'] + b['w'] / 2):.1f}, {cy - (b['y0'] + b['h'] / 2):.1f})",
-                       data={"output": name, "aspect": round(aspect, 3), "centroid_offset": [round(cx - (b["x0"] + b["w"] / 2), 2), round(cy - (b["y0"] + b["h"] / 2), 2)]}))
+    dx, dy = cx - (b["x0"] + b["w"] / 2), cy - (b["y0"] + b["h"] / 2)
+    out.append(Finding(check="bounds", severity="info", message=f"{name}: aspect {aspect:.2f}; centroid offset ({dx:.1f}, {dy:.1f})",
+                       data={"output": name, "aspect": round(aspect, 3), "centroid_offset": [round(dx, 2), round(dy, 2)]}))
     if GENERIC_ASPECT[0] <= aspect <= GENERIC_ASPECT[1] and name == "full-symbol":
-        out.append(Finding(check="generic_profile", severity="info", message="symbol aspect sits in the 3:4 band linked to false recognition (Henderson & Cote 1998); make sure the silhouette is distinctive", data={"aspect": round(aspect, 3)}))
+        out.append(Finding(check="generic_profile", severity="info",
+                           message="symbol aspect sits in the 3:4 band linked to false recognition (Henderson & Cote 1998); "
+                                   "make sure the silhouette is distinctive",
+                           data={"aspect": round(aspect, 3)}))
     return out
 
 
@@ -146,27 +156,35 @@ def _tiny_parts(name: str, geo: dict) -> list[Finding]:
     if not tiny:
         return []
     sev = "fail" if name in ("small", "favicon") else "warn"
-    return [Finding(check="tiny_parts", severity=sev, message=f"{name}: {len(tiny)} part(s) smaller than 1/48 of the canvas will vanish when small",
+    return [Finding(check="tiny_parts", severity=sev,
+                    message=f"{name}: {len(tiny)} part(s) smaller than 1/48 of the canvas will vanish when small",
                     data={"output": name, "count": len(tiny), "parts": tiny[:5]})]
 
 
 def _text_legibility(outputs: dict, geometries: dict, state) -> list[Finding]:
     """Wordmark x-height in px at the brand's minimum lockup width; a wordmark without text metrics warns that it cannot be checked."""
     out: list[Finding] = []
-    for name, min_px in (("full-horizontal", state.min_sizes.horizontal_px), ("full-stacked", state.min_sizes.stacked_px), ("full-wordmark", state.min_sizes.horizontal_px)):
+    sizes = state.min_sizes
+    for name, min_px in (("full-horizontal", sizes.horizontal_px), ("full-stacked", sizes.stacked_px),
+                         ("full-wordmark", sizes.horizontal_px)):
         geo = geometries.get(name)
         if not geo:
             continue
         if geo["wordmark"] is None:  # these lockups always show the wordmark, so it was drawn without text()
-            out.append(Finding(check="text_legibility", severity="warn", message=f"{name}: wordmark metrics unknown (not a TextShape); x-height cannot be checked — "
-                               "build the wordmark with text() and keep it the first operand of every op", data={"output": name}))
+            out.append(Finding(check="text_legibility", severity="warn",
+                               message=f"{name}: wordmark metrics unknown (not a TextShape); x-height cannot be checked — "
+                                       "build the wordmark with text() and keep it the first operand of every op",
+                               data={"output": name}))
             continue
         px = geo["wordmark"]["x_height"] * min_px / geo["bounds"]["w"]
         if px < X_HEIGHT_MIN_PX:
-            out.append(Finding(check="text_legibility", severity="fail", message=f"{name}: wordmark x-height is {px:.1f} px at the {min_px} px minimum width (need {X_HEIGHT_MIN_PX}); shorten, thicken or raise the minimum size",
+            out.append(Finding(check="text_legibility", severity="fail",
+                               message=f"{name}: wordmark x-height is {px:.1f} px at the {min_px} px minimum width "
+                                       f"(need {X_HEIGHT_MIN_PX}); shorten, thicken or raise the minimum size",
                                data={"output": name, "x_height_px": round(px, 2), "min_px": min_px}))
         else:
-            out.append(Finding(check="text_legibility", severity="info", message=f"{name}: wordmark x-height {px:.1f} px at {min_px} px", data={"output": name, "x_height_px": round(px, 2)}))
+            out.append(Finding(check="text_legibility", severity="info", message=f"{name}: wordmark x-height {px:.1f} px at {min_px} px",
+                               data={"output": name, "x_height_px": round(px, 2)}))
     return out
 
 
@@ -191,16 +209,20 @@ def _raster_findings(marks: dict, renderer: Renderer, lenient: frozenset[str] = 
         big = ink_mask(renderer.svg_to_png(svg, *_box_size(svg, 512)))
         feature = min_feature_px(big) * target / 512
         if feature < min_px:
-            out.append(Finding(check="min_feature", severity=hard, message=f"{name}: thinnest feature is {feature:.2f} px at {target} px (need {min_px}); thicken strokes or redraw the tier",
+            out.append(Finding(check="min_feature", severity=hard,
+                               message=f"{name}: thinnest feature is {feature:.2f} px at {target} px (need {min_px}); "
+                                       "thicken strokes or redraw the tier",
                                data={"output": name, "feature_px": round(feature, 2), "target": target}))
         else:
-            out.append(Finding(check="min_feature", severity="info", message=f"{name}: thinnest feature {feature:.2f} px at {target} px", data={"output": name, "feature_px": round(feature, 2), "target": target}))
+            out.append(Finding(check="min_feature", severity="info", message=f"{name}: thinnest feature {feature:.2f} px at {target} px",
+                               data={"output": name, "feature_px": round(feature, 2), "target": target}))
         small = ink_mask(renderer.svg_to_png(svg, *_box_size(svg, target)))
         before, after = component_count(big), component_count(small)
         if after != before:  # fewer parts: they merged or vanished; more: a thin join broke
             sev = hard if name in ("small", "favicon") else "warn"
             how = "parts merge or vanish" if after < before else "parts split apart"
-            out.append(Finding(check="one_colour_merge", severity=sev, message=f"{name}: {before} part(s) at 512 px become {after} at {target} px ({how})",
+            out.append(Finding(check="one_colour_merge", severity=sev,
+                               message=f"{name}: {before} part(s) at 512 px become {after} at {target} px ({how})",
                                data={"output": name, "before": before, "after": after, "target": target}))
     return out
 
@@ -254,10 +276,13 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
 
     if set(again) != set(outputs):
         changed = ", ".join(sorted(set(outputs) ^ set(again)))
-        findings.append(Finding(check="determinism", severity="fail", message=f"building twice gave different outputs ({changed} in only one build); remove randomness or time-dependent code",
+        findings.append(Finding(check="determinism", severity="fail",
+                                message=f"building twice gave different outputs ({changed} in only one build); "
+                                        "remove randomness or time-dependent code",
                                 data={"first": list(outputs), "second": list(again)}))
     elif any(outputs[n].to_svg("black") != again[n].to_svg("black") for n in outputs):
-        findings.append(Finding(check="determinism", severity="fail", message="building twice gave different SVG; remove randomness or time-dependent code", data={}))
+        findings.append(Finding(check="determinism", severity="fail",
+                                message="building twice gave different SVG; remove randomness or time-dependent code", data={}))
 
     sources, tier_findings = _checked_outputs(outputs)
     lenient = frozenset(name for name, source in sources.items() if source == "full-lockup")  # wordmark-only stand-ins
@@ -268,7 +293,8 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
         findings += _tiny_parts(name, geometries[source])
     roles = geometries["full-lockup"]["roles"]
     if len(roles) > MAX_ROLES:
-        findings.append(Finding(check="colour_count", severity="warn", message=f"{len(roles)} colour roles in use (more than {MAX_ROLES})", data={"roles": roles}))
+        findings.append(Finding(check="colour_count", severity="warn", message=f"{len(roles)} colour roles in use (more than {MAX_ROLES})",
+                                data={"roles": roles}))
     findings += _text_legibility(outputs, geometries, state)
     cliches = load_cliches(paths)
     industry, found_in = _industry(paths, state)
@@ -278,20 +304,23 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
         message = f"industry {named} resolves to {', '.join(industries)}"
     else:
         message = f"industry {named}: none matched; motifs were checked against the general cliché list only"
-    findings.append(Finding(check="industry", severity="info", message=message, data={"industry": industry, "source": found_in, "resolved": industries}))
+    findings.append(Finding(check="industry", severity="info", message=message,
+                            data={"industry": industry, "source": found_in, "resolved": industries}))
     findings += check_cliches(module.meta.motifs, cliches, industry)
 
     tokens_file = Path(tokens_path) if tokens_path else folder / "tokens.json"
     if tokens_file.is_file():
         # Type gets the text thresholds: whichever roles the wordmark and tagline are drawn in (ink when there is no type).
-        text_roles = sorted({p["role"] for geo in geometries.values() for p in geo["parts"] if p["name"] in ("wordmark", "tagline")}) or ["ink"]
+        type_parts = [p for geo in geometries.values() for p in geo["parts"] if p["name"] in ("wordmark", "tagline")]
+        text_roles = sorted({p["role"] for p in type_parts}) or ["ink"]
         try:
             check = check_tokens(load_tokens(tokens_file), text_roles=text_roles)
         except CliError as err:  # a broken tokens file is a finding to fix, not a reason to skip the rest of the audit
             findings.append(Finding(check="tokens", severity="fail", message=str(err), data={}))
         else:
             findings += [Finding(check="contrast", severity="fail", message=m, data={}) for m in check.failures]
-            findings += [Finding(check="cvd" if m.startswith("cvd") else "grayscale", severity="warn", message=m, data={}) for m in check.warnings]
+            findings += [Finding(check="cvd" if m.startswith("cvd") else "grayscale", severity="warn", message=m, data={})
+                         for m in check.warnings]
 
     rendered = False
     if renderer is not None:

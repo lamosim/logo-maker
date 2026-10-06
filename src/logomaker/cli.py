@@ -20,7 +20,8 @@ from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
 from .schemas import Phase
 
-MODULES = ["skia", "fontTools", "uharfbuzz", "coloraide", "reportlab", "playwright", "PIL", "numpy", "scipy", "jinja2", "httpx", "pydantic", "pypdf"]
+MODULES = ["skia", "fontTools", "uharfbuzz", "coloraide", "reportlab", "playwright", "PIL", "numpy", "scipy", "jinja2", "httpx", "pydantic",
+           "pypdf"]
 
 
 def command(fn):
@@ -316,8 +317,8 @@ def concept_build(slug: str, concept: str, variants: str, tokens_path: str | Non
 
 def _emit_audit(payload: dict, result, warnings: list[str] | None = None) -> None:
     """Emit `payload` with the audit's verdict on top, as `color check` does: failures are errors and exit 2."""
-    emit(payload, ok=result.ok, errors=[f.message for f in result.failures], warnings=(warnings or []) + [f.message for f in result.warnings],
-         code=0 if result.ok else EXIT_RULE)
+    emit(payload, ok=result.ok, errors=[f.message for f in result.failures],
+         warnings=(warnings or []) + [f.message for f in result.warnings], code=0 if result.ok else EXIT_RULE)
 
 
 @concept_group.command("audit")
@@ -375,7 +376,8 @@ def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tok
     else:
         with Renderer() as renderer:
             result = auditlib.audit_concept(paths, slug, concept, renderer=renderer, tokens_path=tokens_path)
-            critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result, tokens_path=tokens_path, outputs=outputs)
+            critique = sheetlib.critique_sheet(paths, slug, concept, round_n, renderer, audit=result, tokens_path=tokens_path,
+                                               outputs=outputs)
     # Everything is written before the verdict: a failing audit still leaves the build, audit.json and the sheet.
     _emit_audit({"concept": str(folder.relative_to(paths.root)), "build": report, "audit": result.model_dump(), "critique": critique},
                 result, warnings=report["warnings"])

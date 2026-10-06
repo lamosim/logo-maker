@@ -48,7 +48,7 @@ class Renderer:
         self._pw = None
         self._browser = None
 
-    def __enter__(self) -> "Renderer":
+    def __enter__(self) -> Renderer:
         if not self.chrome_app.exists():
             raise CliError(f"Google Chrome not found at {self.chrome_app}; install it to render", code=EXIT_EXTERNAL)
         try:

@@ -110,11 +110,11 @@ class TextShape(Shape):
         self.glyph_bounds = glyph_bounds
         self.font = font
 
-    def _with_path(self, path: skia.Path, free_segments: int) -> "TextShape":
+    def _with_path(self, path: skia.Path, free_segments: int) -> TextShape:
         return TextShape(path, advance=self.advance, cap_height=self.cap_height, x_height=self.x_height,
                          glyph_bounds=list(self.glyph_bounds), font=self.font, free_segments=free_segments)
 
-    def transformed(self, matrix: skia.Matrix) -> "TextShape":
+    def transformed(self, matrix: skia.Matrix) -> TextShape:
         """The text moved, turned or resized: lengths scale by sqrt(|det|) of the matrix, glyph boxes map through it."""
         dst = skia.Path()
         self.path.transform(matrix, dst)

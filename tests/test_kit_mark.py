@@ -35,7 +35,8 @@ def test_a_notched_wordmark_keeps_its_metrics_in_the_mark(project_root):
     word = text("Good", "Fira Code", weight=600, cap_height=180)
     m = Mark(symbol=circle(0, 0, 100), wordmark=subtract(word, rect(0, 60, 40, 20)))
     assert m.x_unit == 180
-    assert m.geometry()["wordmark"] == {"cap_height": 180, "x_height": round(word.x_height, 3), "advance": round(word.advance, 3), "font": word.font}
+    expected = {"cap_height": 180, "x_height": round(word.x_height, 3), "advance": round(word.advance, 3), "font": word.font}
+    assert m.geometry()["wordmark"] == expected
 
 
 def test_x_unit_without_wordmark_is_fifth_of_symbol_height():

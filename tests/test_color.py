@@ -119,7 +119,8 @@ def test_text_thresholds_apply_to_the_text_roles_given():
     rows = {(r.context, r.role): r for r in result.contrast}
     assert (rows[("light", "primary")].required_wcag, rows[("light", "primary")].required_apca) == (4.5, 60.0)
     assert (rows[("dark", "primary")].required_wcag, rows[("light", "ink")].required_wcag) == (4.5, 3.0)
-    assert not result.ok and any(f.startswith("light: role primary (#e8572a) on paper #ffffff") and "need 4.5" in f for f in result.failures)
+    assert not result.ok
+    assert any(f.startswith("light: role primary (#e8572a) on paper #ffffff") and "need 4.5" in f for f in result.failures)
 
 
 def test_contrast_thresholds_use_raw_values_and_rows_show_floored_ones():

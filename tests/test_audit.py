@@ -69,7 +69,8 @@ def test_industry_falls_back_to_the_brief(project_root, brief_payload):
     assert {f.data["source"] for f in findings(result, "cliche")} == {"ai"}  # the brief's industry picks the cliché list too
     registry.set_fields(project(), "keystone", industry="Real estate")
     industry = findings(audit.audit_concept(project(), "keystone", "04-cliche"), "industry")[0]
-    assert (industry.data["source"], industry.data["resolved"]) == ("brand.json", ["real-estate"]) and "(from brand.json)" in industry.message
+    assert (industry.data["source"], industry.data["resolved"]) == ("brand.json", ["real-estate"])
+    assert "(from brand.json)" in industry.message
 
 
 def test_industry_resolution_ranks_whole_word_aliases(project_root):
@@ -131,7 +132,8 @@ def write_concept(folder, build_body: str, tiers: str = "{'full': {}}") -> None:
 def test_a_notched_wordmark_is_still_checked_for_legibility(project_root):
     folder = install_concept(project_root, "good", name="14-notch")
     # 27 characters at cap height 60 beside a 400-unit symbol: about 3 px of x-height at the 120 px minimum width.
-    write_concept(folder, "word = subtract(text('Keystone Invoicing Partners', 'Fira Code', weight=600, cap_height=60), rect(0, 20, 30, 10))\n"
+    write_concept(folder, "name = text('Keystone Invoicing Partners', 'Fira Code', weight=600, cap_height=60)\n"
+                          "word = subtract(name, rect(0, 20, 30, 10))\n"
                           "return Mark(symbol=rect_centered(0, 0, 400, 400), wordmark=word)")
     result = audit.audit_concept(project(), "keystone", "14-notch")
     legibility = findings(result, "text_legibility")
@@ -143,7 +145,8 @@ def test_a_wordmark_without_text_metrics_warns_instead_of_skipping(project_root)
     folder = install_concept(project_root, "good", name="15-blocks")
     write_concept(folder, "return Mark(symbol=rect_centered(0, 0, 400, 400), wordmark=rect(0, 0, 900, 120))")
     legibility = findings(audit.audit_concept(project(), "keystone", "15-blocks"), "text_legibility")
-    assert [(f.data["output"], f.severity) for f in legibility] == [("full-horizontal", "warn"), ("full-stacked", "warn"), ("full-wordmark", "warn")]
+    assert [f.data["output"] for f in legibility] == ["full-horizontal", "full-stacked", "full-wordmark"]
+    assert all(f.severity == "warn" for f in legibility)
     assert legibility[0].message == ("full-horizontal: wordmark metrics unknown (not a TextShape); x-height cannot be checked — "
                                      "build the wordmark with text() and keep it the first operand of every op")
 
@@ -219,7 +222,8 @@ def test_colour_count_warns_over_three_roles(project_root):
         "    return Mark(symbol=Composite([(circle(i * 300, 0, 100), role) for i, role in enumerate(ROLES)]))\n"
     )
     count = findings(audit.audit_concept(project(), "keystone", "10-roles"), "colour_count")
-    assert count[0].severity == "warn" and count[0].message.startswith("4 colour roles") and count[0].data["roles"] == ["accent", "ink", "primary", "secondary"]
+    assert count[0].severity == "warn" and count[0].message.startswith("4 colour roles")
+    assert count[0].data["roles"] == ["accent", "ink", "primary", "secondary"]
 
 
 def test_tokens_contrast_feeds_the_audit(project_root):
@@ -287,7 +291,8 @@ def test_missing_tiers_fall_back_and_warn(project_root):
     result = audit.audit_concept(project(), "keystone", "03-tiny")
     assert fallbacks(result) == [("favicon", "small")]
     # The favicon's checks run on the small build under the favicon's name, so the favicon's severity applies.
-    assert {f.data["output"]: f.severity for f in findings(result, "tiny_parts")} == {"full-symbol": "warn", "small": "fail", "favicon": "fail"}
+    tiny = {f.data["output"]: f.severity for f in findings(result, "tiny_parts")}
+    assert tiny == {"full-symbol": "warn", "small": "fail", "favicon": "fail"}
 
 
 def test_a_fallback_tier_repeats_only_the_size_dependent_checks(project_root):
@@ -380,7 +385,9 @@ def test_fingerprint_covers_concept_params_and_tokens(project_root):
     assert audit.audit_concept(project(), "keystone", "01-good").fingerprint == first
     assert json.loads((folder / "audit.json").read_text())["fingerprint"] == first
     seen = {first}
-    for name, content in (("params.json", '{"stroke": 80}'), ("tokens.json", json.dumps(good_tokens())), ("concept.py", (folder / "concept.py").read_text() + "# edited\n")):
+    edits = (("params.json", '{"stroke": 80}'), ("tokens.json", json.dumps(good_tokens())),
+             ("concept.py", (folder / "concept.py").read_text() + "# edited\n"))
+    for name, content in edits:
         (folder / name).write_text(content)
         seen.add(audit.concept_fingerprint(folder))
     assert len(seen) == 4  # each file changes it

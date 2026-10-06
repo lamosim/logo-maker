@@ -45,7 +45,7 @@ class Params(dict):
         except KeyError as err:
             raise AttributeError(f"no parameter {name!r}") from err
 
-    def with_overrides(self, **changes) -> "Params":
+    def with_overrides(self, **changes) -> Params:
         return Params({**self, **changes})
 
 
@@ -135,7 +135,8 @@ def build_tiers(concept: ConceptModule, overrides: dict | None = None) -> dict[s
         if tier not in TIER_NAMES:
             raise CliError(f"unknown tier {tier!r}; use {TIER_NAMES}")
         drop_wordmark = tier_overrides.get("wordmark") is False
-        p = concept.params.with_overrides(**(overrides or {})).with_overrides(**{k: v for k, v in tier_overrides.items() if k != "wordmark"})
+        tier_params = {k: v for k, v in tier_overrides.items() if k != "wordmark"}
+        p = concept.params.with_overrides(**(overrides or {})).with_overrides(**tier_params)
         with _concept_code(f"{concept.path} build() failed for tier {tier!r}"):
             mark = concept.build(p)
         if not isinstance(mark, Mark):
@@ -184,7 +185,8 @@ def write_build(folder: Path, outputs: dict[str, Mark], variants: tuple[str, ...
         for variant in variants:
             chosen = dark_palette if variant == "reverse" else palette
             svgs[f"{name}-{variant}.svg"] = mark.to_svg(variant, palette=chosen)
-    warnings = [f"tier {tier!r} missing; exports fall back to the next larger build" for tier in ("small", "favicon") if tier not in outputs]
+    warnings = [f"tier {tier!r} missing; exports fall back to the next larger build"
+                for tier in ("small", "favicon") if tier not in outputs]
     report = {"outputs": list(outputs), "variants": list(variants), "files": list(svgs), "warnings": warnings}
     geometry_json, report_json = json.dumps(geometry, indent=2) + "\n", json.dumps(report, indent=2) + "\n"
     build_dir = folder / "build"

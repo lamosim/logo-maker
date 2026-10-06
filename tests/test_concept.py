@@ -46,7 +46,8 @@ def test_params_json_must_parse_and_name_known_params(project_root):
     params = folder / "params.json"
     for content, error in (('{"stroke": ', "01-good/params.json is not valid JSON: "),
                            ("[80]", "01-good/params.json must be a JSON object mapping parameter names to values"),
-                           ('{"stroke": 80, "strok": 1, "colour": 2}', "01-good/params.json: unknown params: strok, colour (known: stroke, gap)")):
+                           ('{"stroke": 80, "strok": 1, "colour": 2}',
+                            "01-good/params.json: unknown params: strok, colour (known: stroke, gap)")):
         params.write_text(content)
         code, payload = run("concept", "build", "keystone", "01-good")
         assert code == 2 and "traceback" not in payload and error in payload["errors"][0], payload
@@ -95,7 +96,8 @@ def test_a_missing_font_inside_a_concept_exits_3_with_the_fetch_hint(project_roo
 def test_concept_prints_go_to_stderr_so_stdout_stays_one_json_object(project_root):
     folder = install_concept(project_root, "good")
     source = (folder / "concept.py").read_text()
-    (folder / "concept.py").write_text(source.replace("def build(p):\n", "print('loading')\n\n\ndef build(p):\n    print('building', p.stroke)\n"))
+    printing = source.replace("def build(p):\n", "print('loading')\n\n\ndef build(p):\n    print('building', p.stroke)\n")
+    (folder / "concept.py").write_text(printing)
     result = CliRunner().invoke(main, ["concept", "build", "keystone", "01-good"])
     assert result.exit_code == 0 and json.loads(result.stdout)["ok"]  # json.loads refuses anything beside the one object
     assert "loading" in result.stderr and "building 90" in result.stderr

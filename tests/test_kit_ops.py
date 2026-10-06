@@ -2,7 +2,22 @@ import math
 
 import pytest
 
-from logomaker.kit.ops import align, center, fit, intersect, mirror_x, mirror_y, offset, rotate, scale, stroke, subtract, translate, union, xor
+from logomaker.kit.ops import (
+    align,
+    center,
+    fit,
+    intersect,
+    mirror_x,
+    mirror_y,
+    offset,
+    rotate,
+    scale,
+    stroke,
+    subtract,
+    translate,
+    union,
+    xor,
+)
 from logomaker.kit.optical import compensate_stroke, optical_center, overshoot
 from logomaker.kit.primitives import circle, polygon, rect, rect_centered, ring
 from logomaker.kit.shape import Shape

@@ -129,7 +129,8 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
         "ladder": [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)} for s, name in ladder],
         "mirror": fit_box(big, 256, 256),
         "rotate": fit_box(big, 256, 256),
-        "one_colour": [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)} for s, name in _one_colour_outputs(outputs)],
+        "one_colour": [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)}
+                       for s, name in _one_colour_outputs(outputs)],
     }
     if audit is None:
         audit = _saved_audit(folder)

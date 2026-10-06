@@ -289,7 +289,8 @@ def test_a_long_idea_stays_on_one_header_line(project_root):
 
 
 def test_one_colour_test_draws_the_audited_tiers_with_fallbacks():
-    assert sheets._one_colour_outputs({"full-lockup": 1, "full-symbol": 1, "small": 1, "favicon": 1}) == [(64, "full-symbol"), (32, "small")]
+    every_tier = {"full-lockup": 1, "full-symbol": 1, "small": 1, "favicon": 1}
+    assert sheets._one_colour_outputs(every_tier) == [(64, "full-symbol"), (32, "small")]
     assert sheets._one_colour_outputs({"full-lockup": 1, "full-symbol": 1}) == [(64, "full-symbol"), (32, "full-symbol")]
     assert sheets._one_colour_outputs({"full-lockup": 1}) == [(64, "full-lockup"), (32, "full-lockup")]
 
@@ -299,7 +300,8 @@ def test_audit_lines_put_failures_then_warnings_then_measurements_within_budget(
         ok=False,
         failures=[finding("min_feature", "fail", "f1"), finding("tokens", "fail", "f2")],
         warnings=[finding("tiers", "warn", "w1")],
-        info=[finding("bounds", "info", "b1"), finding("anchors", "info", "a1"), finding("industry", "info", "i1"), finding("min_feature", "info", "m1")],
+        info=[finding("bounds", "info", "b1"), finding("anchors", "info", "a1"), finding("industry", "info", "i1"),
+              finding("min_feature", "info", "m1")],
     )
     lines = sheets._audit_lines(result, budget=5)  # exactly fits
     assert [(line["kind"], line["text"]) for line in lines] == [
@@ -322,7 +324,8 @@ def test_palettes_prefer_an_explicit_tokens_file(project_root):
 def test_sheet_draws_spec_sizes_and_never_drops_audit_lines_silently(project_root):
     install_concept(project_root, "good")
     many = AuditResult(ok=False, failures=[finding("min_feature", "fail", f"problem {i}") for i in range(60)])
-    info = sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer(), audit=many, tokens_path=write_palette(project_root))
+    palette = write_palette(project_root)
+    info = sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer(), audit=many, tokens_path=palette)
     html = Path(info["critique_html"]).read_text()
     longest = [max(int(w), int(h)) for w, h in SVG_SIZES.findall(html)]
     # Lockups black, white, colour, reverse; the ladder; mirrored and rotated; the one-colour test.

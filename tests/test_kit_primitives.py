@@ -3,7 +3,20 @@ import math
 import pytest
 
 from logomaker.kit.primitives import (
-    arc, bezier, circle, line, polygon, polyline, rect, rect_centered, regular_polygon, ring, rrect, snap, snap_angle, wedge,
+    arc,
+    bezier,
+    circle,
+    line,
+    polygon,
+    polyline,
+    rect,
+    rect_centered,
+    regular_polygon,
+    ring,
+    rrect,
+    snap,
+    snap_angle,
+    wedge,
 )
 
 
