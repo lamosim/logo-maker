@@ -56,6 +56,20 @@ def test_industry_without_a_match_says_so(project_root):
     install_concept(project_root, "good")
     industry = findings(audit.audit_concept(project(), "keystone", "01-good"), "industry")
     assert industry[0].severity == "info" and industry[0].data["resolved"] == [] and "none matched" in industry[0].message
+    assert industry[0].data["source"] is None and industry[0].message.startswith("industry not set")
+
+
+def test_industry_falls_back_to_the_brief(project_root, brief_payload):
+    install_concept(project_root, "cliche", name="04-cliche")
+    (project_root / "brands" / "keystone" / "brief.json").write_text(json.dumps({**brief_payload, "industry": "AI tooling"}))
+    result = audit.audit_concept(project(), "keystone", "04-cliche")
+    industry = findings(result, "industry")[0]
+    assert (industry.data["industry"], industry.data["source"], industry.data["resolved"]) == ("AI tooling", "brief.json", ["ai"])
+    assert industry.message == "industry 'AI tooling' (from brief.json) resolves to ai"
+    assert {f.data["source"] for f in findings(result, "cliche")} == {"ai"}  # the brief's industry picks the cliché list too
+    registry.set_fields(project(), "keystone", industry="Real estate")
+    industry = findings(audit.audit_concept(project(), "keystone", "04-cliche"), "industry")[0]
+    assert (industry.data["source"], industry.data["resolved"]) == ("brand.json", ["real-estate"]) and "(from brand.json)" in industry.message
 
 
 def test_industry_resolution_ranks_whole_word_aliases(project_root):
@@ -319,6 +333,7 @@ def test_dots_that_merge_at_favicon_size_fail(project_root, renderer):
     result = audit.audit_concept(project(), "keystone", "12-dots", renderer=renderer)
     merge = [f for f in findings(result, "one_colour_merge") if f.data["output"] == "favicon"]
     assert merge and merge[0].severity == "fail" and (merge[0].data["before"], merge[0].data["after"]) == (2, 1)
+    assert merge[0].message.endswith("(parts merge or vanish)")
     # The missing small tier is still rendered, on its full-symbol fallback.
     assert {f.data["output"] for f in findings(result, "min_feature")} == {"full-symbol", "small", "favicon"}
 
@@ -352,6 +367,19 @@ def test_a_failed_build_replaces_the_audit_with_a_failing_one(project_root):
     written = json.loads((folder / "audit.json").read_text())
     assert written["ok"] is False and written["rendered"] is False and written["fingerprint"] == audit.concept_fingerprint(folder)
     assert [(f["check"], f["severity"], f["message"]) for f in written["failures"]] == [("build", "fail", str(err.value))]
+
+
+@requires_chrome
+@pytest.mark.render
+def test_parts_that_split_at_small_sizes_are_flagged(project_root, renderer):
+    folder = install_concept(project_root, "good", name="16-neck")
+    # Two discs joined by a 6-unit bar: about 6 px at 512 px, a fraction of a pixel at 16 px, where the bar disappears.
+    write_concept(folder, "return Mark(symbol=union(circle(-150, 0, 100), circle(150, 0, 100), rect(-150, -3, 300, 6)))",
+                  tiers="{'full': {}, 'favicon': {}}")
+    result = audit.audit_concept(project(), "keystone", "16-neck", renderer=renderer)
+    split = [f for f in findings(result, "one_colour_merge") if f.data["output"] == "favicon"]
+    assert split and split[0].severity == "fail" and (split[0].data["before"], split[0].data["after"]) == (1, 2)
+    assert split[0].message == "favicon: 1 part(s) at 512 px become 2 at 16 px (parts split apart)"
 
 
 def test_concept_audit_cli(project_root):

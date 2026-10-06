@@ -187,11 +187,23 @@ def _raster_findings(marks: dict, renderer: Renderer, lenient: frozenset[str] = 
             out.append(Finding(check="min_feature", severity="info", message=f"{name}: thinnest feature {feature:.2f} px at {target} px", data={"output": name, "feature_px": round(feature, 2), "target": target}))
         small = ink_mask(renderer.svg_to_png(svg, *_box_size(svg, target)))
         before, after = component_count(big), component_count(small)
-        if after < before:
+        if after != before:  # fewer parts: they merged or vanished; more: a thin join broke
             sev = hard if name in ("small", "favicon") else "warn"
-            out.append(Finding(check="one_colour_merge", severity=sev, message=f"{name}: {before} part(s) at 512 px become {after} at {target} px (parts merge or vanish)",
+            how = "parts merge or vanish" if after < before else "parts split apart"
+            out.append(Finding(check="one_colour_merge", severity=sev, message=f"{name}: {before} part(s) at 512 px become {after} at {target} px ({how})",
                                data={"output": name, "before": before, "after": after, "target": target}))
     return out
+
+
+def _industry(paths: ProjectPaths, state) -> tuple[str | None, str | None]:
+    """The brand's industry and where it was found: brand.json, else the brief's `industry`, else (None, None)."""
+    if state.industry:
+        return state.industry, "brand.json"
+    try:
+        industry = json.loads((paths.brand(state.slug) / "brief.json").read_text(encoding="utf-8")).get("industry")
+    except (OSError, ValueError, AttributeError):  # no brief yet, or one the intake gate will reject anyway
+        return None, None
+    return (industry, "brief.json") if isinstance(industry, str) and industry.strip() else (None, None)
 
 
 def _checked_outputs(outputs: dict) -> tuple[dict[str, str], list[Finding]]:
@@ -244,14 +256,15 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
         findings.append(Finding(check="colour_count", severity="warn", message=f"{len(roles)} colour roles in use (more than {MAX_ROLES})", data={"roles": roles}))
     findings += _text_legibility(outputs, geometries, state)
     cliches = load_cliches(paths)
-    industries = resolve_industries(cliches, state.industry)
-    named = repr(state.industry) if state.industry else "not set"
+    industry, source = _industry(paths, state)
+    industries = resolve_industries(cliches, industry)
+    named = f"{industry!r} (from {source})" if industry else "not set"
     if industries:
         message = f"industry {named} resolves to {', '.join(industries)}"
     else:
         message = f"industry {named}: none matched; motifs were checked against the general cliché list only"
-    findings.append(Finding(check="industry", severity="info", message=message, data={"industry": state.industry, "resolved": industries}))
-    findings += check_cliches(module.meta.motifs, cliches, state.industry)
+    findings.append(Finding(check="industry", severity="info", message=message, data={"industry": industry, "source": source, "resolved": industries}))
+    findings += check_cliches(module.meta.motifs, cliches, industry)
 
     tokens_file = folder / "tokens.json"
     if tokens_file.is_file():

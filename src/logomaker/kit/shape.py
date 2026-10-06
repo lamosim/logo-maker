@@ -211,6 +211,10 @@ class Shape:
         point, an end point back on the start counted once. Control points and the SVG's conic splits do not count."""
         return sum(len(ends) + (0 if ends[-1] == start else 1) for start, ends, _ in self._contours() if ends)
 
+    def segment_count(self) -> int:
+        """Drawn segments, curves and lines alike (a circle has 4), counting a closed contour's implied closing line."""
+        return sum(len(ends) + (1 if closed and ends[-1] != start else 0) for start, ends, closed in self._contours() if ends)
+
     def straight_segments(self) -> list[tuple[Point, Point]]:
         segments: list[tuple[Point, Point]] = []
         start = current = (0.0, 0.0)

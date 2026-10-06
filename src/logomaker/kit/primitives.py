@@ -40,8 +40,9 @@ def _polar(cx: float, cy: float, r: float, angle: float) -> tuple[float, float]:
 
 
 def _finish(path: skia.Path, free: bool) -> Shape:
+    """Wrap a primitive's path; with free=True every segment it draws, curved or straight, counts as free."""
     shape = Shape(path)
-    shape.free_segments = len(shape.straight_segments()) if free else 0
+    shape.free_segments = shape.segment_count() if free else 0
     return shape
 
 

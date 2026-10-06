@@ -45,6 +45,14 @@ def test_polygons():
     assert tri.free_segments == 0
 
 
+def test_free_primitives_count_every_segment_they_draw():
+    assert circle(0, 0, 100, free=True).free_segments == 4  # four arcs, not zero straight lines
+    assert ring(0, 0, 100, 20, free=True).free_segments == 8
+    assert rrect(0, 0, 100, 50, 10, free=True).free_segments == 8
+    assert rect(0, 0, 10, 10, free=True).free_segments == 4 and polygon([(0, 0), (100, 0), (0, 100)], free=True).free_segments == 3
+    assert circle(0, 0, 100).free_segments == 0
+
+
 def test_wedge():
     w = wedge(0, 0, 100, 0, 90)
     assert math.isclose(w.area, math.pi * 100**2 / 4, rel_tol=0.01)
