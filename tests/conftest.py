@@ -100,3 +100,15 @@ def install_concept(project_root: Path, fixture: str, slug: str = "keystone", na
     target = project_root / "brands" / slug / "concepts" / name
     shutil.copytree(FIXTURES / "concepts" / fixture, target, dirs_exist_ok=True)
     return target
+
+
+CHROME = Path("/Applications/Google Chrome.app")
+requires_chrome = pytest.mark.skipif(not CHROME.exists(), reason="Google Chrome is not installed")
+
+
+@pytest.fixture
+def renderer():
+    from logomaker.render import Renderer
+
+    with Renderer() as r:
+        yield r
