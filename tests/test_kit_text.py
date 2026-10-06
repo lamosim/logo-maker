@@ -94,6 +94,18 @@ def test_transforms_scale_text_metrics(project_root):
     assert math.isclose(turned.cap_height, 180, rel_tol=1e-6) and math.isclose(turned.x_height, word.x_height, rel_tol=1e-6)
 
 
+def test_metrics_follow_the_texts_own_baseline(project_root):
+    word = text("Good", "Fira Code", weight=600, cap_height=180)
+    turned_then_stretched = scale(rotate(word, 90), 1, 2)  # stretched along its baseline, which now runs up the page
+    stretched_then_turned = rotate(scale(word, 2, 1), 90)
+    for result in (turned_then_stretched, stretched_then_turned):
+        metrics = (result.cap_height, result.x_height, result.advance)
+        assert all(math.isclose(m, e, rel_tol=1e-6) for m, e in zip(metrics, (180, word.x_height, 2 * word.advance))), metrics
+        assert (round(result.x_height, 1), round(result.advance, 1)) == (137.8, 1249.7)
+    slanted = word.transformed(skia.Matrix.MakeAll(1, 0.25, 0, 0, 1, 0, 0, 0, 1))  # a shear along the baseline keeps the heights
+    assert math.isclose(slanted.cap_height, 180, rel_tol=1e-6) and math.isclose(slanted.advance, word.advance, rel_tol=1e-6)
+
+
 def test_counters_stay_open_under_nonzero_fill(project_root):
     # The fixture's zero has a slash that splits its counter in two; pathops winds one half like the outline.
     zero = glyph("0", "Fira Code", cap_height=200)

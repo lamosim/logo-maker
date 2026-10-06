@@ -95,38 +95,43 @@ def _clamp_weight(tt: TTFont, weight: float) -> float:
 class TextShape(Shape):
     """Set type: an outline plus the metrics the audit and the lockup need.
 
-    The metrics survive the kit's ops: a transform scales the heights by its vertical stretch and the advance by its
-    horizontal stretch, and a boolean, stroke or offset whose first operand is a TextShape keeps that operand's metrics
-    (a notch does not change the x-height).
+    The metrics survive the kit's ops. `baseline` is the unit vector the text runs along, (1, 0) as set. A transform
+    scales the advance by how far it stretches the baseline and the heights by how far it stretches across it, so a
+    turn followed by a stretch measures what is drawn. A boolean, stroke or offset whose first operand is a TextShape
+    keeps that operand's metrics (a notch does not change the x-height).
     """
 
-    __slots__ = ("advance", "cap_height", "x_height", "glyph_bounds", "font")
+    __slots__ = ("advance", "cap_height", "x_height", "glyph_bounds", "font", "baseline")
 
     def __init__(self, path: skia.Path, *, advance: float, cap_height: float, x_height: float, glyph_bounds: list[Box], font: str,
-                 free_segments: int = 0):
+                 free_segments: int = 0, baseline: tuple[float, float] = (1.0, 0.0)):
         super().__init__(path, free_segments)
         self.advance = advance
         self.cap_height = cap_height
         self.x_height = x_height
         self.glyph_bounds = glyph_bounds
         self.font = font
+        self.baseline = baseline
 
     def _with_path(self, path: skia.Path, free_segments: int) -> TextShape:
         return TextShape(path, advance=self.advance, cap_height=self.cap_height, x_height=self.x_height,
-                         glyph_bounds=list(self.glyph_bounds), font=self.font, free_segments=free_segments)
+                         glyph_bounds=list(self.glyph_bounds), font=self.font, free_segments=free_segments, baseline=self.baseline)
 
     def transformed(self, matrix: skia.Matrix) -> TextShape:
-        """The text moved, turned or resized. Cap and x-height scale by the length of the matrix's image of the unit
-        y vector, the advance by that of the unit x vector (so scale(word, 2, 1) leaves the x-height alone); glyph
-        boxes map through the matrix."""
+        """The text moved, turned, resized or slanted. With M the matrix and u the baseline: the advance scales by
+        kx = |M u|, the cap and x-height by |det M| / kx (the stretch across the baseline, right under shear too), and
+        the baseline becomes M u / kx. Glyph boxes map through the matrix."""
         dst = skia.Path()
         self.path.transform(matrix, dst)
-        across, up = matrix.mapVector(1, 0), matrix.mapVector(0, 1)
-        kx, ky = math.hypot(across.x(), across.y()), math.hypot(up.x(), up.y())
+        along = matrix.mapVector(*self.baseline)
+        kx = math.hypot(along.x(), along.y())
+        det = matrix.getScaleX() * matrix.getScaleY() - matrix.getSkewX() * matrix.getSkewY()
+        ky = abs(det) / kx if kx else 0.0  # a matrix that collapses the baseline leaves no text to measure
+        baseline = (along.x() / kx, along.y() / kx) if kx else self.baseline
         boxes = [matrix.mapRect(skia.Rect.MakeLTRB(b.x0, b.y0, b.x1, b.y1)) for b in self.glyph_bounds]
         return TextShape(dst, advance=self.advance * kx, cap_height=self.cap_height * ky, x_height=self.x_height * ky,
                          glyph_bounds=[Box(r.left(), r.top(), r.right(), r.bottom()) for r in boxes], font=self.font,
-                         free_segments=self.free_segments)
+                         free_segments=self.free_segments, baseline=baseline)
 
 
 def text(
