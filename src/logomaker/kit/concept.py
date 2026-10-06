@@ -28,6 +28,11 @@ class Meta:
     allow_complex: bool = False
     complex_reason: str = ""
 
+    def __post_init__(self) -> None:
+        # A bare string would be read letter by letter by the cliché check.
+        if not isinstance(self.motifs, (list, tuple)) or not all(isinstance(m, str) for m in self.motifs):
+            raise ValueError(f"Meta.motifs must be a list of strings, e.g. motifs=['ring'], got {self.motifs!r}")
+
 
 class Params(dict):
     """Named numbers with attribute access: Params(stroke=90).stroke == 90."""
@@ -101,8 +106,22 @@ def load_concept(folder: Path) -> ConceptModule:
     params = Params(module.PARAMS)
     overrides = folder / "params.json"
     if overrides.is_file():
-        params = params.with_overrides(**json.loads(overrides.read_text(encoding="utf-8")))
+        params = params.with_overrides(**_read_overrides(overrides, params))
     return ConceptModule(path=source, meta=module.META, params=params, tiers=dict(module.TIERS), build=module.build)
+
+
+def _read_overrides(path: Path, params: Params) -> dict:
+    """params.json as overrides of parameters PARAMS defines; anything else is a CliError naming the file."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as err:  # malformed JSON, or bytes that are not UTF-8
+        raise CliError(f"{path} is not valid JSON: {err}") from err
+    if not isinstance(data, dict):
+        raise CliError(f"{path} must be a JSON object mapping parameter names to values")
+    unknown = [name for name in data if name not in params]
+    if unknown:  # a typo here would otherwise be ignored without a word
+        raise CliError(f"{path}: unknown params: {', '.join(unknown)} (known: {', '.join(params) or 'none'})")
+    return data
 
 
 def build_tiers(concept: ConceptModule, overrides: dict | None = None) -> dict[str, Mark]:

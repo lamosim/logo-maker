@@ -41,6 +41,25 @@ def test_params_json_overrides(project_root):
     assert module.params.with_overrides(stroke=10).stroke == 10 and module.params.stroke == 50
 
 
+def test_params_json_must_parse_and_name_known_params(project_root):
+    folder = install_concept(project_root, "good")
+    params = folder / "params.json"
+    for content, error in (('{"stroke": ', "01-good/params.json is not valid JSON: "),
+                           ("[80]", "01-good/params.json must be a JSON object mapping parameter names to values"),
+                           ('{"stroke": 80, "strok": 1, "colour": 2}', "01-good/params.json: unknown params: strok, colour (known: stroke, gap)")):
+        params.write_text(content)
+        code, payload = run("concept", "build", "keystone", "01-good")
+        assert code == 2 and "traceback" not in payload and error in payload["errors"][0], payload
+    assert not (folder / "build").exists()
+
+
+def test_meta_motifs_must_be_a_list_of_strings():
+    for motifs in ("ring", ["ring", 3], None):
+        with pytest.raises(ValueError, match="Meta.motifs must be a list of strings"):
+            conceptlib.Meta(slug="x", idea="y", logo_type="abstract", motifs=motifs)
+    assert conceptlib.Meta(slug="x", idea="y", logo_type="abstract", motifs=("ring", "arch")).motifs == ("ring", "arch")
+
+
 def test_concept_build_cli_writes_files(project_root):
     install_concept(project_root, "good")
     code, payload = run("concept", "build", "keystone", "01-good")
