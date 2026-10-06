@@ -1,0 +1,1213 @@
+{
+  "families": [
+    {
+      "family": "Montserrat",
+      "slug": "montserrat",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean"
+      ],
+      "google_dir": "ofl/montserrat"
+    },
+    {
+      "family": "Poppins",
+      "slug": "poppins",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean",
+        "rounded-geometric"
+      ],
+      "google_dir": "ofl/poppins"
+    },
+    {
+      "family": "Outfit",
+      "slug": "outfit",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean",
+        "rounded-geometric"
+      ],
+      "google_dir": "ofl/outfit"
+    },
+    {
+      "family": "Jost",
+      "slug": "jost",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean",
+        "futura-like"
+      ],
+      "google_dir": "ofl/jost"
+    },
+    {
+      "family": "Plus Jakarta Sans",
+      "slug": "plusjakartasans",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean",
+        "friendly"
+      ],
+      "google_dir": "ofl/plusjakartasans"
+    },
+    {
+      "family": "Sora",
+      "slug": "sora",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean",
+        "crisp"
+      ],
+      "google_dir": "ofl/sora"
+    },
+    {
+      "family": "DM Sans",
+      "slug": "dmsans",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean",
+        "ui"
+      ],
+      "google_dir": "ofl/dmsans"
+    },
+    {
+      "family": "Manrope",
+      "slug": "manrope",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean",
+        "ui"
+      ],
+      "google_dir": "ofl/manrope"
+    },
+    {
+      "family": "Urbanist",
+      "slug": "urbanist",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean"
+      ],
+      "google_dir": "ofl/urbanist"
+    },
+    {
+      "family": "Figtree",
+      "slug": "figtree",
+      "category": "geometric sans",
+      "license": "OFL",
+      "personality": [
+        "modern",
+        "tech",
+        "confident",
+        "startup",
+        "clean",
+        "friendly"
+      ],
+      "google_dir": "ofl/figtree"
+    },
+    {
+      "family": "Inter",
+      "slug": "inter",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss",
+        "ui"
+      ],
+      "google_dir": "ofl/inter"
+    },
+    {
+      "family": "Space Grotesk",
+      "slug": "spacegrotesk",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss",
+        "quirky",
+        "tech"
+      ],
+      "google_dir": "ofl/spacegrotesk"
+    },
+    {
+      "family": "Work Sans",
+      "slug": "worksans",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss"
+      ],
+      "google_dir": "ofl/worksans"
+    },
+    {
+      "family": "Archivo",
+      "slug": "archivo",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss",
+        "wide"
+      ],
+      "google_dir": "ofl/archivo"
+    },
+    {
+      "family": "Familjen Grotesk",
+      "slug": "familjengrotesk",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss"
+      ],
+      "google_dir": "ofl/familjengrotesk"
+    },
+    {
+      "family": "Bricolage Grotesque",
+      "slug": "bricolagegrotesque",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss",
+        "quirky",
+        "character"
+      ],
+      "google_dir": "ofl/bricolagegrotesque"
+    },
+    {
+      "family": "Instrument Sans",
+      "slug": "instrumentsans",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss"
+      ],
+      "google_dir": "ofl/instrumentsans"
+    },
+    {
+      "family": "Public Sans",
+      "slug": "publicsans",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss",
+        "civic"
+      ],
+      "google_dir": "ofl/publicsans"
+    },
+    {
+      "family": "IBM Plex Sans",
+      "slug": "ibmplexsans",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss",
+        "corporate"
+      ],
+      "google_dir": "ofl/ibmplexsans"
+    },
+    {
+      "family": "Roboto",
+      "slug": "roboto",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss",
+        "ui"
+      ],
+      "google_dir": null
+    },
+    {
+      "family": "Geist",
+      "slug": "geist",
+      "category": "grotesk",
+      "license": "OFL",
+      "personality": [
+        "neutral",
+        "editorial",
+        "serious",
+        "swiss",
+        "ui",
+        "tech"
+      ],
+      "google_dir": "ofl/geist"
+    },
+    {
+      "family": "Open Sans",
+      "slug": "opensans",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic"
+      ],
+      "google_dir": "ofl/opensans"
+    },
+    {
+      "family": "Source Sans 3",
+      "slug": "sourcesans3",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic"
+      ],
+      "google_dir": "ofl/sourcesans3"
+    },
+    {
+      "family": "Lato",
+      "slug": "lato",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic"
+      ],
+      "google_dir": "ofl/lato"
+    },
+    {
+      "family": "Fira Sans",
+      "slug": "firasans",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic"
+      ],
+      "google_dir": "ofl/firasans"
+    },
+    {
+      "family": "Nunito Sans",
+      "slug": "nunitosans",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic"
+      ],
+      "google_dir": "ofl/nunitosans"
+    },
+    {
+      "family": "Alegreya Sans",
+      "slug": "alegreyasans",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic",
+        "literary"
+      ],
+      "google_dir": "ofl/alegreyasans"
+    },
+    {
+      "family": "PT Sans",
+      "slug": "ptsans",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic"
+      ],
+      "google_dir": "ofl/ptsans"
+    },
+    {
+      "family": "Cabin",
+      "slug": "cabin",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic"
+      ],
+      "google_dir": "ofl/cabin"
+    },
+    {
+      "family": "Inclusive Sans",
+      "slug": "inclusivesans",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic",
+        "accessible"
+      ],
+      "google_dir": "ofl/inclusivesans"
+    },
+    {
+      "family": "Atkinson Hyperlegible",
+      "slug": "atkinsonhyperlegible",
+      "category": "humanist sans",
+      "license": "OFL",
+      "personality": [
+        "warm",
+        "approachable",
+        "trustworthy",
+        "civic",
+        "accessible"
+      ],
+      "google_dir": "ofl/atkinsonhyperlegible"
+    },
+    {
+      "family": "Libre Baskerville",
+      "slug": "librebaskerville",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance"
+      ],
+      "google_dir": "ofl/librebaskerville"
+    },
+    {
+      "family": "Source Serif 4",
+      "slug": "sourceserif4",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance"
+      ],
+      "google_dir": "ofl/sourceserif4"
+    },
+    {
+      "family": "Merriweather",
+      "slug": "merriweather",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance"
+      ],
+      "google_dir": "ofl/merriweather"
+    },
+    {
+      "family": "Lora",
+      "slug": "lora",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance",
+        "calligraphic"
+      ],
+      "google_dir": "ofl/lora"
+    },
+    {
+      "family": "Newsreader",
+      "slug": "newsreader",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance",
+        "editorial"
+      ],
+      "google_dir": "ofl/newsreader"
+    },
+    {
+      "family": "Literata",
+      "slug": "literata",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance"
+      ],
+      "google_dir": "ofl/literata"
+    },
+    {
+      "family": "Spectral",
+      "slug": "spectral",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance"
+      ],
+      "google_dir": "ofl/spectral"
+    },
+    {
+      "family": "Crimson Pro",
+      "slug": "crimsonpro",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance"
+      ],
+      "google_dir": "ofl/crimsonpro"
+    },
+    {
+      "family": "Libre Caslon Text",
+      "slug": "librecaslontext",
+      "category": "transitional serif",
+      "license": "OFL",
+      "personality": [
+        "established",
+        "credible",
+        "publishing",
+        "finance"
+      ],
+      "google_dir": "ofl/librecaslontext"
+    },
+    {
+      "family": "EB Garamond",
+      "slug": "ebgaramond",
+      "category": "old-style serif",
+      "license": "OFL",
+      "personality": [
+        "heritage",
+        "literary",
+        "artisanal",
+        "hospitality"
+      ],
+      "google_dir": "ofl/ebgaramond"
+    },
+    {
+      "family": "Cormorant",
+      "slug": "cormorant",
+      "category": "old-style serif",
+      "license": "OFL",
+      "personality": [
+        "heritage",
+        "literary",
+        "artisanal",
+        "hospitality",
+        "delicate"
+      ],
+      "google_dir": "ofl/cormorant"
+    },
+    {
+      "family": "Cardo",
+      "slug": "cardo",
+      "category": "old-style serif",
+      "license": "OFL",
+      "personality": [
+        "heritage",
+        "literary",
+        "artisanal",
+        "hospitality"
+      ],
+      "google_dir": "ofl/cardo"
+    },
+    {
+      "family": "Alegreya",
+      "slug": "alegreya",
+      "category": "old-style serif",
+      "license": "OFL",
+      "personality": [
+        "heritage",
+        "literary",
+        "artisanal",
+        "hospitality"
+      ],
+      "google_dir": "ofl/alegreya"
+    },
+    {
+      "family": "Crimson Text",
+      "slug": "crimsontext",
+      "category": "old-style serif",
+      "license": "OFL",
+      "personality": [
+        "heritage",
+        "literary",
+        "artisanal",
+        "hospitality"
+      ],
+      "google_dir": "ofl/crimsontext"
+    },
+    {
+      "family": "Playfair Display",
+      "slug": "playfairdisplay",
+      "category": "didone display",
+      "license": "OFL",
+      "personality": [
+        "luxury",
+        "fashion",
+        "editorial",
+        "elegant"
+      ],
+      "google_dir": "ofl/playfairdisplay"
+    },
+    {
+      "family": "Bodoni Moda",
+      "slug": "bodonimoda",
+      "category": "didone display",
+      "license": "OFL",
+      "personality": [
+        "luxury",
+        "fashion",
+        "editorial",
+        "elegant"
+      ],
+      "google_dir": "ofl/bodonimoda"
+    },
+    {
+      "family": "DM Serif Display",
+      "slug": "dmserifdisplay",
+      "category": "didone display",
+      "license": "OFL",
+      "personality": [
+        "luxury",
+        "fashion",
+        "editorial",
+        "elegant"
+      ],
+      "google_dir": "ofl/dmserifdisplay"
+    },
+    {
+      "family": "Abril Fatface",
+      "slug": "abrilfatface",
+      "category": "didone display",
+      "license": "OFL",
+      "personality": [
+        "luxury",
+        "fashion",
+        "editorial",
+        "elegant",
+        "heavy"
+      ],
+      "google_dir": "ofl/abrilfatface"
+    },
+    {
+      "family": "Instrument Serif",
+      "slug": "instrumentserif",
+      "category": "didone display",
+      "license": "OFL",
+      "personality": [
+        "luxury",
+        "fashion",
+        "editorial",
+        "elegant",
+        "condensed"
+      ],
+      "google_dir": "ofl/instrumentserif"
+    },
+    {
+      "family": "Gilda Display",
+      "slug": "gildadisplay",
+      "category": "didone display",
+      "license": "OFL",
+      "personality": [
+        "luxury",
+        "fashion",
+        "editorial",
+        "elegant"
+      ],
+      "google_dir": "ofl/gildadisplay"
+    },
+    {
+      "family": "Prata",
+      "slug": "prata",
+      "category": "didone display",
+      "license": "OFL",
+      "personality": [
+        "luxury",
+        "fashion",
+        "editorial",
+        "elegant"
+      ],
+      "google_dir": "ofl/prata"
+    },
+    {
+      "family": "Fraunces",
+      "slug": "fraunces",
+      "category": "didone display",
+      "license": "OFL",
+      "personality": [
+        "luxury",
+        "fashion",
+        "editorial",
+        "elegant",
+        "soft",
+        "wonky"
+      ],
+      "google_dir": "ofl/fraunces"
+    },
+    {
+      "family": "Roboto Slab",
+      "slug": "robotoslab",
+      "category": "slab",
+      "license": "OFL",
+      "personality": [
+        "sturdy",
+        "craft",
+        "industrial",
+        "americana",
+        "outdoors"
+      ],
+      "google_dir": null
+    },
+    {
+      "family": "Zilla Slab",
+      "slug": "zillaslab",
+      "category": "slab",
+      "license": "OFL",
+      "personality": [
+        "sturdy",
+        "craft",
+        "industrial",
+        "americana",
+        "outdoors"
+      ],
+      "google_dir": "ofl/zillaslab"
+    },
+    {
+      "family": "Arvo",
+      "slug": "arvo",
+      "category": "slab",
+      "license": "OFL",
+      "personality": [
+        "sturdy",
+        "craft",
+        "industrial",
+        "americana",
+        "outdoors"
+      ],
+      "google_dir": "ofl/arvo"
+    },
+    {
+      "family": "Bitter",
+      "slug": "bitter",
+      "category": "slab",
+      "license": "OFL",
+      "personality": [
+        "sturdy",
+        "craft",
+        "industrial",
+        "americana",
+        "outdoors"
+      ],
+      "google_dir": "ofl/bitter"
+    },
+    {
+      "family": "Aleo",
+      "slug": "aleo",
+      "category": "slab",
+      "license": "OFL",
+      "personality": [
+        "sturdy",
+        "craft",
+        "industrial",
+        "americana",
+        "outdoors"
+      ],
+      "google_dir": "ofl/aleo"
+    },
+    {
+      "family": "Josefin Slab",
+      "slug": "josefinslab",
+      "category": "slab",
+      "license": "OFL",
+      "personality": [
+        "sturdy",
+        "craft",
+        "industrial",
+        "americana",
+        "outdoors",
+        "retro"
+      ],
+      "google_dir": "ofl/josefinslab"
+    },
+    {
+      "family": "Alfa Slab One",
+      "slug": "alfaslabone",
+      "category": "slab",
+      "license": "OFL",
+      "personality": [
+        "sturdy",
+        "craft",
+        "industrial",
+        "americana",
+        "outdoors",
+        "heavy"
+      ],
+      "google_dir": "ofl/alfaslabone"
+    },
+    {
+      "family": "Syne",
+      "slug": "syne",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "art",
+        "bold"
+      ],
+      "google_dir": "ofl/syne"
+    },
+    {
+      "family": "Unbounded",
+      "slug": "unbounded",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "wide",
+        "bold"
+      ],
+      "google_dir": "ofl/unbounded"
+    },
+    {
+      "family": "Bebas Neue",
+      "slug": "bebasneue",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "condensed"
+      ],
+      "google_dir": "ofl/bebasneue"
+    },
+    {
+      "family": "Anton",
+      "slug": "anton",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "condensed",
+        "heavy"
+      ],
+      "google_dir": "ofl/anton"
+    },
+    {
+      "family": "Oswald",
+      "slug": "oswald",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "condensed"
+      ],
+      "google_dir": "ofl/oswald"
+    },
+    {
+      "family": "Archivo Black",
+      "slug": "archivoblack",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "heavy"
+      ],
+      "google_dir": "ofl/archivoblack"
+    },
+    {
+      "family": "Righteous",
+      "slug": "righteous",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "retro"
+      ],
+      "google_dir": "ofl/righteous"
+    },
+    {
+      "family": "Climate Crisis",
+      "slug": "climatecrisis",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "activist",
+        "heavy"
+      ],
+      "google_dir": "ofl/climatecrisis"
+    },
+    {
+      "family": "Rozha One",
+      "slug": "rozhaone",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "heavy"
+      ],
+      "google_dir": "ofl/rozhaone"
+    },
+    {
+      "family": "Ultra",
+      "slug": "ultra",
+      "category": "display",
+      "license": "OFL",
+      "personality": [
+        "loud",
+        "distinctive",
+        "entertainment",
+        "sports",
+        "streetwear",
+        "heavy"
+      ],
+      "google_dir": "ofl/ultra"
+    },
+    {
+      "family": "Space Mono",
+      "slug": "spacemono",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist",
+        "quirky"
+      ],
+      "google_dir": "ofl/spacemono"
+    },
+    {
+      "family": "JetBrains Mono",
+      "slug": "jetbrainsmono",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist",
+        "code"
+      ],
+      "google_dir": "ofl/jetbrainsmono"
+    },
+    {
+      "family": "IBM Plex Mono",
+      "slug": "ibmplexmono",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist",
+        "corporate"
+      ],
+      "google_dir": "ofl/ibmplexmono"
+    },
+    {
+      "family": "Azeret Mono",
+      "slug": "azeretmono",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist"
+      ],
+      "google_dir": "ofl/azeretmono"
+    },
+    {
+      "family": "DM Mono",
+      "slug": "dmmono",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist"
+      ],
+      "google_dir": "ofl/dmmono"
+    },
+    {
+      "family": "Roboto Mono",
+      "slug": "robotomono",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist"
+      ],
+      "google_dir": null
+    },
+    {
+      "family": "Fira Code",
+      "slug": "firacode",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist",
+        "ligatures",
+        "code"
+      ],
+      "google_dir": "ofl/firacode"
+    },
+    {
+      "family": "Geist Mono",
+      "slug": "geistmono",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist",
+        "tech"
+      ],
+      "google_dir": "ofl/geistmono"
+    },
+    {
+      "family": "Martian Mono",
+      "slug": "martianmono",
+      "category": "mono",
+      "license": "OFL",
+      "personality": [
+        "technical",
+        "developer",
+        "data",
+        "retro-futurist",
+        "wide"
+      ],
+      "google_dir": "ofl/martianmono"
+    },
+    {
+      "family": "Nunito",
+      "slug": "nunito",
+      "category": "rounded",
+      "license": "OFL",
+      "personality": [
+        "friendly",
+        "playful",
+        "kids",
+        "food",
+        "wellness"
+      ],
+      "google_dir": "ofl/nunito"
+    },
+    {
+      "family": "Quicksand",
+      "slug": "quicksand",
+      "category": "rounded",
+      "license": "OFL",
+      "personality": [
+        "friendly",
+        "playful",
+        "kids",
+        "food",
+        "wellness",
+        "light"
+      ],
+      "google_dir": "ofl/quicksand"
+    },
+    {
+      "family": "Varela Round",
+      "slug": "varelaround",
+      "category": "rounded",
+      "license": "OFL",
+      "personality": [
+        "friendly",
+        "playful",
+        "kids",
+        "food",
+        "wellness"
+      ],
+      "google_dir": "ofl/varelaround"
+    },
+    {
+      "family": "Comfortaa",
+      "slug": "comfortaa",
+      "category": "rounded",
+      "license": "OFL",
+      "personality": [
+        "friendly",
+        "playful",
+        "kids",
+        "food",
+        "wellness",
+        "geometric"
+      ],
+      "google_dir": "ofl/comfortaa"
+    },
+    {
+      "family": "Fredoka",
+      "slug": "fredoka",
+      "category": "rounded",
+      "license": "OFL",
+      "personality": [
+        "friendly",
+        "playful",
+        "kids",
+        "food",
+        "wellness",
+        "chunky"
+      ],
+      "google_dir": "ofl/fredoka"
+    },
+    {
+      "family": "Baloo 2",
+      "slug": "baloo2",
+      "category": "rounded",
+      "license": "OFL",
+      "personality": [
+        "friendly",
+        "playful",
+        "kids",
+        "food",
+        "wellness",
+        "chunky"
+      ],
+      "google_dir": "ofl/baloo2"
+    },
+    {
+      "family": "M PLUS Rounded 1c",
+      "slug": "mplusrounded1c",
+      "category": "rounded",
+      "license": "OFL",
+      "personality": [
+        "friendly",
+        "playful",
+        "kids",
+        "food",
+        "wellness",
+        "japanese"
+      ],
+      "google_dir": "ofl/mplusrounded1c"
+    }
+  ]
+}

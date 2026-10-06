@@ -11,6 +11,7 @@ import traceback
 import click
 
 from . import __version__, registry
+from . import fonts as fontlib
 from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
 from .schemas import Phase
@@ -185,6 +186,30 @@ def brand_set(slug: str, territory, concept, primary_lockup, industry, surfaces,
         project(), slug, territory=territory, concept=concept, primary_lockup=primary_lockup,
         industry=industry, surfaces=surfaces, fonts=fonts,
     )))
+
+
+@main.group("fonts")
+def fonts_group() -> None:
+    """Font catalogue and cache."""
+
+
+@fonts_group.command("list")
+@click.option("--category", default=None)
+@click.option("--personality", default=None)
+@command
+def fonts_list(category: str | None, personality: str | None) -> None:
+    paths = project()
+    families = fontlib.list_fonts(paths, category, personality)
+    emit({"families": [
+        {**fontlib.family_to_dict(f), "cached": bool(fontlib.cached_files(paths, f.family))} for f in families
+    ]})
+
+
+@fonts_group.command("fetch")
+@click.argument("family")
+@command
+def fonts_fetch(family: str) -> None:
+    emit({"manifest": fontlib.fetch(project(), family)})
 
 
 if __name__ == "__main__":  # pragma: no cover
