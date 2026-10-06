@@ -79,12 +79,43 @@ def test_unnamed_brand_must_be_named_before_strategy(project_root, brief_payload
     assert code == 2 and any("naming" in m for m in payload["missing"])
     code, payload = run("brand", "advance", "working-title", "--to", "naming")
     assert code == 0
+    (project_root / "brands" / "working-title" / "naming.md").write_text("# Naming\n")
     code, payload = run("brand", "advance", "working-title", "--to", "strategy")
     assert code == 2 and any("needs a name" in m for m in payload["missing"])
     code, payload = run("brand", "rename", "working-title", "--name", "Keystone")
     assert code == 0 and payload["brand"]["name"] == "Keystone" and payload["brand"]["needs_name"] is False
     code, payload = run("brand", "advance", "working-title", "--to", "strategy")
     assert code == 0 and payload["brand"]["slug"] == "working-title"
+
+
+def test_advance_rechecks_every_earlier_phase(project_root, brief_payload, strategy_payload):
+    run("brand", "new", "Keystone")
+    write_brief(project_root, "keystone", brief_payload)
+    assert run("brand", "advance", "keystone", "--to", "strategy")[0] == 0
+    brand = project_root / "brands" / "keystone"
+    (brand / "brief.json").unlink()
+    (brand / "strategy.md").write_text("# Strategy\n")
+    (brand / "strategy.json").write_text(json.dumps(strategy_payload))
+    code, payload = run("brand", "advance", "keystone", "--to", "territories")
+    assert code == 2 and any("brief.json" in m for m in payload["missing"])
+    assert any("brief.json" in m for m in run("brand", "status", "keystone")[1]["missing"])
+    (brand / "brief.json").write_text(json.dumps(brief_payload))
+    code, payload = run("brand", "advance", "keystone", "--to", "territories")
+    assert code == 0 and payload["brand"]["phase"] == "territories"
+
+
+def test_naming_phase_needs_naming_md_before_strategy(project_root, brief_payload):
+    run("brand", "new", "Working Title", "--unnamed")
+    brief_payload["needs_name"] = True
+    brief_payload["name"] = None
+    write_brief(project_root, "working-title", brief_payload)
+    assert run("brand", "advance", "working-title", "--to", "naming")[0] == 0
+    assert run("brand", "rename", "working-title", "--name", "Keystone")[0] == 0
+    code, payload = run("brand", "advance", "working-title", "--to", "strategy")
+    assert code == 2 and any("naming.md" in m for m in payload["missing"])
+    (project_root / "brands" / "working-title" / "naming.md").write_text("# Naming\n")
+    code, payload = run("brand", "advance", "working-title", "--to", "strategy")
+    assert code == 0 and payload["brand"]["phase"] == "strategy"
 
 
 def test_decide_appends_and_status_reports_next(project_root):

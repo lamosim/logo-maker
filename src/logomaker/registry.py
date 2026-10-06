@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -132,59 +133,91 @@ def _validate_file(path: Path, model: type[BaseModel]) -> str | None:
     return None
 
 
+def _need(brand: Path, path: Path, model: type[BaseModel] | None = None) -> list[str]:
+    """Return a message if `path` is missing or, when `model` is given, does not validate as it."""
+    if model is None:
+        return [] if path.is_file() else [f"{path.relative_to(brand)} is missing"]
+    err = _validate_file(path, model)
+    return [err] if err else []
+
+
+def _check_brief(brand: Path, state: BrandState) -> list[str]:
+    return _need(brand, brand / "brief.md") + _need(brand, brand / "brief.json", Brief)
+
+
+def _check_naming(brand: Path, state: BrandState) -> list[str]:
+    # Only a brand leaving the naming phase owes naming.md; one that never needed a name went intake -> strategy.
+    if state.phase != Phase.naming:
+        return []
+    return _need(brand, brand / "naming.md")
+
+
+def _check_strategy(brand: Path, state: BrandState) -> list[str]:
+    return _need(brand, brand / "strategy.md") + _need(brand, brand / "strategy.json", Strategy)
+
+
+def _check_territories(brand: Path, state: BrandState) -> list[str]:
+    spec = brand / "territories" / "territories.json"
+    missing = _need(brand, spec)
+    if spec.is_file():
+        try:
+            slugs = [t["slug"] for t in json.loads(spec.read_text(encoding="utf-8"))["territories"]]
+        except (KeyError, TypeError, ValueError):
+            slugs = []
+            missing.append("territories.json must contain a 'territories' list with slugs")
+        if state.territory not in slugs:
+            missing.append("territory not chosen (run: logomaker brand set <slug> --territory <territory-slug>)")
+    return missing
+
+
+def _check_concept(brand: Path, state: BrandState) -> list[str]:
+    if not state.concept:
+        return ["concept not chosen (run: logomaker brand set <slug> --concept <NN-slug>)"]
+    folder = brand / "concepts" / state.concept
+    audit = folder / "audit.json"
+    missing = _need(brand, folder / "concept.py") + _need(brand, audit)
+    if audit.is_file() and not json.loads(audit.read_text(encoding="utf-8")).get("ok"):
+        missing.append(f"{state.concept}/audit.json has failures")
+    return missing
+
+
+def _check_final(brand: Path, state: BrandState) -> list[str]:
+    missing: list[str] = []
+    for name in ("concept.py", "params.json", "tokens.json"):
+        missing += _need(brand, brand / "final" / name)
+    return missing
+
+
+def _check_verify(brand: Path, state: BrandState) -> list[str]:
+    verify = brand / "package" / "verify.json"
+    missing = _need(brand, verify)
+    if verify.is_file() and not json.loads(verify.read_text(encoding="utf-8")).get("ok"):
+        missing.append("package/verify.json reports failures")
+    return missing
+
+
+# The artifacts each phase leaves behind. Advancing to a phase re-runs the checks of every phase before it.
+PHASE_CHECKS: dict[Phase, Callable[[Path, BrandState], list[str]]] = {
+    Phase.intake: _check_brief,
+    Phase.naming: _check_naming,
+    Phase.strategy: _check_strategy,
+    Phase.territories: _check_territories,
+    Phase.concepts: _check_concept,
+    Phase.refinement: _check_final,
+    Phase.package: _check_verify,
+}
+
+
 def prerequisites(paths: ProjectPaths, state: BrandState, target: Phase) -> list[str]:
     brand = paths.brand(state.slug)
     missing: list[str] = []
     nxt = allowed_next(state)
     if target != nxt:
         missing.append(f"phase {state.phase.value} can only advance to {nxt.value if nxt else 'nothing'}, not {target.value}")
-
-    def need(path: Path, model: type[BaseModel] | None = None) -> None:
-        if model is None:
-            if not path.is_file():
-                missing.append(f"{path.relative_to(brand)} is missing")
-        else:
-            err = _validate_file(path, model)
-            if err:
-                missing.append(err)
-
-    if target in (Phase.naming, Phase.strategy):
-        need(brand / "brief.md")
-        need(brand / "brief.json", Brief)
+    for phase in PHASE_ORDER[: PHASE_ORDER.index(target)]:
+        missing += PHASE_CHECKS[phase](brand, state)
     if target == Phase.strategy and state.needs_name:
         missing.append("brand still needs a name (run: logomaker brand rename <slug> --name <Name>)")
-    if target == Phase.territories:
-        need(brand / "strategy.md")
-        need(brand / "strategy.json", Strategy)
-    if target == Phase.concepts:
-        spec = brand / "territories" / "territories.json"
-        need(spec)
-        if spec.is_file():
-            try:
-                slugs = [t["slug"] for t in json.loads(spec.read_text(encoding="utf-8"))["territories"]]
-            except (KeyError, TypeError, ValueError):
-                slugs = []
-                missing.append("territories.json must contain a 'territories' list with slugs")
-            if state.territory not in slugs:
-                missing.append("territory not chosen (run: logomaker brand set <slug> --territory <territory-slug>)")
-    if target == Phase.refinement:
-        if not state.concept:
-            missing.append("concept not chosen (run: logomaker brand set <slug> --concept <NN-slug>)")
-        else:
-            folder = brand / "concepts" / state.concept
-            need(folder / "concept.py")
-            audit = folder / "audit.json"
-            need(audit)
-            if audit.is_file() and not json.loads(audit.read_text(encoding="utf-8")).get("ok"):
-                missing.append(f"{state.concept}/audit.json has failures")
-    if target == Phase.package:
-        for name in ("concept.py", "params.json", "tokens.json"):
-            need(brand / "final" / name)
-    if target == Phase.done:
-        verify = brand / "package" / "verify.json"
-        need(verify)
-        if verify.is_file() and not json.loads(verify.read_text(encoding="utf-8")).get("ok"):
-            missing.append("package/verify.json reports failures")
     return missing
 
 
