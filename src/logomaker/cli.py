@@ -1,4 +1,8 @@
-"""Click entry points. Every command ends in output.emit()."""
+"""Click entry points. Every command ends in output.emit().
+
+The heavy modules (the kit, audit, sheets, render, color, fonts) are imported inside the commands that use them, so
+`setup --check` still runs, and reports, when one of their dependencies is missing.
+"""
 from __future__ import annotations
 
 import functools
@@ -12,19 +16,13 @@ from pathlib import Path
 import click
 
 from . import __version__, registry
-from . import audit as auditlib
-from . import color as colorlib
-from . import fonts as fontlib
-from . import sheets as sheetlib
-from .kit import concept as conceptlib
 from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
 from .paths import project
-from .render import Renderer
 from .schemas import Phase
 
 CHROME_APP = "/Applications/Google Chrome.app"
 CHROME_BIN = CHROME_APP + "/Contents/MacOS/Google Chrome"
-MODULES = ["skia", "fontTools", "uharfbuzz", "coloraide", "reportlab", "playwright", "PIL", "numpy", "scipy", "jinja2", "httpx", "pydantic"]
+MODULES = ["skia", "fontTools", "uharfbuzz", "coloraide", "reportlab", "playwright", "PIL", "numpy", "scipy", "jinja2", "httpx", "pydantic", "pypdf"]
 
 
 def command(fn):
@@ -79,17 +77,19 @@ def chrome_status() -> dict:
 
 
 @main.command("setup")
-@click.option("--check", is_flag=True, help="Report status only; create nothing.")
+@click.option("--check", is_flag=True, help="Report status only; create nothing. Missing Chrome or modules exit 3.")
 @command
 def setup(check: bool) -> None:
     paths = project()
-    modules = {}
+    modules: dict[str, bool] = {}
+    module_errors: dict[str, str] = {}
     for name in MODULES:
         try:
             importlib.import_module(name)
             modules[name] = True
-        except Exception:  # noqa: BLE001
+        except Exception as err:  # noqa: BLE001 - ImportError, or a module that breaks while importing
             modules[name] = False
+            module_errors[name] = f"{type(err).__name__}: {err}"
     chrome = chrome_status()
     created = []
     if not check:
@@ -97,22 +97,18 @@ def setup(check: bool) -> None:
             if not folder.exists():
                 folder.mkdir(parents=True)
                 created.append(str(folder.relative_to(paths.root)))
-    warnings = []
+    problems = []
     if not chrome["found"]:
-        warnings.append(f"Google Chrome not found at {CHROME_APP}; render commands will exit {EXIT_EXTERNAL}")
+        problems.append(f"Google Chrome not found at {chrome['path']}; render commands will exit {EXIT_EXTERNAL}")
     missing = [m for m, ok in modules.items() if not ok]
     if missing:
-        warnings.append("missing modules: " + ", ".join(missing) + " (run uv sync)")
-    emit(
-        {
-            "root": str(paths.root),
-            "python": platform.python_version(),
-            "chrome": chrome,
-            "modules": modules,
-            "created": created,
-        },
-        warnings=warnings,
-    )
+        problems.append("missing modules: " + ", ".join(missing) + " (run uv sync)")
+    payload = {"root": str(paths.root), "python": platform.python_version(), "chrome": chrome, "modules": modules, "created": created}
+    if module_errors:
+        payload["module_errors"] = module_errors
+    if check:  # a check is a verdict: anything missing fails it
+        emit(payload, ok=not problems, errors=problems, code=EXIT_EXTERNAL if problems else 0)
+    emit(payload, warnings=problems)
 
 
 @main.group("brand")
@@ -204,6 +200,8 @@ def fonts_group() -> None:
 @click.option("--personality", default=None)
 @command
 def fonts_list(category: str | None, personality: str | None) -> None:
+    from . import fonts as fontlib
+
     paths = project()
     if category:
         categories = list(dict.fromkeys(f.category for f in fontlib.load_catalog(paths)))
@@ -219,6 +217,8 @@ def fonts_list(category: str | None, personality: str | None) -> None:
 @click.argument("family")
 @command
 def fonts_fetch(family: str) -> None:
+    from . import fonts as fontlib
+
     emit({"manifest": fontlib.fetch(project(), family)})
 
 
@@ -231,6 +231,8 @@ def color_group() -> None:
 @click.argument("value")
 @command
 def color_info(value: str) -> None:
+    from . import color as colorlib
+
     emit(colorlib.info(value))
 
 
@@ -239,6 +241,8 @@ def color_info(value: str) -> None:
 @click.option("--steps", default=9, type=click.IntRange(min=1))
 @command
 def color_ramp(value: str, steps: int) -> None:
+    from . import color as colorlib
+
     emit({"ramp": colorlib.ramp(value, steps)})
 
 
@@ -246,6 +250,8 @@ def color_ramp(value: str, steps: int) -> None:
 @click.argument("tokens_path", type=click.Path(exists=True, dir_okay=False))
 @command
 def color_check(tokens_path: str) -> None:
+    from . import color as colorlib
+
     result = colorlib.check_tokens(colorlib.load_tokens(Path(tokens_path)))
     emit(result.model_dump(), ok=result.ok, errors=result.failures, warnings=result.warnings, code=0 if result.ok else EXIT_RULE)
 
@@ -256,6 +262,9 @@ def concept_group() -> None:
 
 
 def _build_concept(paths, slug: str, concept: str, variants: str, tokens_path: str | None):
+    from . import color as colorlib
+    from .kit import concept as conceptlib
+
     folder = conceptlib.concept_folder(paths, slug, concept)
     # Variants are checked before tokens are read, the concept is loaded or the build folder is touched.
     wanted = conceptlib.validate_variants(v.strip() for v in variants.split(",") if v.strip())
@@ -295,6 +304,9 @@ def _emit_audit(payload: dict, result, warnings: list[str] | None = None) -> Non
 @click.option("--no-render", is_flag=True, help="Skip the raster checks (no Chrome needed).")
 @command
 def concept_audit(slug: str, concept: str, no_render: bool) -> None:
+    from . import audit as auditlib
+    from .render import Renderer
+
     paths = project()
     if no_render:
         result = auditlib.audit_concept(paths, slug, concept)
@@ -311,6 +323,8 @@ def concept_audit(slug: str, concept: str, no_render: bool) -> None:
 @click.option("--tokens", "tokens_path", default=None, type=click.Path(exists=True, dir_okay=False), help="tokens.json for color/reverse (defaults to <concept>/tokens.json when present)")
 @command
 def concept_render(slug: str, concept: str, round_n: int | None, tokens_path: str | None) -> None:
+    from . import sheets as sheetlib
+
     # No renderer passed: the sheet launches Chrome itself, only once the concept has loaded and built.
     emit(sheetlib.critique_sheet(project(), slug, concept, round_n, tokens_path=tokens_path))
 
@@ -324,6 +338,10 @@ def concept_render(slug: str, concept: str, round_n: int | None, tokens_path: st
 @click.option("--no-render", is_flag=True, help="Build and audit only (no Chrome).")
 @command
 def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tokens_path: str | None, no_render: bool) -> None:
+    from . import audit as auditlib
+    from . import sheets as sheetlib
+    from .render import Renderer
+
     paths = project()
     folder, report = _build_concept(paths, slug, concept, variants, tokens_path)
     critique = None

@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 
 from click.testing import CliRunner
 
@@ -43,3 +45,43 @@ def test_help_stays_plain_text_and_exits_zero():
     assert result.exit_code == 0, result.output
     assert result.stdout.startswith("Usage:")
     assert "setup" in result.stdout
+
+
+def test_setup_check_fails_without_chrome_but_plain_setup_only_warns(project_root, monkeypatch):
+    from logomaker import cli
+
+    monkeypatch.setattr(cli, "chrome_status", lambda: {"found": False, "path": "/nowhere/Google Chrome.app", "version": None})
+    result = CliRunner().invoke(main, ["setup", "--check"])
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 3 and payload["ok"] is False
+    assert payload["errors"] == ["Google Chrome not found at /nowhere/Google Chrome.app; render commands will exit 3"]
+    result = CliRunner().invoke(main, ["setup"])
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 0 and payload["ok"] is True and payload["errors"] == []
+    assert payload["warnings"] == ["Google Chrome not found at /nowhere/Google Chrome.app; render commands will exit 3"]
+
+
+def test_setup_check_runs_and_reports_a_missing_module(project_root):
+    # A fresh interpreter where skia cannot be imported: the CLI must still load and say so.
+    script = (
+        "import sys\n"
+        "sys.modules['skia'] = None\n"
+        "from click.testing import CliRunner\n"
+        "from logomaker.cli import main\n"
+        "result = CliRunner().invoke(main, ['setup', '--check'])\n"
+        "print(result.exit_code)\n"
+        "print(result.stdout)\n"
+    )
+    proc = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, timeout=120)
+    assert proc.returncode == 0, proc.stderr
+    exit_code, _, stdout = proc.stdout.partition("\n")
+    payload = json.loads(stdout)
+    assert int(exit_code) == 3 and payload["ok"] is False
+    assert payload["modules"]["skia"] is False and payload["modules"]["pypdf"] is True
+    assert list(payload["module_errors"]) == ["skia"] and "skia" in payload["module_errors"]["skia"]
+    assert any(e.startswith("missing modules: skia") for e in payload["errors"])
+
+
+def test_setup_check_adds_module_errors_only_when_an_import_fails(project_root):
+    payload = json.loads(CliRunner().invoke(main, ["setup", "--check"]).stdout)
+    assert "pypdf" in payload["modules"] and all(payload["modules"].values()) and "module_errors" not in payload
