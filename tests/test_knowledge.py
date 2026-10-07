@@ -26,6 +26,7 @@ from logomaker.kit import concept as conceptlib
 from logomaker.paths import project
 from logomaker.schemas import Brief, MinSizes, Phase, Scorecard
 from tests.conftest import REPO
+from tests.md import heading_is, headings, section
 
 SKILL = REPO / ".claude" / "skills" / "logo"
 REF = SKILL / "reference"
@@ -65,37 +66,6 @@ MENTION = re.compile(r"(?<![^\s(`\"'])(?:logomaker[ \t]+)?(?P<group>" + "|".join
 
 def read(name: str) -> str:
     return (REF / name).read_text(encoding="utf-8")
-
-
-def heading_is(found: str, required: str) -> bool:
-    """Whether heading `found` is `required`, alone or followed by punctuation (": ...", " (...)"), never by more words:
-    "Use carefully" is not "Use"."""
-    return re.fullmatch(rf"{re.escape(required)}(?:\s*[^\w\s].*)?", found) is not None
-
-
-def sections(text: str) -> list[tuple[str, str]]:
-    """Each level-two section as (heading, body). A line inside a fenced code block never starts a section."""
-    out: list[tuple[str, str]] = []
-    fenced = False
-    for line in text.splitlines(keepends=True):
-        if line.startswith("```"):
-            fenced = not fenced
-        if not fenced and line.startswith("## "):
-            out.append((line[3:].strip(), ""))
-        elif out:
-            out[-1] = (out[-1][0], out[-1][1] + line)
-    return out
-
-
-def headings(text: str) -> list[str]:
-    return [heading for heading, _ in sections(text)]
-
-
-def section(text: str, heading: str) -> str:
-    """The body of the first level-two section whose heading is `heading` (heading_is)."""
-    bodies = [body for found, body in sections(text) if heading_is(found, heading)]
-    assert bodies, f"no section {heading!r}"
-    return bodies[0]
 
 
 def code_blocks(text: str, language: str) -> list[str]:

@@ -29,7 +29,7 @@ uv run logomaker concept run harbor final
 uv run logomaker package build harbor && uv run logomaker package verify harbor
 ```
 
-Every brand lives in `brands/<slug>/`; the finished package is `brands/<slug>/package/`. `docs/examples/keystone/` is a complete example.
+Every brand lives in `brands/<slug>/`; the finished package is `brands/<slug>/package/`. `brands/` and `registry/` are the owner's working data: the repository neither tracks nor ignores them, and the owner decides whether to commit them. `docs/examples/keystone/` is a complete example.
 
 ## Layout
 

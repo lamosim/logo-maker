@@ -5,7 +5,7 @@ description: Guided logo and brand identity creation for the owner's ventures, f
 
 # Logo skill
 
-You are the designer. The `logomaker` CLI does every deterministic step; you do the judgment. The research this skill is built on lives in `reference/`: read the files named for each phase before working in it, and `reference/process.md` when you start or resume a brand and before every `brand advance`.
+You are the designer. The `logomaker` CLI does every deterministic step; you do the judgment. The research this skill is built on lives in `reference/`: read the files named for each phase before working in it, and `reference/process.md` when you start or resume a brand, before every `brand advance` and before showing the owner anything. Whatever the phase, read `reference/evidence-rules.md` when the owner's taste and the evidence pull apart, `reference/trends.md` when the owner asks for something fashionable, `reference/naming.md` when the owner proposes a name to check, and `reference/deliverables.md` when the owner asks what a package file is for.
 
 ## First move
 
@@ -22,7 +22,7 @@ Every command prints one JSON object; read `ok`, `errors` and `warnings` and act
 `uv run logomaker brand advance <slug> --to <phase>` accepts only the next phase and re-checks the artifacts of every earlier phase, not just the current one. A refusal exits 2 with its reasons under `missing`, most naming the command that clears them; `uv run logomaker brand status <slug>` lists them without moving.
 
 ### Intake (read `reference/questionnaire.md`, `reference/strategy-frameworks.md`)
-- Ask the eleven core questions one per message, in order, skipping any already answered; offer a short multiple choice where it helps. Question 11 now covers how the name is written and said, its story and any tagline.
+- Ask the eleven core questions one per message, in order, skipping any already answered; offer a short multiple choice where it helps. Question 11 covers how the name is written and said, its story and any tagline.
 - Infer the archetype, the personality scores (0 to 1 on the five Aaker dimensions), the industry tag (a phrase holding a cliché-list key or alias, so the audit checks the right list) and the ranked surfaces.
 - Write `brands/<slug>/brief.md` (the readable write-back) and `brief.json` (`Brief`). Show the write-back, wait for the owner's correction or confirmation, and record what changed with `brand decide`.
 - Gate: the owner confirms the brief. Advance to `naming` (a brand made with `--unnamed`) or `strategy`.
@@ -48,26 +48,26 @@ Every command prints one JSON object; read `ok`, `errors` and `warnings` and act
 - `uv run logomaker sheet territories <slug> --no-open`; read `territories/board.png`, then open the board for the owner.
 - Gate: the owner picks one. Run `uv run logomaker brand set <slug> --territory <territory-slug> --font wordmark=<Family>:<weight>`, record the choice and advance to `concepts`.
 
-### Concepts (read `reference/craft.md`, `reference/kit-api.md`, `reference/scorecard.md`, `reference/cliches.md`, `reference/logo-types.md`)
+### Concepts (read `reference/craft.md`, `reference/kit-api.md`, `reference/scorecard.md`, `reference/evidence-rules.md`, `reference/trends.md`, `reference/cliches.md`, `reference/logo-types.md`)
 - Write 12 to 20 one-line ideas in `concepts/ideas.md`, each tagged with motifs. Strike any on the blacklist unless the brief made it the strategy; then twist it and justify it.
 - Pick five to eight directions, at least three structurally different (another logo type or construction logic, not a variation), and create `concepts/NN-slug/concept.py` for each (see "Writing concept modules"). Black only: no `tokens.json` in a concept folder. A `--tokens` palette preview is throwaway; re-run `concept run` without it before `sheet concepts` or `brand advance`.
 - For each: `uv run logomaker concept run <slug> NN-slug`, then read `concepts/NN-slug/renders/round-N/critique.png`. Score the ten criteria into `scorecard.json` (`Scorecard`) with evidence, and write `critique.md`: your notes, and every audit warning fixed or justified.
 - Revise and rerun, at most four rounds per concept. Kill a concept that cannot pass: `"kill": true` with a `reason`, all ten scores kept.
-- Before presenting, search the web by description for look-alikes of each survivor (the evidence for `clear`).
-- Present 3 to 5 survivors: `uv run logomaker sheet concepts <slug> --concepts <NN-slug>,<NN-slug>,<NN-slug> --no-open`; read `sheets/concepts.png`, then open the sheet. The CLI refuses a concept without a fresh, rendered, passing audit and a gate-passing scorecard; fix that, never argue with it.
-- Say the Collins rule 95 preface (in "Conversation rules") before the owner sees the sheet. Ask what the owner likes in each before asking which to choose.
+- Before presenting, search the web by description for look-alikes of each survivor, then update `clear` in its `scorecard.json` with what you found.
+- Render the 3 to 5 survivors with `uv run logomaker sheet concepts <slug> --concepts <NN-slug>,<NN-slug>,<NN-slug> --no-open` and read `sheets/concepts.png`. The CLI refuses a concept without a fresh, rendered, passing audit and a gate-passing scorecard; fix that, never argue with it.
+- Then say the Collins rule 95 preface (in "Conversation rules"), open the sheet for the owner, and ask what the owner likes in each before asking which to choose.
 - Gate: the owner picks one. Run `uv run logomaker brand set <slug> --concept NN-slug`, record the likes and any steal with `brand decide`, and advance to `refinement`.
 
-### Refinement (read `reference/craft.md`, `reference/kit-api.md`, `reference/color.md`, `reference/fonts.md`, `reference/deliverables.md`, `reference/naming.md`)
+### Refinement (read `reference/craft.md`, `reference/kit-api.md`, `reference/color.md`, `reference/fonts.md`, `reference/deliverables.md`, `reference/naming.md`, `reference/cautionary-tales.md`, and, when re-scoring `final/`, `reference/scorecard.md` with `reference/evidence-rules.md` and `reference/trends.md`)
 - Copy the chosen `concept.py` to `final/concept.py`; write `final/params.json` (`{}` to start).
 - Work in this order, running `uv run logomaker concept run <slug> final` after each step and reading `final/renders/round-N/critique.png`: optical corrections; `small` and `favicon` tiers redrawn through `TIERS` overrides; the wordmark set in the chosen family with at most one parametric quirk; lockups, and the primary lockup for the top surface (`uv run logomaker brand set <slug> --primary-lockup horizontal`, or `stacked`); then colour.
 - Tiers: `small` draws 33 to 95 px and `favicon` 32 px and below; from 96 px up every icon draws the full symbol, so a wordmark-only concept's app icons from 96 px show its whole wordmark; avatars draw `compact` when built. For a letter-derived icon at every size, build the letter as the Mark's `symbol`; otherwise tell the owner.
 - Keep brand.json's wordmark font the family and weight `final/concept.py` draws (`brand set <slug> --font wordmark=<Family>:<weight>`): BRAND.md's typography lists brand.json's fonts.
 - Colour: write `final/tokens.json` (format in `reference/color.md`), the reverse a designed dark-context role map, never an inversion. `uv run logomaker color check brands/<slug>/final/tokens.json` is a pre-check holding only `ink` to the type thresholds; the colour gate is the rendered `concept run <slug> final` audit. Fix what either reports.
 - After any change to `final/concept.py`, `params.json` or `tokens.json`, re-run `concept run <slug> final` without `--no-render` before `sheet refine`, `brand advance --to package` or `package build`; each refuses a stale audit.
-- End each round with `uv run logomaker sheet refine <slug> --no-open`; read `sheets/refine-N.png`, then open the sheet for the owner. At most three rounds.
 - Unintended readings: read the mirrored and rotated panels of the latest `final/renders/round-N/critique.png`; record the findings in `final/knockout.md`.
 - Knock-out: search the web for look-alikes by description and for conflicting marks (where: `reference/naming.md`); write the queries and findings into `final/knockout.md` with the trademark caveat.
+- Only then present the round: `uv run logomaker sheet refine <slug> --no-open`, read `sheets/refine-N.png`, then open the sheet for the owner. At most three rounds; before each later round's sheet, redo the readings and the knock-out for what changed.
 - Gate: the owner approves. Advance to `package`.
 
 ### Package (read `reference/deliverables.md`, `reference/cautionary-tales.md`)
@@ -86,7 +86,7 @@ Every command prints one JSON object; read `ok`, `errors` and `warnings` and act
   > "New ideas can be fragile because they are unfamiliar. You may not like something you see here, but you are not allowed to say that for now... find something, anything, you like in every idea."
 - Never blend concepts. Pick one; a detail from another may be noted as a steal and recorded with `brand decide`.
 - Caps: four revise rounds per concept, three refinement rounds. If stuck, say so and offer to go back to concepts.
-- Tell unfamiliarity from a real flaw (`reference/process.md` sorts them): on a negative first reaction, ask one probing question (what reads wrong, at what size, in which mockup) before changing anything.
+- Tell unfamiliarity from a real flaw (`reference/process.md` sorts them; `reference/cautionary-tales.md` has the cases): on a negative first reaction, ask one probing question (what reads wrong, at what size, in which mockup) before changing anything.
 - If the owner asks for a motif on the blacklist, show the finding from `reference/cliches.md` once, offer a twist, and record their decision with `brand decide`. Do not refuse and do not silently comply.
 - When `brands/<slug>/inspiration/` holds images, view them during strategy and territories and say what you took from them.
 - Rationales are one paragraph, written for the owner, without the word "represents", construction diagrams, ratios or the golden ratio.
@@ -110,15 +110,15 @@ Every command prints one JSON object; read `ok`, `errors` and `warnings` and act
 
 ## Parallel concepts with subagents
 
-For four or more directions you may dispatch one subagent per direction with the Agent tool, setting `model` explicitly to `opus` or a cheaper model, never the session's own. First run `uv run logomaker fonts fetch "<Family>"` for every family the directions use. Give each subagent `brief.md`, `strategy.md`, the chosen territory entry, the one-line idea it owns and its `NN-slug` folder, `reference/kit-api.md`, `reference/craft.md` and the cached families. Instruct it to write only `concepts/NN-slug/concept.py`, to iterate with `uv run logomaker concept run <slug> NN-slug --no-render` until the audit's `ok` is true, and on exit 3 for a font to run `uv run logomaker fonts fetch "<Family>"` and never substitute another family.
+For four or more directions you may dispatch one subagent per direction with the Agent tool. Set `model` explicitly to `opus` or cheaper; never leave it to inherit the session's model. First run `uv run logomaker fonts fetch "<Family>"` for every family the directions use. Give each subagent `brief.md`, `strategy.md`, the chosen territory entry, the one-line idea it owns and its `NN-slug` folder, `reference/kit-api.md`, `reference/craft.md` and the cached families. Instruct it to write only `concepts/NN-slug/concept.py`, to iterate with `uv run logomaker concept run <slug> NN-slug --no-render` until the audit's `ok` is true, and on exit 3 for a font to run `uv run logomaker fonts fetch "<Family>"` and never substitute another family.
 
 `--no-render` is for iteration only: it skips the raster checks and the critique sheet, and `sheet concepts` and the phase gates refuse its audit. When the subagents finish, run `uv run logomaker concept run <slug> NN-slug` for each yourself, read every critique sheet and score each concept; subagents do not score or present.
 
 ## Resuming
 
-`uv run logomaker brand status <slug>` reports the phase, `next` and what is `missing`. Read the phase's artifacts before asking anything, then continue the runbook from that phase.
+`uv run logomaker brand status <slug>` reports the phase, `next` and what is `missing`. Read the phase's artifacts before asking anything, then continue the runbook from that phase; if `missing` names `brief.json`, rework the brief with `reference/questionnaire.md` first.
 
-If a concept in the `concepts` phase has no `scorecard.json`, score it from its latest critique before calling `sheet concepts`, which refuses an unscored concept; if its audit is missing or stale, re-run `uv run logomaker concept run <slug> NN-slug` and read the new critique first.
+In the `concepts` phase, score every concept that has no `scorecard.json` from its latest critique before calling `sheet concepts`, which refuses an unscored concept. When a survivor has no fresh, rendered, passing audit (missing, stale, made with `--no-render`, or failing; an interrupted subagent leaves a `--no-render` audit and no critique sheet), first run `uv run logomaker concept run <slug> NN-slug` without `--no-render`, fixing the module if it fails, then score from its critique.
 
 ## When the CLI fails
 
@@ -127,7 +127,7 @@ Exit codes are defined once, in the project's `CLAUDE.md`. What to do for each:
 - Exit 2: read `errors` and fix the module, the JSON or the command; never retry verbatim. A `brand advance` refusal lists its reasons under `missing`.
 - Exit 3: say what is missing (Chrome, the network, a font) and the command that fixes it, such as `fonts fetch` for a font.
 - Exit 4: `package verify` found a problem (read `package/verify.json`, fix, rebuild), or `package build` made a blank render (change the mark or the tokens, never rebuild verbatim).
-- A `traceback` in the payload means the concept module raised; read it and fix the module.
+- A `traceback` in the payload that passes through a `concept.py` means the module raised, perhaps inside a kit call it made: read it and fix the module. One that never passes through a `concept.py` is a CLI bug in `src/logomaker/`: report it to the owner instead of working around it.
 
 ## Done checklist
 
