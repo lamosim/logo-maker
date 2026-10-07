@@ -492,16 +492,18 @@ def names_analyze(name: str) -> None:
 
 @names_group.command("check")
 @click.argument("name")
-@click.option("--tlds", default="com,co,io,ai,app,dev", help="Comma-separated top-level domains to check")
-@click.option("--handles", default="github", help="Comma-separated handle services to check: github, or empty for none")
+@click.option("--tlds", default=None, help="Comma-separated top-level domains to check (default: names.TLDS)")
+@click.option("--handles", default=None, help="Comma-separated handle services to check: github, or empty for none "
+                                              "(default: names.HANDLES)")
 @command
-def names_check(name: str, tlds: str, handles: str) -> None:
+def names_check(name: str, tlds: str | None, handles: str | None) -> None:
     """Check domains over RDAP (then whois) and GitHub handles; a failed or late lookup is unknown, with a warning."""
     from . import names as nameslib
 
-    tld_list = tuple(t.strip() for t in tlds.split(",") if t.strip())
-    handle_list = tuple(h.strip() for h in handles.split(",") if h.strip())
-    result = nameslib.check(name, tld_list, handle_list)
+    def listed(value: str | None, default: tuple[str, ...]) -> tuple[str, ...]:
+        return default if value is None else tuple(v.strip() for v in value.split(",") if v.strip())
+
+    result = nameslib.check(name, listed(tlds, nameslib.TLDS), listed(handles, nameslib.HANDLES))
     emit(result, warnings=result.pop("warnings"))
 
 

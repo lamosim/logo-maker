@@ -36,14 +36,16 @@ OTHER_LABELS = (  # made up: a registered domain under other field labels, insid
 
 class Whois:
     """Stands in for the whois command (`names.subprocess.run`): it prints answers[domain], or fails as if whois were not
-    installed for a domain with no answer. `asked` lists the domains looked up."""
+    installed for a domain with no answer. `asked` lists the domains looked up; each must be given `timeout` seconds."""
 
     def __init__(self):
         self.answers: dict[str, str] = {}
         self.asked: list[str] = []
+        self.timeout = names.LOOKUP_TIMEOUT
 
     def __call__(self, argv, **kwargs):
         assert argv[0] == "whois", argv
+        assert kwargs.get("timeout") == self.timeout, kwargs
         self.asked.append(argv[-1])
         if argv[-1] not in self.answers:
             raise FileNotFoundError(2, "No such file or directory", "whois")
@@ -70,6 +72,8 @@ def test_analyze_features():
     assert names.analyze("PayPal")["camel_case"] and names.analyze("Octo")["initial"]["round"]
     assert not names.analyze("Strngth")["pronounceable"]
     assert names.domain_label("Café Nuit!") == "cafenuit"
+    cafe = names.analyze("Café Nuit")  # the accent folds away; the é still counts as a front vowel
+    assert cafe["letters"] == "cafenuit" and cafe["vowels"] == {"front": 2, "back": 1, "neutral": 1, "front_ratio": 0.67}
 
 
 def fake_transport(registered: set[str], github_taken: set[str], fail: set[str] | frozenset[str] = frozenset(),
@@ -135,6 +139,8 @@ def test_rdap_org_404_is_not_availability(whois):
     pytest.param(CO_NOT_FOUND, "available", id="co-not-found-field-value"),
     pytest.param(OTHER_LABELS, "unknown", id="phrases-inside-prose"),  # "not found" and "available" mid-sentence say nothing
     pytest.param(IANA_ONLY, "unknown", id="no-whois-server"),
+    pytest.param("Domain: keystone.io\nStatus: AVAILABLE\n", "available", id="available-as-a-field-value"),  # made up
+    pytest.param("% whois\nAvailable domains are listed at the registry.\n", "unknown", id="available-starting-prose"),
 ])
 def test_whois_verdicts(whois, answer, status):
     whois.answers["keystone.io"] = answer
@@ -211,6 +217,65 @@ def test_deadline_leaves_the_rest_unknown(monkeypatch, whois):
     assert result["handles"] == {"github": {"user": "unknown", "org": "unknown"}}
     assert result["warnings"] == ["deadline reached after 45 s; not checked: keystone.ai, keystone.app, github"]
     assert asked.count("rdap.org") == 2 and "api.github.com" not in asked and whois.asked == []
+
+
+def test_a_lookup_waits_no_longer_than_the_check_allows(monkeypatch, whois):
+    clock = [1000.0]
+    monkeypatch.setattr(names, "monotonic", lambda: clock[0])
+    timeouts = []
+
+    def slow(request: httpx.Request) -> httpx.Response:  # rdap.org has no server for .io: whois decides
+        timeouts.append(request.extensions["timeout"]["read"])
+        clock[0] += 3
+        return httpx.Response(404, json={})
+
+    whois.answers["keystone.io"] = IO_NOT_FOUND
+    with httpx.Client(transport=httpx.MockTransport(slow)) as client:
+        assert names.check_domain("keystone.io", client)["status"] == "available"  # 10 s for each, the most there is
+        assert timeouts == [10]
+        late = names.Clock(deadline=1010.0, limit=1012.0)  # a check whose limit is closer than LOOKUP_TIMEOUT
+        whois.timeout = pytest.approx(12 - 6)  # RDAP ran from 3 to 6 s in: 6 s left before the limit
+        assert names.check_domain("keystone.io", client, clock=late)["method"] == "whois"
+        assert timeouts == [10, pytest.approx(12 - 3)]  # the request got only the time left before the limit
+    assert names.Clock(deadline=1000.0, limit=1005.0).timeout() == 0.0  # past the limit, nothing is left
+
+
+def test_whois_is_skipped_once_rdap_takes_the_check_past_its_deadline(monkeypatch, whois):
+    clock = [1000.0]
+    monkeypatch.setattr(names, "monotonic", lambda: clock[0])
+    services = fake_transport(set(), set(), no_rdap={"io"})
+
+    def slow(request: httpx.Request) -> httpx.Response:  # the RDAP lookup that starts at 0 s answers at 46 s
+        clock[0] += 46
+        return services.handle_request(request)
+
+    whois.answers["keystone.io"] = IO_NOT_FOUND
+    result = names.check("Keystone", tlds=("io", "co"), handles=("github",), transport=httpx.MockTransport(slow))
+    assert result["domains"] == [{"domain": "keystone.io", "status": "unknown", "method": "none"},
+                                 {"domain": "keystone.co", "status": "unknown", "method": "none"}]
+    assert result["warnings"] == ["keystone.io: RDAP 404 from rdap.org, and the deadline passed before whois",
+                                  "deadline reached after 45 s; not checked: keystone.co, github"]
+    assert whois.asked == []
+
+
+def test_tlds_are_normalised_and_anything_else_refused_before_a_lookup(monkeypatch):
+    result = names.check("Keystone", tlds=(".COM", " .co.UK "), handles=(), transport=fake_transport({"keystone.com"}, set()))
+    assert [d["domain"] for d in result["domains"]] == ["keystone.com", "keystone.co.uk"]
+    monkeypatch.setattr(names, "default_transport", lambda: pytest.fail("no lookup expected"))
+    for value in ("c/m", ".", "com..uk"):
+        result = CliRunner().invoke(main, ["names", "check", "Keystone", "--tlds", f"io,{value}"])
+        payload = json.loads(result.stdout)
+        assert result.exit_code == 2 and payload["errors"] == [
+            f"Not a top-level domain: {value!r} (letters, digits and hyphens, dot-separated: com or co.uk)"], value
+
+
+def test_the_cli_checks_the_default_tlds_and_handles(monkeypatch):
+    monkeypatch.setattr(names, "default_transport", lambda: fake_transport(set(), set()))
+    payload = json.loads(CliRunner().invoke(main, ["names", "check", "Keystone"]).stdout)
+    assert [d["domain"] for d in payload["domains"]] == [f"keystone.{tld}" for tld in names.TLDS]
+    assert list(payload["handles"]) == list(names.HANDLES)
+    payload = json.loads(CliRunner().invoke(main, ["names", "check", "Keystone", "--tlds", "com", "--handles", ""]).stdout)
+    assert [d["domain"] for d in payload["domains"]] == ["keystone.com"] and payload["handles"] == {}
 
 
 def test_check_needs_letters_or_digits():
