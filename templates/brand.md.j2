@@ -1,0 +1,62 @@
+# {{ brand }} brand guidelines
+
+{{ rationale }}
+
+## Logo system
+
+| Tier | File | Use |
+|---|---|---|
+| Primary ({{ primary_lockup }}) | `{{ prefix }}-primary-color.svg` | website header, documents, print |
+| Horizontal | `{{ prefix }}-horizontal-color.svg` | nav bars, email signatures, banners |
+| Stacked | `{{ prefix }}-stacked-color.svg` | square placements, packaging, social posts |
+{% if has_wordmark %}| Wordmark | `{{ prefix }}-wordmark-color.svg` | when the symbol is already present |
+{% endif %}| Mark | `{{ prefix }}-mark-color.svg` | avatars, app icons, favicons over 32 px |
+| Small | `{{ prefix }}-small-color.svg` | 33 to 95 px |
+| Favicon | `{{ prefix }}-favicon-color.svg` | 32 px and below |
+
+Each tier ships in five variants: `color`, `reverse` (for dark backgrounds; designed, not inverted), `black`, `white`, and `mono`, which inherits `currentColor` from CSS.
+
+## Clear space and minimum size
+
+- Clear space: one x on every side, where x is {{ x_rule }} ({{ x_unit }} units of the 1000-unit canvas).
+- Minimum sizes: horizontal {{ ms.horizontal_px }} px / {{ ms.horizontal_mm }} mm; stacked {{ ms.stacked_px }} px / {{ ms.stacked_mm }} mm; mark {{ ms.mark_px }} px / {{ ms.mark_mm }} mm; favicon {{ ms.favicon_px }} px.
+
+## Colour
+
+| Name | HEX | RGB | HSL | OKLCH | CMYK (naive; confirm with the printer) |
+|---|---|---|---|---|---|
+{% for c in colours %}| {{ c.name }} | {{ c.hex }} | {{ c.rgb|join(', ') }} | {{ c.hsl|join(', ') }} | {{ c.oklch|join(' ') }} | {{ c.cmyk|join(', ') }} |
+{% endfor %}
+Roles on light paper: {{ roles_light }}. Roles on dark paper: {{ roles_dark }}.
+
+Contrast (WCAG ratio / APCA Lc):
+{% for r in contrast %}- {{ r.context }}: {{ r.role }} {{ r.color }} on {{ r.against }} = {{ r.wcag }} / {{ r.apca }} ({{ 'ok' if r.ok else 'below threshold' }})
+{% endfor %}
+## Typography
+
+{% for f in fonts %}- {{ f.family }} {{ f.weight }} ({{ f.license }}); {% if f.cached %}files in `fonts/{{ f.slug }}/`{% else %}not in this package (run `logomaker fonts fetch "{{ f.family }}"` and rebuild){% endif %}
+{% endfor %}
+Deliverable SVGs and PDFs have text converted to outlines. The font files are for new material in the same voice.
+
+## Don't
+
+1. Stretch or squash it.
+2. Rotate or tilt it.
+3. Recolour it outside the roles above.
+4. Add shadows, outlines, gradients or effects.
+5. Place it on busy backgrounds without the reversed or contained version.
+6. Re-typeset the name in another font.
+
+## Backgrounds
+
+Light fields use `color`. Dark fields use `reverse`. Photographs use `white` or `black` inside a clear-space zone. Fields in the primary colour use `white`.
+
+## Web head snippet
+
+```html
+{{ head_snippet }}
+```
+
+## Files
+
+See `README.md` for the full index with dimensions.

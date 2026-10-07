@@ -1,0 +1,22 @@
+# {{ brand }} logo package
+
+Built {{ built }} by logo-maker. To regenerate it, copy the files in `source/` back: `concept.py`, `params.json`, `tokens.json` and `rationale.md` into `brands/{{ slug }}/final/`, and `brand.json` and `strategy.json` into `brands/{{ slug }}/` beside it. Then run `uv run logomaker concept run {{ slug }} final` (packaging needs a passing audit of the final mark) and `uv run logomaker package build {{ slug }}`; `package build` reads `final/`, never `source/`.
+
+Preview the `reverse` and `white` PNGs on a dark background; they are transparent. CMYK values in the PDFs, EPS files and `tokens.json` are a naive conversion; confirm with your printer before a press run.
+
+{% for group, entries in groups %}
+## {{ group }}
+{% if group == "Print" %}
+The PDFs and EPS files hold outlines only, no live text, so the default font entry reportlab lists in them is unused. An EPS bounding box may be up to one point larger than the art.
+{% endif %}
+| File | Purpose | Size |
+|---|---|---|
+{% for e in entries %}| `{{ e.path }}` | {{ e.purpose }} | {% if e.width %}{{ e.width }}x{{ e.height }}{% endif %} |
+{% endfor %}
+{% endfor %}
+## Package files
+
+| File | Purpose |
+|---|---|
+| `README.md` | this index |
+| `manifest.json` | every file with dimensions and sha256 |

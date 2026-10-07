@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  @page { margin: 12mm; }
+  body{margin:0;font:11px/1.4 -apple-system,Helvetica,Arial,sans-serif;color:#222}
+  h1{font-size:22px;margin:0 0 2px} .sub{color:#666;margin-bottom:10px}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#666;margin:12px 0 6px;border-top:1px solid #ddd;padding-top:6px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .panel{border:1px solid #ddd;padding:8px;display:flex;align-items:center;justify-content:center;background:#fff}
+  .panel.dark{background:#111}
+  .chip{width:92px;height:56px;border-radius:4px;padding:6px;box-sizing:border-box;font-size:9px;display:flex;flex-direction:column;justify-content:flex-end}
+  .rationale{max-width:640px}
+  ol{margin:4px 0 0 16px;padding:0}
+</style></head>
+<body>
+<h1>{{ brand }}</h1>
+<div class="sub">Brand sheet. Clear space x = {{ x_rule }}. Minimum sizes: horizontal {{ ms.horizontal_px }} px / {{ ms.horizontal_mm }} mm, stacked {{ ms.stacked_px }} px / {{ ms.stacked_mm }} mm, mark {{ ms.mark_px }} px / {{ ms.mark_mm }} mm, favicon {{ ms.favicon_px }} px.</div>
+<div class="rationale">{{ rationale }}</div>
+
+<h2>Logo system</h2>
+<div class="row">
+  <div class="panel" style="width:260px;height:120px;background:{{ paper_light }}">{{ sheet.primary|safe }}</div>
+  <div class="panel dark" style="width:260px;height:120px;background:{{ paper_dark }}">{{ sheet.reverse|safe }}</div>
+  <div class="panel" style="width:120px;height:120px">{{ sheet.stacked|safe }}</div>
+  <div class="panel" style="width:90px;height:120px">{{ sheet.mark|safe }}</div>
+  <div class="panel" style="width:60px;height:120px">{{ sheet.small|safe }}</div>
+  <div class="panel" style="width:60px;height:120px">{{ sheet.favicon|safe }}</div>
+</div>
+
+<h2>Clear space</h2>
+<div class="row"><div class="panel" style="width:320px;height:130px">{{ sheet.clear_space|safe }}</div>
+<div style="max-width:330px">One x of clear space on every side, where x is {{ x_rule }}. Never crop, outline, rotate, distort, add effects, recolour outside the roles, re-typeset, or place on busy backgrounds without the reversed or contained version.</div></div>
+
+<h2>Colour</h2>
+<div class="row">{% for c in colours %}<div class="chip" style="background:{{ c.hex }};color:{{ c.text }}"><b>{{ c.name }}</b><span>{{ c.hex }}</span><span>CMYK {{ c.cmyk|join(' ') }}</span></div>{% endfor %}</div>
+<div style="margin-top:6px">Light paper roles: {{ roles_light }}. Dark paper roles: {{ roles_dark }}. Contrast: {% for r in contrast %}{{ r.context }} {{ r.role }} {{ r.wcag }}/{{ r.apca }}{{ ', ' if not loop.last }}{% endfor %}.</div>
+
+<h2>Typography</h2>
+<div>{% for f in fonts %}{{ f.family }} {{ f.weight }} ({{ f.license }}){{ '; ' if not loop.last }}{% endfor %}. Deliverables are outlined; the font files are in <code>fonts/</code>.</div>
+
+<h2>Backgrounds and files</h2>
+<div>Light fields: color. Dark fields: reverse. Photographs: white or black inside a clear-space zone. Primary-colour fields: white. Full file index in README.md; web head snippet in favicon-head.html.</div>
+</body></html>

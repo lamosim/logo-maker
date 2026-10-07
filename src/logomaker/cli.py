@@ -16,7 +16,7 @@ from pathlib import Path
 import click
 
 from . import __version__, registry
-from .output import EXIT_EXTERNAL, EXIT_RULE, CliError, emit
+from .output import EXIT_EXTERNAL, EXIT_RULE, EXIT_VERIFY, CliError, emit
 from .paths import project
 from .schemas import Phase
 
@@ -462,6 +462,17 @@ def package_build(slug: str, paper: str) -> None:
     skipped = [f"{group} skipped: {reason}" for group, reason in manifest.skipped.items()]
     emit({"package": str(builder.pkg.relative_to(paths.root)), "files": len(manifest.files), "manifest": "package/manifest.json"},
          warnings=manifest.warnings + skipped)
+
+
+@package_group.command("verify")
+@click.argument("slug")
+@command
+def package_verify(slug: str) -> None:
+    """Check package/ against its manifest and write package/verify.json, which the done phase needs; problems exit 4."""
+    from . import export as exportlib
+
+    result = exportlib.verify(project(), slug)
+    emit(result, ok=result["ok"], errors=result["problems"], code=0 if result["ok"] else EXIT_VERIFY)
 
 
 if __name__ == "__main__":  # pragma: no cover
