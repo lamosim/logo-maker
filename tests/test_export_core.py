@@ -2,6 +2,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -90,6 +91,20 @@ def test_core_groups_without_chrome(project_root):
     assert json.loads((pkg / "manifest.json").read_text()) == manifest.model_dump()
     assert manifest.warnings == [] and manifest.skipped == {}
     assert len(stub.calls) == 80 + 1 + 7  # the PNG matrix, the 2048 px primary flattened, the favicon set's frames and tiles
+
+
+def test_the_head_snippet_links_icons_from_the_site_root_and_previews_absolutely(project_root):
+    make_final_brand(project_root)
+    build(["favicons"])
+    head = (project_root / "brands" / "keystone" / "package" / "favicon-head.html").read_text()
+    assert re.findall(r'href="([^"]+)"', head) == ["/favicon.ico", "/icon.svg", "/apple-touch-icon.png", "/manifest.webmanifest"]
+    # Link previews fetch their image from another site, so a root-relative URL means nothing to them.
+    lines = head.splitlines()
+    note = next(i for i, line in enumerate(lines) if line.startswith("<!--"))
+    assert "replace https://example.com with your site's origin" in lines[note]
+    assert lines[note + 1:note + 3] == ['<meta name="twitter:image" content="https://example.com/x-card-1200x600.png">',
+                                        '<meta property="og:image" content="https://example.com/og-image-1200x630.png">']
+    assert lines[note + 3:] == ['<meta property="og:image:width" content="1200">', '<meta property="og:image:height" content="630">']
 
 
 def test_raster_icons_draw_the_tier_for_their_size(project_root):

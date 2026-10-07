@@ -95,7 +95,8 @@ def test_document_groups_index_and_verify_without_chrome(project_root):
     brand_md = (pkg / "BRAND.md").read_text()
     assert "`icon-works-wordmark-color.svg`" in brand_md and "- Fira Code 600 (OFL); files in `fonts/firacode/`" in brand_md
     assert "primary: Ember, ink: Coal, paper: Paper" in brand_md and "primary: Ember Light, ink: Paper, paper: Coal" in brand_md
-
+    snippet = (pkg / "favicon-head.html").read_text()
+    assert f"```html\n{snippet}" in brand_md and "Replace `https://example.com` in the two preview image URLs" in brand_md
     assert PdfReader(str(pkg / "brand-sheet.pdf")).pages
 
     readme = (pkg / "README.md").read_text()
