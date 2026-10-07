@@ -125,12 +125,8 @@ def test_print_files_hash_the_same_every_build(project_root, next_day):
     assert {entry.path: entry.sha256 for entry in print_builder().build().files} == first and list(first) == PRINT_FILES
 
 
-def test_print_files_leave_out_what_the_concept_cannot_draw(project_root, monkeypatch):
+def test_print_files_leave_out_a_wordmark_the_concept_cannot_draw(project_root):
     use_concept(make_final_brand(project_root), "tall_frame")  # a symbol alone: no wordmark lockup
-    builder = print_builder()
-    manifest = builder.build()
+    manifest = print_builder().build()
     assert [e.path for e in manifest.files] == [path for path in PRINT_FILES if "-wordmark-" not in path]
     assert "wordmark skipped: the concept has no full-wordmark" in manifest.warnings and manifest.skipped == {}
-    monkeypatch.setattr(builder, "mark", lambda variant: None)  # a concept with nothing at all to print
-    manifest = builder.build()
-    assert manifest.files == [] and manifest.skipped == {"print_files": "the concept has no lockup to print"}

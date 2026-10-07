@@ -265,10 +265,7 @@ class PackageBuilder(DocumentGroups):
                                *image_size(png))
 
     def flattened(self) -> None:
-        svg = self.svg("primary", "color")
-        if svg is None:
-            self.skip("flattened", "the concept has no primary lockup")
-            return
+        svg = self.svg("primary", "color")  # never None: the primary chain ends at full-lockup
         with Image.open(io.BytesIO(self.png_bytes(svg, 2048))) as opened:
             image = opened.convert("RGBA")
         white = Image.alpha_composite(Image.new("RGBA", image.size, "#ffffff"), image).convert("RGB")
@@ -332,10 +329,7 @@ class PackageBuilder(DocumentGroups):
             self._tile(f"avatar-{size}.png", size, art, 0.56, f"profile avatar {size}: art inside the 80% circle crop", self.light["paper"])
 
     def banners(self) -> None:
-        svg = self.svg("horizontal", "color")
-        if svg is None:
-            self.skip("banners", "the concept has no horizontal lockup")
-            return
+        svg = self.svg("horizontal", "color")  # never None: the horizontal chain ends at full-lockup
         for relpath, width, height, safe, purpose in (  # safe: the box (x, y, w, h) the logo stays inside; None, the whole banner
             ("banner-x-1500x500.png", 1500, 500, (0, 60, 1500, 380), "X header; top and bottom 60 px kept clear"),
             ("banner-linkedin-personal-1584x396.png", 1584, 396, None, "LinkedIn personal banner"),
@@ -348,9 +342,6 @@ class PackageBuilder(DocumentGroups):
 
     def previews(self) -> None:
         svg = self.svg("horizontal", "color")
-        if svg is None:
-            self.skip("previews", "the concept has no horizontal lockup")
-            return
         for relpath, width, height, purpose in (("og-image-1200x630.png", 1200, 630, "Open Graph link preview"),
                                                 ("x-card-1200x600.png", 1200, 600, "X summary_large_image card")):
             self._place(relpath, width, height, svg, 0.6, purpose, self.light["paper"])
@@ -360,9 +351,6 @@ class PackageBuilder(DocumentGroups):
                                        ("gbp-logo-720.png", 720, "Google Business Profile logo")):
             self._tile(relpath, size, self.mark_at(size).to_svg("color", palette=self.light), 0.62, purpose, self.light["paper"])
         svg = self.svg("horizontal", "color")
-        if svg is None:
-            self.skip("commerce", "the concept has no horizontal lockup for the email, Shopify and Stripe logos")
-            return
         for relpath, width, height, purpose in (("email-signature-logo@2x.png", 400, 100, "email signature logo, shown at 200x50"),
                                                 ("shopify-header-logo@2x.png", 800, 200, "Shopify header logo, shown at 400x100")):
             self._place(relpath, width, height, svg, 1.0, purpose, None)  # transparent, the logo as large as the canvas allows
@@ -371,9 +359,8 @@ class PackageBuilder(DocumentGroups):
 
     def print_files(self) -> None:
         """Vector print files drawn from the kit's paths (pdfout), never through Chrome: an RGB, a CMYK and a black PDF of
-        each named lockup, and a CMYK EPS of the primary lockup and of the mark. A lockup the concept cannot draw is left
-        out (mark() warns); when it can draw none, the group is skipped."""
-        printed = False
+        each named lockup, and a CMYK EPS of the primary lockup and of the mark. A wordmark the concept cannot draw is left
+        out (mark() warns); every other lockup's chain ends at full-lockup."""
         for variant in PNG_VARIANTS:
             mark = self.mark(variant)
             if mark is None:
@@ -383,17 +370,10 @@ class PackageBuilder(DocumentGroups):
                 relpath = f"{self.name}-{variant}-{suffix}.pdf"
                 pdfout.mark_to_pdf(mark, self.pkg / relpath, colour, palette, mode)
                 self.register(relpath, f"{variant} vector PDF, {suffix} (CMYK values are naive; confirm with the printer)")
-            printed = True
         for variant in ("primary", "mark"):
-            mark = self.mark(variant)
-            if mark is None:
-                continue
             relpath = f"{self.name}-{variant}-cmyk.eps"
-            pdfout.mark_to_eps(mark, self.pkg / relpath, "color", self.light, "cmyk")
+            pdfout.mark_to_eps(self.mark(variant), self.pkg / relpath, "color", self.light, "cmyk")
             self.register(relpath, f"{variant} legacy EPS for old print vendors")
-            printed = True
-        if not printed:
-            self.skip("print_files", "the concept has no lockup to print")
 
     # ---- driver --------------------------------------------------------
     def build(self, renderer: Renderer | None = None) -> Manifest:

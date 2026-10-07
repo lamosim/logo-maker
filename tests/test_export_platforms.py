@@ -163,23 +163,6 @@ def test_the_stripe_logo_is_1024_wide_whatever_the_lockup_shape(project_root, fi
     assert entry.width == 1024 and (entry.width, entry.height) == size == svg_size(builder.svg("horizontal", "color"), 1024)
 
 
-@pytest.mark.parametrize(("group", "kept", "reason"), [
-    ("banners", [], "the concept has no horizontal lockup"),
-    ("previews", [], "the concept has no horizontal lockup"),
-    ("commerce", ["stripe-icon-512.png", "gbp-logo-720.png"],
-     "the concept has no horizontal lockup for the email, Shopify and Stripe logos"),
-])
-def test_a_group_without_a_horizontal_lockup_records_what_it_left_out(project_root, monkeypatch, group, kept, reason):
-    make_final_brand(project_root)
-    svg = export.PackageBuilder.svg
-
-    def without_horizontal(self, variant: str, colour: str) -> str | None:
-        return None if variant == "horizontal" else svg(self, variant, colour)
-
-    monkeypatch.setattr(export.PackageBuilder, "svg", without_horizontal)
-    _, manifest = build([group])
-    assert [e.path for e in manifest.files] == kept and manifest.skipped == {group: reason}
-
 
 def test_a_render_that_fills_its_canvas_is_not_blank(project_root):
     # A solid mark with no holes fills its own viewBox, so its render on transparent is opaque edge to edge in one colour, as
