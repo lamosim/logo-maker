@@ -45,7 +45,6 @@ def test_ramp_is_monotonic_in_lightness():
     assert all(a > b for a, b in zip(lightness, lightness[1:]))
 
 
-
 def tokens_with(**light_roles: str) -> color.Tokens:
     """good_tokens() with each given light-context role pointed at a new colour."""
     data = good_tokens()

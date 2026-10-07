@@ -291,7 +291,7 @@ def test_a_package_file_that_cannot_be_written_exits_3_and_keeps_the_previous_pa
     monkeypatch.setattr(render, "Renderer", StubRenderer)
     monkeypatch.setattr(export.PackageBuilder, "GROUPS", ["masters"])
     code, payload = package_build()
-    assert code == 3 and "traceback" not in payload and payload["errors"][0].startswith("could not write the package (")
+    assert code == 3 and "traceback" not in payload and payload["errors"][0].startswith("could not build the package (")
     assert "No space left on device" in payload["errors"][0] and "keystone-mark-color.svg" in payload["errors"][0]
     assert [p.name for p in pkg.iterdir()] == ["marker.txt"] and not (pkg.parent / "package.tmp").exists()
 

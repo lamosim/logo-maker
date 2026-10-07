@@ -436,8 +436,8 @@ class PackageBuilder(DocumentGroups):
                                 warnings=self.warnings, skipped=self.skipped)
             (staging / "manifest.json").write_text(json.dumps(manifest.model_dump(), indent=2) + "\n", encoding="utf-8")
             _swap_in(staging, package, aside)
-        except OSError as err:  # a file the groups or the manifest could not write; _swap_in reports its own
-            raise CliError(f"could not write the package ({err}); the previous package is kept", code=EXIT_EXTERNAL) from err
+        except OSError as err:  # a file the groups or the manifest could not write (or read); _swap_in reports its own
+            raise CliError(f"could not build the package ({err}); the previous package is kept", code=EXIT_EXTERNAL) from err
         finally:
             self.pkg = package
             shutil.rmtree(staging, ignore_errors=True)  # gone already after a swap; else the next build tidies what is left

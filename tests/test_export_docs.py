@@ -13,6 +13,7 @@ from logomaker import fonts as fontlib
 from logomaker.cli import main
 from logomaker.color import check_tokens, chip_text
 from logomaker.kit import Mark, rect_centered, ring
+from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import Phase
 from tests.conftest import StubRenderer, make_final_brand, requires_chrome, write_passing_audit
@@ -312,11 +313,19 @@ class TwoPagePdf(StubRenderer):
         return out.getvalue()
 
 
+class NoPdf(StubRenderer):
+    def html_to_pdf(self, html: str, paper: str = "letter") -> bytes:
+        return b"not a pdf"
+
+
 def test_a_brand_sheet_past_one_page_is_kept_with_a_warning(project_root):
     make_final_brand(project_root)
     _, manifest = build(["favicons", "docs"], TwoPagePdf())
     assert manifest.warnings == ["brand-sheet.pdf runs to 2 pages, not one; shorten final/rationale.md or the palette"]
     assert "brand-sheet.pdf" in [e.path for e in manifest.files]
+    with pytest.raises(CliError) as err:  # what Chrome printed is no PDF: external, never a traceback
+        build(["docs"], NoPdf())
+    assert err.value.code == 3 and str(err.value).startswith("brand-sheet.pdf from Chrome is not a readable PDF (")
 
 
 @requires_chrome

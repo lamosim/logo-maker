@@ -13,13 +13,14 @@ from functools import cached_property
 from pathlib import Path
 
 from pypdf import PdfReader
+from pypdf.errors import PyPdfError
 
 from . import fonts as fontlib
 from . import registry
 from .audit import digest, text_roles
 from .color import CheckResult, check_tokens, chip_text
 from .kit.text import TextShape
-from .output import EXIT_VERIFY, CliError
+from .output import EXIT_EXTERNAL, EXIT_VERIFY, CliError
 from .paths import ProjectPaths
 from .raster import image_size
 from .render import fit_box
@@ -198,7 +199,10 @@ class DocumentGroups:
                 self.warn(f"source/{source.name} left out: brands/{self.slug}/{origin} is missing")
         html = env.get_template("brand-sheet.html").render(**ctx)
         pdf = self.renderer.html_to_pdf(html, self.paper)
-        pages = len(PdfReader(io.BytesIO(pdf)).pages)
+        try:
+            pages = len(PdfReader(io.BytesIO(pdf)).pages)
+        except PyPdfError as err:  # Chrome printed something that is not a PDF
+            raise CliError(f"brand-sheet.pdf from Chrome is not a readable PDF ({err})", code=EXIT_EXTERNAL) from err
         if pages > 1:
             self.warn(f"brand-sheet.pdf runs to {pages} pages, not one; shorten final/rationale.md or the palette")
         self.write("brand-sheet.pdf", pdf, "one-page brand sheet")

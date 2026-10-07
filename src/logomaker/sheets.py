@@ -208,7 +208,6 @@ def open_file(path: Path, enabled: bool = True, warnings: list[str] | None = Non
     return True
 
 
-
 def initial_of(name: str) -> str:
     """The letter the territories board sets as a specimen: the name's first letter or digit, upper-cased, else "A"."""
     return next((ch for ch in name if ch.isalnum()), "A").upper()

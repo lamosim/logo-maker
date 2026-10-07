@@ -172,7 +172,6 @@ def test_the_stripe_logo_is_1024_wide_whatever_the_lockup_shape(project_root, fi
     assert entry.width == 1024 and (entry.width, entry.height) == size == svg_size(builder.svg("horizontal", "color"), 1024)
 
 
-
 def test_a_render_that_fills_its_canvas_is_not_blank(project_root):
     # A solid mark with no holes fills its own viewBox, so its render on transparent is opaque edge to edge in one colour, as
     # a square small tier is on the primary tile; the flattened JPEG lays it edge to edge on white. Only a raster that is

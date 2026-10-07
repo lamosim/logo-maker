@@ -157,7 +157,6 @@ def test_print_group_writes_files(project_root):
     assert "0 .62 .82 .09 setcmykcolor" in (pkg / "keystone-mark-cmyk.eps").read_text().splitlines()
 
 
-
 def test_print_files_hash_the_same_every_build(project_root, next_day):
     make_final_brand(project_root)
     first = {entry.path: entry.sha256 for entry in print_builder().build().files}
