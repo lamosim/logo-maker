@@ -14,9 +14,10 @@ from logomaker.kit.mark import Mark
 from logomaker.kit.primitives import rect
 from logomaker.output import CliError
 from logomaker.paths import project
-from tests.conftest import FIXTURES, StubChrome, make_final_brand, no_open_command, requires_chrome, write_passing_audit
+from tests.conftest import FIXTURES, StubChrome, good_tokens, make_final_brand, no_open_command, requires_chrome, write_passing_audit
 
 MISSING = "final/concept.py is missing; copy the chosen concept into final/ first"
+PRIMARY = "#0f7b6c"  # a teal light primary, distinct from the fixture tokens' #e8572a
 SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
 CONTRAST_ROW = re.compile(r'<tr><td>(\w+)</td><td>(\w+)</td>(?:<td>[^<]*</td>){4}<td>([\d.]+) / Lc ([\d.]+)</td><td class="(ok|bad)">')
 
@@ -129,7 +130,11 @@ def test_a_default_round_is_one_past_the_highest_never_a_count(project_root):
 
 
 def test_the_sheet_draws_every_section_at_its_size(project_root):
-    make_final_brand(project_root)
+    final = make_final_brand(project_root)
+    tokens = good_tokens()
+    tokens["colors"]["ember"]["hex"] = PRIMARY  # a primary of these tokens alone, which no accent written into the code can match
+    (final / "tokens.json").write_text(json.dumps(tokens))
+    write_passing_audit(project(), "keystone", final)  # its fingerprint covers tokens.json
     info, html = refine()
     part = sections(html)
     assert list(part) == ["Tiers", "Lockups", "Colour variants", "Clear space", "Minimum sizes", "Colour-vision simulations",
@@ -140,7 +145,7 @@ def test_the_sheet_draws_every_section_at_its_size(project_root):
     assert captions(part["Colour variants"]) == ["color", "reverse", "black", "white", "mono (currentColor)"]
     assert 'fill="currentColor"' in part["Colour variants"]
     # mono takes the colour of the CSS around it: previewed in the light palette's primary, the tokens' own colour
-    assert re.findall(r";color:([^\"]+)\">", part["Colour variants"]) == ["inherit"] * 4 + ["#e8572a"]
+    assert re.findall(r";color:([^\"]+)\">", part["Colour variants"]) == ["inherit"] * 4 + [PRIMARY]
     widths = [int(w) for w in re.findall(r'<figure class="panel[^"]*" style="width:(\d+)px', part["Colour variants"])]
     assert len(widths) == 5 and sum(widths) + 4 * 16 <= sheets.REFINE_W - 2 * 24  # one row: the body's padding is 24 px a side
     assert captions(part["Clear space"]) == ["clear space = one x on every side"]

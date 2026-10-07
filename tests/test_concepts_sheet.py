@@ -25,6 +25,7 @@ AUDIT = "logomaker concept audit keystone 01-good"
 STALE = (f"is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, or cliches.json changed); "
          f"re-run: {AUDIT}")
 EMPTY = "at least one concept is needed (--concepts 01-arch,03-keystone)"
+NO_SYMBOL = "no symbol in this concept: app icons from 96 px up and the mark files show the whole wordmark"
 SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
 STRIP = re.compile(r'<div class="strip">(.*?)</div>', re.S)
 
@@ -101,12 +102,14 @@ def test_mockup_context_wordmark_only_warns(project_root):
 
 
 @pytest.mark.parametrize(("tiers", "warnings"), [
-    ((), ["no symbol in this concept: icon, favicon and avatar mockups use the wordmark"]),
-    (("favicon",), ["no symbol in this concept: icon and avatar mockups use the wordmark"]),
-    (("compact", "favicon"), ["no symbol in this concept: icon mockup uses the wordmark"]),
-    (("small",), []),  # the small tier draws the icon and the avatar, and stands in for the favicon
+    ((), [f"{NO_SYMBOL}; so do the icon, favicon and avatar mockups"]),
+    (("favicon",), [f"{NO_SYMBOL}; so do the icon and avatar mockups"]),
+    (("compact", "favicon"), [f"{NO_SYMBOL}; so does the icon mockup"]),
+    # The small tier draws the icon and the avatar and stands in for the favicon: no mockup shows the wordmark, the
+    # package still does.
+    (("small",), [NO_SYMBOL]),
 ])
-def test_the_wordmark_warning_names_only_the_mockups_the_wordmark_draws(project_root, tiers, warnings):
+def test_a_concept_without_a_symbol_is_warned_where_its_wordmark_shows(project_root, tiers, warnings):
     registry.new_brand(project(), "Keystone")
     word = Mark(wordmark=text("Keystone", "Fira Code", weight=700, cap_height=180), lockup="wordmark")
     initial = Mark(wordmark=text("K", "Fira Code", weight=800, cap_height=180), lockup="wordmark")
@@ -263,7 +266,7 @@ def test_the_cli_writes_the_sheet_opens_it_and_warns_about_wordmark_fallbacks(pr
     monkeypatch.delenv("LOGOMAKER_NO_OPEN")
     opened = []
     monkeypatch.setattr(subprocess, "Popen", lambda argv, **kwargs: opened.append(argv))
-    fallback = "02-word: no symbol in this concept: icon, favicon and avatar mockups use the wordmark"
+    fallback = f"02-word: {NO_SYMBOL}; so do the icon, favicon and avatar mockups"
     folder = project_root / "brands" / "keystone" / "sheets"
     code, payload = sheet("--concepts", " 01-good , 02-word ", "--no-open")
     assert code == 0 and payload["concepts"] == ["01-good", "02-word"] and payload["warnings"] == [fallback] and opened == []
@@ -294,7 +297,7 @@ def test_concepts_sheet_renders_all_mockups(project_root, renderer):
     for kind in mockups.MOCKUPS:
         assert html.count(f'class="mockup" data-mockup="{kind}"') == 3, kind
     assert "01-good" in html and "02-good-colour" in html and "03-word" in html and "40 / 50" in html
-    fallback = "no symbol in this concept: icon, favicon and avatar mockups use the wordmark"
+    fallback = f"{NO_SYMBOL}; so do the icon, favicon and avatar mockups"
     sections = html.split('<section class="concept">')[1:]
     assert [f'<div class="warn">{fallback}</div>' in section for section in sections] == [False, False, True]
     assert "background:#e8572a" in html  # the colour concept's app-icon tile is its primary

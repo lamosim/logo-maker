@@ -2,9 +2,9 @@
 
 The skill reads these files phase by phase. The tests keep each one complete (its title, its "Read this when:" line, its
 headings, its length and its sources), keep the two generated pages equal to their data, keep every CLI command and option
-the skill's documents mention real, in code or in prose, and keep the documented code honest: kit-api.md's worked examples
-build and pass the audit (its raster checks too, in the render suite), craft.md's recipes make what they say, and the JSON
-blocks validate.
+the skill's documents and the example's WALKTHROUGH.md mention real, in code or in prose, and keep the documented code
+honest: kit-api.md's worked examples build and pass the audit (its raster checks too, in the render suite), craft.md's
+recipes make what they say, and the JSON blocks validate.
 """
 from __future__ import annotations
 
@@ -113,15 +113,18 @@ def prose_lines(text: str) -> list[str]:
 
 
 def cli_problems(text: str) -> list[str]:
-    """Each CLI mention in `text` that cli.main lacks. In code: a group after "logomaker", a `<group> <command>`, or a
-    `--option` written after a command, or after a group named without one (up to the next mention), that it does not
-    take. In prose, outside backticks: a `logomaker <group> [<command>]` naming a group or command that does not exist."""
+    """Each CLI mention in `text` that cli.main lacks. In code, where a mention starts a span or a fenced line or follows
+    "logomaker": a group after "logomaker", a `<group> <command>`, or a `--option` written after a command, or after a
+    group named without one (up to the next mention), that it does not take. In prose, outside backticks: a
+    `logomaker <group> [<command>]` naming a group or command that does not exist."""
     problems: list[str] = []
     for unit in code_units(text):
         for word in re.findall(r"(?<![\w.])logomaker[ \t]+([a-z][\w-]*)", unit):
             if word not in COMMANDS:
                 problems.append(f"no group `logomaker {word}` (in `{unit.strip()}`)")
-        mentions = list(MENTION.finditer(unit))
+        # A mention starts the span (or the fenced line) or follows "logomaker": a group named further in is an option's
+        # value (`--phase package`) or a word in code, so the options after it still belong to the command before it.
+        mentions = [m for m in MENTION.finditer(unit) if m[0].startswith("logomaker") or not unit[:m.start()].strip()]
         for i, mention in enumerate(mentions):
             name, word = mention["group"], mention["command"]
             target = COMMANDS[name]
@@ -146,8 +149,10 @@ def cli_problems(text: str) -> list[str]:
 
 
 def skill_documents() -> list[Path]:
-    """Every Markdown file of the logo skill, and the project's CLAUDE.md and README.md when they exist."""
-    return sorted(SKILL.rglob("*.md")) + [path for path in (REPO / "CLAUDE.md", REPO / "README.md") if path.is_file()]
+    """Every Markdown file of the logo skill; the project's CLAUDE.md and README.md when they exist; and the example
+    brand's WALKTHROUGH.md, which SKILL.md makes the reference for the order of the commands."""
+    others = (REPO / "CLAUDE.md", REPO / "README.md", REPO / "docs" / "examples" / "keystone" / "WALKTHROUGH.md")
+    return sorted(SKILL.rglob("*.md")) + [path for path in others if path.is_file()]
 
 
 def last_binding(code: str) -> str:
@@ -344,7 +349,7 @@ def test_deliverables_md_mirrors_the_package_builder():
 
 def test_every_cli_command_and_option_the_documents_mention_exists():
     documents = skill_documents()
-    assert len(documents) >= len(REQUIRED)
+    assert len(documents) >= len(REQUIRED) and REPO / "docs" / "examples" / "keystone" / "WALKTHROUGH.md" in documents
     problems = [f"{path.relative_to(REPO)}: {problem}" for path in documents for problem in cli_problems(path.read_text(encoding="utf-8"))]
     assert not problems, "\n".join(problems)
 
@@ -354,10 +359,11 @@ def test_the_cli_check_catches_what_does_not_exist():
                 "`uv run logomaker frob x`; `uv run logomaker brand set <slug> --industry fintech` is real.\n"
                 "In prose, run logomaker brand zap first, then logomaker concept run (which exists), then `sheet --wide`.\n"
                 "```bash\nuv run logomaker brand set keystone --industry fintech \\\n  --surface \"app icon\" --size 3\n```\n"
-                "```python\n# the CLI's `concept frob` is no command, but a comment is prose about the code\nMark(symbol=ring())\n```\n")
+                "```python\n# the CLI's `concept frob` is no command, but a comment is prose about the code\nMark(symbol=ring())\n```\n"
+                "An option's value is no mention: `uv run logomaker brand decide <slug> --phase package --by user --note \"...\"`.\n")
     problems = cli_problems(injected)
     assert len(problems) == 8, problems
     for expected in ("`brand frob`", "--min-size", "--render", "`logomaker frob`", "`brand zap` (in prose", "`sheet` takes no --wide",
                      "`set` takes no --size"):
         assert any(expected in problem for problem in problems), expected
-    assert not any("concept frob" in problem for problem in problems)
+    assert not any("concept frob" in problem or "--phase package" in problem for problem in problems)

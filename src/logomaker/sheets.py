@@ -293,14 +293,18 @@ def mark_mockups(outputs: dict) -> dict[str, str]:
 def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: dict | None) -> dict:
     """What the seven mockups (templates/mockups) draw for one concept: its outputs in colour from `light` and `dark`
     (black and white without tokens), each mark picked as exports pick it (mark_mockups), generated neighbour icons for
-    the home screen and the other browser tabs, and `warnings`: a concept without a symbol names the mockups among the
-    icon, favicon and avatar that no tier of its own draws, so its wordmark (the full lockup) stands in."""
+    the home screen and the other browser tabs, and `warnings`: a concept without a symbol is told that the package's
+    app icons from 96 px up and its mark files show the whole wordmark, whatever its tiers draw, and which of the icon,
+    favicon and avatar mockups show it too, because no tier of its own draws them (the full lockup stands in)."""
     drawn = mark_mockups(outputs)
     stand_ins = [mockup for mockup, output in drawn.items() if output == "full-lockup"]  # only without a symbol
     warnings: list[str] = []
-    if stand_ins:
-        named = stand_ins[0] if len(stand_ins) == 1 else f"{', '.join(stand_ins[:-1])} and {stand_ins[-1]}"
-        warnings.append(f"no symbol in this concept: {named} {'mockup uses' if len(stand_ins) == 1 else 'mockups use'} the wordmark")
+    if "full-symbol" not in outputs:
+        warning = "no symbol in this concept: app icons from 96 px up and the mark files show the whole wordmark"
+        if stand_ins:
+            named = stand_ins[0] if len(stand_ins) == 1 else f"{', '.join(stand_ins[:-1])} and {stand_ins[-1]}"
+            warning += f"; so {'does' if len(stand_ins) == 1 else 'do'} the {named} {'mockup' if len(stand_ins) == 1 else 'mockups'}"
+        warnings.append(warning)
     try:
         handle = registry.slugify(state.name)  # follows the name, so a renamed working title gets its new handle
     except CliError:  # a name with no ASCII letters or digits to keep
