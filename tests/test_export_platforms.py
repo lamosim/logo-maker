@@ -1,4 +1,5 @@
 import hashlib
+import math
 import shutil
 from pathlib import Path
 
@@ -10,7 +11,8 @@ from logomaker import export
 from logomaker.kit.mark import ROLES
 from logomaker.output import CliError
 from logomaker.paths import project
-from logomaker.sheets import fit_size, pick_output
+from logomaker.render import svg_size
+from logomaker.sheets import fit_size, pick_output, size_tier
 from tests.conftest import FIXTURES, StubRenderer, make_final_brand, requires_chrome, write_passing_audit
 from tests.test_export_core import build, opened
 
@@ -19,8 +21,8 @@ LAYERS = ["app-icon-layers/background.svg", "app-icon-layers/foreground.svg", "a
           "android/ic_launcher_background.svg", "android/ic_launcher_monochrome.svg"]
 # Each raster the six groups write, in order: its size (None: the art's own, for the Stripe logo), the output that draws its
 # art, the art's palette ("tile": every role in light paper, for the primary tile; "light") and the box the art is fitted to:
-# 60% of an app icon, 56% of an avatar, 60% of a banner's or preview's safe area, the whole email and Shopify canvas, a
-# 1024 px long edge for the Stripe logo, 62% of the Stripe and GBP icons.
+# 60% of an app icon, 56% of an avatar, 62% of the Stripe and GBP icons, 60% of a banner's or preview's safe area, the
+# whole email and Shopify canvas, and 1024 px wide at any height for the Stripe logo.
 RASTERS = [
     ("ios-app-icon-1024.png", (1024, 1024), "full-symbol", "tile", (614, 614)),
     ("android/mipmap-mdpi/ic_launcher.png", (48, 48), "small", "tile", (29, 29)),
@@ -42,11 +44,11 @@ RASTERS = [
     ("banner-bluesky-1500x500.png", (1500, 500), "full-horizontal", "light", (900, 300)),
     ("og-image-1200x630.png", (1200, 630), "full-horizontal", "light", (720, 378)),
     ("x-card-1200x600.png", (1200, 600), "full-horizontal", "light", (720, 360)),
-    ("email-signature-logo@2x.png", (400, 100), "full-horizontal", "light", (400, 100)),
-    ("shopify-header-logo@2x.png", (800, 200), "full-horizontal", "light", (800, 200)),
-    ("stripe-logo.png", None, "full-horizontal", "light", (1024, 1024)),
     ("stripe-icon-512.png", (512, 512), "full-symbol", "light", (317, 317)),
     ("gbp-logo-720.png", (720, 720), "full-symbol", "light", (446, 446)),
+    ("email-signature-logo@2x.png", (400, 100), "full-horizontal", "light", (400, 100)),
+    ("shopify-header-logo@2x.png", (800, 200), "full-horizontal", "light", (800, 200)),
+    ("stripe-logo.png", None, "full-horizontal", "light", (1024, math.inf)),
 ]
 PLATFORM_FILES = [RASTERS[0][0], *LAYERS, *(name for name, *_ in RASTERS[1:])]
 
@@ -60,6 +62,10 @@ def use_concept(final: Path, fixture: str) -> None:
 def on_tile(light: dict[str, str]) -> dict[str, str]:
     """The palette of art on the primary tile: every role, paper too, in the light paper colour."""
     return {role: light["paper"] for role in (*ROLES, "paper")}
+
+
+def viewbox(svg: str) -> list[float]:
+    return [float(v) for v in svg.split('viewBox="')[1].split('"')[0].split()]
 
 
 def ink_box(path: Path, ink: tuple[int, int, int] | None = None) -> tuple[int, int, int, int]:
@@ -99,8 +105,19 @@ def test_platform_groups_without_chrome(project_root):
     symbol = builder.outputs["full-symbol"]  # the tier for 1024 px (Apple) and 108 px (Android)
     art = symbol.to_svg("color", palette=palettes["tile"])
     assert (pkg / "app-icon-layers/foreground.svg").read_text() == export.square_viewbox(art, 0.6)
-    assert (pkg / "android/ic_launcher_foreground.svg").read_text() == export.square_viewbox(art, 660 / 1080)
-    assert (pkg / "android/ic_launcher_monochrome.svg").read_text() == export.square_viewbox(symbol.to_svg("black"), 660 / 1080)
+    assert (pkg / "android/ic_launcher_foreground.svg").read_text() == export.square_viewbox(art, 466 / 1080)
+    assert (pkg / "android/ic_launcher_monochrome.svg").read_text() == export.square_viewbox(symbol.to_svg("black"), 466 / 1080)
+    _, _, art_w, art_h = viewbox(art)
+    for name in ("android/ic_launcher_foreground.svg", "android/ic_launcher_monochrome.svg"):
+        side = viewbox((pkg / name).read_text())[2]  # the adaptive icon's 108 dp, as 1080 units
+        assert math.hypot(art_w, art_h) / 2 * 1080 / side <= 330, name  # the art's corners inside the 66 dp safe circle
+        assert "inside the 66 dp safe circle" in entries[name].purpose and "1080" not in entries[name].purpose, name
+
+
+def test_adaptive_icon_art_fits_the_safe_circle_even_when_square():
+    square = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0 0H100V100H0Z"/></svg>'  # the worst case
+    side = viewbox(export.square_viewbox(square, export.ADAPTIVE_SAFE / 1080))[2]
+    assert math.hypot(100, 100) / 2 * 1080 / side <= 330  # its corners inside the 66 dp (660-unit) circle of 108 dp (1080)
 
 
 @pytest.mark.parametrize(("fixture", "drawn", "warnings"), [
@@ -133,12 +150,49 @@ def test_mark_at_picks_the_output_pick_output_does(project_root, fixture):
     use_concept(make_final_brand(project_root), fixture)
     builder = export.PackageBuilder(project(), "keystone")
     for size in (16, 32, 33, 48, 95, 96, 108, 1024):
+        assert export.CHAINS[export.TIER_VARIANTS[size_tier(size)[0]]] == size_tier(size), size  # mark() follows the same chain
         assert builder.mark_at(size) is builder.outputs[pick_output(builder.outputs, size)], size
+
+
+@pytest.mark.parametrize("fixture", ["good", "tall_frame"])  # tall_frame's lockup is its symbol alone, twice as tall as wide
+def test_the_stripe_logo_is_1024_wide_whatever_the_lockup_shape(project_root, fixture):
+    use_concept(make_final_brand(project_root), fixture)
+    builder, manifest = build(["commerce"])
+    entry = next(e for e in manifest.files if e.path == "stripe-logo.png")
+    size = opened(project_root / "brands" / "keystone" / "package" / "stripe-logo.png").size
+    assert entry.width == 1024 and (entry.width, entry.height) == size == svg_size(builder.svg("horizontal", "color"), 1024)
+
+
+@pytest.mark.parametrize(("group", "kept", "reason"), [
+    ("banners", [], "the concept has no horizontal lockup"),
+    ("previews", [], "the concept has no horizontal lockup"),
+    ("commerce", ["stripe-icon-512.png", "gbp-logo-720.png"],
+     "the concept has no horizontal lockup for the email, Shopify and Stripe logos"),
+])
+def test_a_group_without_a_horizontal_lockup_records_what_it_left_out(project_root, monkeypatch, group, kept, reason):
+    make_final_brand(project_root)
+    svg = export.PackageBuilder.svg
+
+    def without_horizontal(self, variant: str, colour: str) -> str | None:
+        return None if variant == "horizontal" else svg(self, variant, colour)
+
+    monkeypatch.setattr(export.PackageBuilder, "svg", without_horizontal)
+    _, manifest = build([group])
+    assert [e.path for e in manifest.files] == kept and manifest.skipped == {group: reason}
+
+
+def test_a_render_that_fills_its_canvas_is_not_blank(project_root):
+    # A solid mark with no holes fills its own viewBox, so its render on transparent is opaque edge to edge in one colour, as
+    # a square small tier is on the primary tile. Only a raster composed onto a background is blank in one flat colour. (The
+    # flattened JPEG is left out: it lays the render edge to edge on white, where one flat colour is blank by that rule.)
+    make_final_brand(project_root)
+    _, manifest = build(["pngs", "favicons", *PLATFORM], StubRenderer(bleed=True))
+    assert len(manifest.files) == 80 + 8 + 30
 
 
 @pytest.mark.parametrize(("group", "named"), [
     ("apple", "ios-app-icon-1024.png"), ("android", "android/mipmap-mdpi/ic_launcher.png"), ("social", "avatar-320.png"),
-    ("banners", "banner-x-1500x500.png"), ("previews", "og-image-1200x630.png"), ("commerce", "email-signature-logo@2x.png"),
+    ("banners", "banner-x-1500x500.png"), ("previews", "og-image-1200x630.png"), ("commerce", "stripe-icon-512.png"),
 ])
 def test_blank_art_stops_the_build_before_it_is_composed(project_root, group, named):
     # Composed onto one flat colour, blank art leaves a composite the blank rule refuses too; on a surface of several

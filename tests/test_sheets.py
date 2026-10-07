@@ -22,6 +22,12 @@ SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
 AUDIT_LINE_DIV = re.compile(r'<div class="(fail|warn|info|more)">(.*?)</div>')
 
 
+def test_size_tier_is_the_chain_pick_output_follows():
+    assert sheets.size_tier(1024) == sheets.size_tier(96) == ("full-symbol", "full-lockup")
+    assert sheets.size_tier(95) == sheets.size_tier(33) == ("small", "full-symbol", "full-lockup")
+    assert sheets.size_tier(32) == sheets.size_tier(16) == ("favicon", "small", "full-symbol", "full-lockup")
+
+
 def test_pick_output_tier_rule():
     full = {"full-lockup": 1, "full-symbol": 1, "small": 1, "favicon": 1}
     assert sheets.pick_output(full, 256) == "full-symbol"

@@ -53,14 +53,19 @@ def _first_present(outputs: dict, chain: Iterable[str]) -> str:
     return next((name for name in chain if name in outputs), "full-lockup")
 
 
-def pick_output(outputs: dict, size: int) -> str:
+def size_tier(size: int) -> tuple[str, ...]:
+    """The outputs that draw the mark `size` px across, best first (spec section 6.4): full-symbol from 96 px, small
+    down to 33 px, favicon at 32 px and below, each falling back to the next larger build and ending at full-lockup."""
     if size >= 96:
-        chain = ("full-symbol", "full-lockup")
-    elif size > 32:
-        chain = ("small", "full-symbol", "full-lockup")
-    else:
-        chain = ("favicon", "small", "full-symbol", "full-lockup")
-    return _first_present(outputs, chain)
+        return ("full-symbol", "full-lockup")
+    if size > 32:
+        return ("small", "full-symbol", "full-lockup")
+    return ("favicon", "small", "full-symbol", "full-lockup")
+
+
+def pick_output(outputs: dict, size: int) -> str:
+    """The output that draws the mark `size` px across: the first in size_tier(size) that was built."""
+    return _first_present(outputs, size_tier(size))
 
 
 def fit_size(svg: str, box_w: int, box_h: int) -> tuple[int, int]:

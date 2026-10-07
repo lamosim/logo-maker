@@ -21,7 +21,7 @@ from .paths import ProjectPaths
 from .raster import blank, encoded, image_size
 from .render import VIEWBOX, Renderer
 from .schemas import Manifest, ManifestEntry, now_iso
-from .sheets import _first_present, _palettes_of, fit_size, jinja, pick_output
+from .sheets import _first_present, _palettes_of, fit_size, jinja, size_tier
 
 VARIANT_NAMES = ("primary", "horizontal", "stacked", "wordmark", "mark", "small", "favicon")
 COLOURS = ("color", "reverse", "black", "white", "mono")
@@ -29,6 +29,7 @@ PNG_VARIANTS = ("primary", "horizontal", "stacked", "wordmark", "mark")
 PNG_COLOURS = ("color", "reverse", "black", "white")
 PNG_SIZES = (256, 512, 1024, 2048)
 MASK_SAFE = 289  # centred in 512, its corners stay inside the maskable safe circle (radius 40% = 204.8 px)
+ADAPTIVE_SAFE = 466  # of the adaptive icon's 1080 units: centred, its corners stay inside the 66 dp safe circle (660 / √2 = 466.7)
 REQUIRED_FINAL = ("concept.py", "params.json", "tokens.json", "rationale.md")
 RASTERS = (".png", ".jpg", ".webp")  # written files that write() refuses when blank
 STAGING, ASIDE = "package.tmp", "package.old.tmp"  # beside package/: the build in progress; the previous package mid-swap
@@ -41,8 +42,8 @@ CHAINS = {
     "small": ("small", *TIER_FALLBACKS["small"]),
     "favicon": ("favicon", *TIER_FALLBACKS["favicon"]),
 }
-# The tier sheets.pick_output prefers at each size, and the variant whose chain (CHAINS) falls back from it as pick_output does.
-SIZE_TIERS = {"full-symbol": "mark", "small": "small", "favicon": "favicon"}
+# The variant whose chain (CHAINS) is the one sheets.size_tier gives a size, by that chain's first output.
+TIER_VARIANTS = {"full-symbol": "mark", "small": "small", "favicon": "favicon"}
 
 
 def square_viewbox(svg: str, fraction: float) -> str:
@@ -131,9 +132,13 @@ class PackageBuilder:
         return self.outputs[name]
 
     def mark_at(self, size: int) -> Mark:
-        """The output that draws the mark `size` px across, as sheets.pick_output picks it: full-symbol from 96 px, small
-        down to 33 px, favicon below, each falling back to the next larger build, with mark()'s warning when it does."""
-        return self.mark(SIZE_TIERS[pick_output(SIZE_TIERS, size)])
+        """The output that draws the mark `size` px across: the first built in sheets.size_tier(size), the chain
+        sheets.pick_output follows (full-symbol from 96 px, small down to 33 px, favicon below). It resolves through
+        mark(), so a fallback warns. Never None: mark() returns None only for a chain with nothing built, and each of
+        these ends at full-lockup, which every build has."""
+        mark = self.mark(TIER_VARIANTS[size_tier(size)[0]])
+        assert mark is not None  # every size_tier chain ends at full-lockup
+        return mark
 
     def svg(self, variant: str, colour: str) -> str | None:
         mark = self.mark(variant)
@@ -147,17 +152,20 @@ class PackageBuilder:
         return ManifestEntry(path=relpath, purpose=purpose, width=width, height=height, sha256=hashlib.sha256(raw).hexdigest(),
                              bytes=len(raw))
 
-    def _refuse_blank(self, name: str, raster: bytes) -> None:
-        """Stop the build with exit 4, naming `name`, when `raster` shows nothing (raster.blank)."""
-        if blank(raster):
+    def _refuse_blank(self, name: str, raster: bytes, *, opaque: bool) -> None:
+        """Stop the build with exit 4, naming `name`, when `raster` shows nothing (raster.blank): a render on transparent
+        when no pixel is drawn, an `opaque` one, composed onto a background, when it is one flat colour."""
+        if blank(raster, opaque=opaque):
             raise CliError(f"{name} came out blank: its render drew nothing", code=EXIT_VERIFY)
 
-    def write(self, relpath: str, data: bytes | str, purpose: str, width: int | None = None, height: int | None = None) -> Path:
+    def write(self, relpath: str, data: bytes | str, purpose: str, width: int | None = None, height: int | None = None, *,
+              opaque: bool = False) -> Path:
         """Write `data` to `relpath` in the package and add its manifest entry. A raster (RASTERS) that came out blank
-        stops the build with exit 4 instead."""
+        stops the build with exit 4 instead: `opaque` when it was composed onto a background, else a render on
+        transparent (_refuse_blank)."""
         raw = data.encode("utf-8") if isinstance(data, str) else data
         if Path(relpath).suffix in RASTERS:
-            self._refuse_blank(relpath, raw)
+            self._refuse_blank(relpath, raw, opaque=opaque)
         target = self.pkg / relpath
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(raw)
@@ -208,9 +216,10 @@ class PackageBuilder:
         bx, by, bw, bh = safe or (0, 0, width, height)
         art_w, art_h = round(bw * fraction), round(bh * fraction)
         art = self.render_fit(art_svg, art_w, art_h)
-        self._refuse_blank(f"{relpath} (art)", art)
+        self._refuse_blank(f"{relpath} (art)", art, opaque=False)
         x, y, _, _ = self._centered(bw, bh, art_w, art_h)
-        self.write(relpath, self.compose(width, height, background, art, (bx + x, by + y, art_w, art_h), alpha), purpose, width, height)
+        self.write(relpath, self.compose(width, height, background, art, (bx + x, by + y, art_w, art_h), alpha), purpose, width, height,
+                   opaque=background is not None)
 
     def _on_primary(self) -> dict[str, str]:
         """The palette of art on a primary-colour tile: every role, paper too, in the light paper colour (as the concept
@@ -245,7 +254,7 @@ class PackageBuilder:
             image = opened.convert("RGBA")
         white = Image.alpha_composite(Image.new("RGBA", image.size, "#ffffff"), image).convert("RGB")
         self.write(f"{self.name}-primary-color-white-bg-2048.jpg", encoded(white, "JPEG", quality=92),
-                   "primary on a white background, flattened JPEG", *image.size)
+                   "primary on a white background, flattened JPEG", *image.size, opaque=True)
         self.write(f"{self.name}-primary-color-2048.webp", encoded(image, "WEBP", quality=90), "primary colour transparent WebP",
                    *image.size)
 
@@ -253,7 +262,7 @@ class PackageBuilder:
         frames = []
         for size in (48, 32, 16):  # each frame drawn by the tier for its own size, and checked before the ICO packs it
             png = self.render_fit(square_viewbox(self.mark_at(size).to_svg("color", palette=self.light), 0.9), size, size)
-            self._refuse_blank(f"favicon.ico ({size} px frame)", png)
+            self._refuse_blank(f"favicon.ico ({size} px frame)", png, opaque=False)
             with Image.open(io.BytesIO(png)) as frame:
                 frames.append(frame.convert("RGBA"))
         self.write("favicon.ico", encoded(frames[0], "ICO", sizes=[(48, 48), (32, 32), (16, 16)], append_images=frames[1:]),
@@ -285,12 +294,12 @@ class PackageBuilder:
 
     def android(self) -> None:
         on_primary, primary = self._on_primary(), self.light["primary"]
-        layer, inside = self.mark_at(108), 660 / 1080  # the tier for the 108 dp canvas; the art inside its central 660 of 1080 units
-        self.write("android/ic_launcher_foreground.svg", square_viewbox(layer.to_svg("color", palette=on_primary), inside),
-                   "adaptive icon foreground: 1080-unit canvas, art inside the central 660 (the 66 dp safe zone)")
+        layer = self.mark_at(108)  # the tier for the adaptive icon's 108 dp canvas
+        self.write("android/ic_launcher_foreground.svg", square_viewbox(layer.to_svg("color", palette=on_primary), ADAPTIVE_SAFE / 1080),
+                   "adaptive icon foreground: art fitted inside the 66 dp safe circle of the 108 dp canvas")
         self.write("android/ic_launcher_background.svg", square_fill(1080, primary), "adaptive icon background layer, 1080-unit canvas")
-        self.write("android/ic_launcher_monochrome.svg", square_viewbox(layer.to_svg("black"), inside),
-                   "adaptive icon monochrome layer (themed icons): 1080-unit canvas, art inside the central 660")
+        self.write("android/ic_launcher_monochrome.svg", square_viewbox(layer.to_svg("black"), ADAPTIVE_SAFE / 1080),
+                   "adaptive icon monochrome layer (themed icons): art fitted inside the 66 dp safe circle of the 108 dp canvas")
         for density, px in (("mdpi", 48), ("hdpi", 72), ("xhdpi", 96), ("xxhdpi", 144), ("xxxhdpi", 192)):
             art = self.mark_at(px).to_svg("color", palette=on_primary)
             self._tile(f"android/mipmap-{density}/ic_launcher.png", px, art, 0.6, f"legacy launcher icon, {density}", primary)
@@ -328,18 +337,18 @@ class PackageBuilder:
             self._place(relpath, width, height, svg, 0.6, purpose, self.light["paper"])
 
     def commerce(self) -> None:
+        for relpath, size, purpose in (("stripe-icon-512.png", 512, "Stripe branding icon"),
+                                       ("gbp-logo-720.png", 720, "Google Business Profile logo")):
+            self._tile(relpath, size, self.mark_at(size).to_svg("color", palette=self.light), 0.62, purpose, self.light["paper"])
         svg = self.svg("horizontal", "color")
         if svg is None:
-            self.skip("commerce", "the concept has no horizontal lockup")
+            self.skip("commerce", "the concept has no horizontal lockup for the email, Shopify and Stripe logos")
             return
         for relpath, width, height, purpose in (("email-signature-logo@2x.png", 400, 100, "email signature logo, shown at 200x50"),
                                                 ("shopify-header-logo@2x.png", 800, 200, "Shopify header logo, shown at 400x100")):
             self._place(relpath, width, height, svg, 1.0, purpose, None)  # transparent, the logo as large as the canvas allows
-        png = self.png_bytes(svg, 1024)
+        png = self.renderer.svg_to_png(svg, 1024)  # 1024 wide whatever the lockup's shape, as tall as its aspect makes it
         self.write("stripe-logo.png", png, "Stripe branding logo, 1024 wide", *image_size(png))
-        for relpath, size, purpose in (("stripe-icon-512.png", 512, "Stripe branding icon"),
-                                       ("gbp-logo-720.png", 720, "Google Business Profile logo")):
-            self._tile(relpath, size, self.mark_at(size).to_svg("color", palette=self.light), 0.62, purpose, self.light["paper"])
 
     # ---- driver --------------------------------------------------------
     def build(self, renderer: Renderer) -> Manifest:

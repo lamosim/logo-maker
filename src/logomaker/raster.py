@@ -38,17 +38,17 @@ def image_size(data: bytes) -> tuple[int, int]:
         return image.size
 
 
-def blank(data: bytes) -> bool:
-    """Whether an encoded image shows nothing: spec section 13's "empty or fully transparent" render. With any
-    transparency it is blank when every pixel is fully transparent. Fully opaque, it is art composed onto a background,
-    and blank in one flat colour. ink_mask's cut-offs measure ink, not this: they would call a faint render blank, and a
-    light mark on light paper."""
+def blank(data: bytes, *, opaque: bool) -> bool:
+    """Whether an encoded image shows nothing: spec section 13's "empty or fully transparent" render. Only the caller
+    knows which kind it made. A render on transparent is blank when every pixel is fully transparent, and never for
+    filling its canvas in one colour, as a solid mark with no holes does. An `opaque` raster, art composed onto a
+    background, is blank in one flat colour: the background with nothing on it. ink_mask's cut-offs measure ink, not
+    this: they would call a faint render blank, and a light mark on light paper."""
     with Image.open(io.BytesIO(data)) as image:
         extrema = image.convert("RGBA").getextrema()
-    low_alpha, high_alpha = extrema[3]
-    if low_alpha == 255:
+    if opaque:
         return all(low == high for low, high in extrema)
-    return high_alpha == 0
+    return extrema[3][1] == 0
 
 
 def component_count(mask: np.ndarray) -> int:

@@ -195,11 +195,12 @@ class StubChrome:
 class StubRenderer:
     """Stands in for render.Renderer without Chrome, for the package builder: svg_to_png and html_to_png return real PNGs
     of the size asked for, a block of `ink` (RGBA) over the middle half of a transparent canvas (of `background`, when
-    given); `ink=None` draws nothing, a blank render. html_to_pdf returns a one-page PDF. `calls` records every svg_to_png
-    as (svg, width, height, background)."""
+    given); `ink=None` draws nothing, a blank render, and `bleed=True` inks the whole canvas, as a solid mark with no holes
+    fills its own viewBox. html_to_pdf returns a one-page PDF. `calls` records every svg_to_png as (svg, width, height,
+    background)."""
 
-    def __init__(self, ink: tuple[int, int, int, int] | None = (31, 27, 24, 255)):
-        self.ink = ink
+    def __init__(self, ink: tuple[int, int, int, int] | None = (31, 27, 24, 255), bleed: bool = False):
+        self.ink, self.bleed = ink, bleed
         self.calls: list[tuple[str, int, int, str | None]] = []
 
     def __enter__(self):
@@ -211,7 +212,8 @@ class StubRenderer:
     def _png(self, width: int, height: int, background: str | None = None) -> bytes:
         image = Image.new("RGBA", (width, height), background or (0, 0, 0, 0))
         if self.ink is not None:
-            ImageDraw.Draw(image).rectangle((width // 4, height // 4, 3 * width // 4, 3 * height // 4), fill=self.ink)
+            box = (0, 0, width - 1, height - 1) if self.bleed else (width // 4, height // 4, 3 * width // 4, 3 * height // 4)
+            ImageDraw.Draw(image).rectangle(box, fill=self.ink)
         out = io.BytesIO()
         image.save(out, format="PNG")
         return out.getvalue()
