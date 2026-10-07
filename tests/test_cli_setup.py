@@ -69,10 +69,10 @@ def test_setup_finds_chrome_where_the_renderer_looks(project_root, monkeypatch, 
 
 
 def test_setup_check_runs_and_reports_a_missing_module(project_root):
-    # A fresh interpreter where skia and Playwright cannot be imported: the CLI must still load and say so.
+    # A fresh interpreter where skia, Playwright and httpx cannot be imported: the CLI must still load and say so.
     script = (
         "import sys\n"
-        "sys.modules['skia'] = sys.modules['playwright'] = None\n"
+        "sys.modules['skia'] = sys.modules['playwright'] = sys.modules['httpx'] = None\n"
         "from click.testing import CliRunner\n"
         "from logomaker.cli import main\n"
         "result = CliRunner().invoke(main, ['setup', '--check'])\n"
@@ -85,8 +85,9 @@ def test_setup_check_runs_and_reports_a_missing_module(project_root):
     payload = json.loads(stdout)
     assert int(exit_code) == 3 and payload["ok"] is False
     assert payload["modules"]["skia"] is False and payload["modules"]["playwright"] is False and payload["modules"]["pypdf"] is True
-    assert list(payload["module_errors"]) == ["skia", "playwright"] and "skia" in payload["module_errors"]["skia"]
-    assert any(e.startswith("missing modules: skia, playwright") for e in payload["errors"])
+    assert payload["modules"]["httpx"] is False  # the CLI loads names, for its help's defaults, without httpx
+    assert list(payload["module_errors"]) == ["skia", "playwright", "httpx"] and "skia" in payload["module_errors"]["skia"]
+    assert any(e.startswith("missing modules: skia, playwright, httpx") for e in payload["errors"])
     assert payload["chrome"]["path"] == "/Applications/Google Chrome.app"  # still checked without Playwright
 
 

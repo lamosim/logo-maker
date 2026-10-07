@@ -1,7 +1,8 @@
 """Click entry points. Every command ends in output.emit().
 
 The heavy modules (the kit, audit, sheets, render, color, fonts) are imported inside the commands that use them, so
-`setup --check` still runs, and reports, when one of their dependencies is missing.
+`setup --check` still runs, and reports, when one of their dependencies is missing. names loads with the CLI, for the
+defaults its help shows, and imports httpx only when a lookup runs.
 """
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ from pathlib import Path
 import click
 
 from . import __version__, registry
+from . import names as nameslib  # light: httpx is imported only when a lookup runs
 from .output import EXIT_EXTERNAL, EXIT_RULE, EXIT_VERIFY, CliError, emit
 from .paths import project
 from .schemas import Phase
@@ -485,20 +487,17 @@ def names_group() -> None:
 @command
 def names_analyze(name: str) -> None:
     """Show a name's sound and letterform features: syllables, vowels, initial letter, pronounceability."""
-    from . import names as nameslib
-
     emit(nameslib.analyze(name))
 
 
 @names_group.command("check")
 @click.argument("name")
-@click.option("--tlds", default=None, help="Comma-separated top-level domains to check (default: names.TLDS)")
-@click.option("--handles", default=None, help="Comma-separated handle services to check: github, or empty for none "
-                                              "(default: names.HANDLES)")
+@click.option("--tlds", default=None, help=f"Comma-separated top-level domains to check (default: {','.join(nameslib.TLDS)})")
+@click.option("--handles", default=None, help="Comma-separated handle services to check, or empty for none "
+                                              f"(default: {','.join(nameslib.HANDLES)})")
 @command
 def names_check(name: str, tlds: str | None, handles: str | None) -> None:
     """Check domains over RDAP (then whois) and GitHub handles; a failed or late lookup is unknown, with a warning."""
-    from . import names as nameslib
 
     def listed(value: str | None, default: tuple[str, ...]) -> tuple[str, ...]:
         return default if value is None else tuple(v.strip() for v in value.split(",") if v.strip())

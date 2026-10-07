@@ -269,6 +269,13 @@ def test_tlds_are_normalised_and_anything_else_refused_before_a_lookup(monkeypat
             f"Not a top-level domain: {value!r} (letters, digits and hyphens, dot-separated: com or co.uk)"], value
 
 
+def test_names_check_help_shows_the_defaults_it_uses():
+    result = CliRunner().invoke(main, ["names", "check", "--help"])
+    shown = " ".join(result.output.split())  # click wraps the help to the terminal's width
+    assert result.exit_code == 0 and f"(default: {','.join(names.TLDS)})" in shown and f"(default: {','.join(names.HANDLES)})" in shown
+    assert "com,co,io,ai,app,dev" in shown and "names.TLDS" not in shown
+
+
 def test_the_cli_checks_the_default_tlds_and_handles(monkeypatch):
     monkeypatch.setattr(names, "default_transport", lambda: fake_transport(set(), set()))
     payload = json.loads(CliRunner().invoke(main, ["names", "check", "Keystone"]).stdout)

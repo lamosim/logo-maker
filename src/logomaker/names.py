@@ -1,4 +1,6 @@
-"""Name analysis (sound and letterform features) and availability checks over RDAP, whois and the GitHub API."""
+"""Name analysis (sound and letterform features) and availability checks over RDAP, whois and the GitHub API.
+
+httpx is imported where a lookup runs, so the CLI can load this module, and show its defaults, without it."""
 from __future__ import annotations
 
 import re
@@ -7,10 +9,12 @@ import unicodedata
 from collections.abc import Iterable
 from dataclasses import dataclass
 from time import monotonic
-
-import httpx
+from typing import TYPE_CHECKING
 
 from .output import CliError
+
+if TYPE_CHECKING:
+    import httpx
 
 FRONT, BACK, NEUTRAL = set("ie"), set("ou"), set("a")
 VOWELS = FRONT | BACK | NEUTRAL | {"y"}
@@ -143,6 +147,8 @@ def check_domain(domain: str, client: httpx.Client, warnings: list[str] | None =
     own when None), and whois is skipped once the deadline has passed. An unknown status adds its reason to
     `warnings`, when given.
     """
+    import httpx
+
     clock = clock or Clock.starting_now()
     try:
         # the bootstrap is a redirect
@@ -169,6 +175,8 @@ def check_domain(domain: str, client: httpx.Client, warnings: list[str] | None =
 def _github_lookup(key: str, url: str, client: httpx.Client, problems: list[str], clock: Clock) -> str:
     """One GitHub API lookup, waiting at most `clock` allows: registered (200), available (404) or unknown, whose reason
     is added to `problems`."""
+    import httpx
+
     try:
         code = client.get(url, timeout=clock.timeout()).status_code
     except httpx.HTTPError as err:
@@ -232,6 +240,8 @@ def check(name: str, tlds: tuple[str, ...] = TLDS, handles: tuple[str, ...] = HA
     unchecked = []
     headers = {"User-Agent": "logomaker", "Accept": "application/json"}
     transport = transport if transport is not None else default_transport()
+    import httpx  # here, not at the top: see the module docstring
+
     with httpx.Client(timeout=LOOKUP_TIMEOUT, follow_redirects=True, headers=headers, transport=transport) as client:
         for tld in tlds:
             domain = f"{label}.{tld}"
