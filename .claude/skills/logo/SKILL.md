@@ -15,6 +15,8 @@ You are the designer. The `logomaker` CLI does every deterministic step; you do 
 4. For a new venture, settle whether it has a name before `brand new`, as the next question unless already answered: `uv run logomaker brand new "<Name>"`, or `uv run logomaker brand new "<Working title>" --unnamed`, the only way a brand gets a naming phase.
 5. Never draw, search the web, or propose names before the brief is confirmed.
 
+The example brand in `docs/examples/keystone/` (its `WALKTHROUGH.md` and the artifacts beside it) is the reference for each artifact's shape and for the order of the commands, never for design ideas; never edit it.
+
 ## Phase runbook
 
 Every command prints one JSON object; read `ok`, `errors` and `warnings` and act on them. A JSON file a gate validates follows its model in `src/logomaker/schemas.py` (`Brief`, `Strategy`, `TerritoriesSpec`, `Scorecard`) or `src/logomaker/color.py` (`Tokens`); read the model first. Record each owner decision with `uv run logomaker brand decide <slug> --phase <phase> --by user --note "..."`.

@@ -4,7 +4,9 @@ Code settings.
 The first three tests are the floor: the headings, rules and commands each document must carry. The rest pin what the
 runbook promises: it quotes the two canonical passages exactly as the reference files word them, the Review Focus
 behaviours are written into it, the owner sees a sheet only after the checks and the reading that come before it, it
-points at every reference file and only at files that exist, and the settings allow the CLI while still denying .env.
+points at the example brand for each artifact's shape and the command order only, a named venture checks its name once
+in strategy, it points at every reference file and only at files that exist, and the settings allow the CLI while still
+denying .env.
 tests/test_knowledge.py checks every CLI command and option these documents mention; tests/md.py holds the section helpers
 both files use.
 """
@@ -126,6 +128,13 @@ def test_skill_shows_the_owner_only_what_it_checked_and_read():
     in_order(flat(section(runbook, "Refinement", level=3)), "reading `final/renders/round-N/critique.png`", "Unintended readings:",
              "Knock-out:", "Only then present the round: `uv run logomaker sheet refine <slug> --no-open`", "read `sheets/refine-N.png`",
              "open the sheet for the owner")
+
+
+def test_skill_points_at_the_example_brand_for_shape_and_order_only():
+    first = flat(section(SKILL.read_text(encoding="utf-8"), "First move"))
+    assert ("The example brand in `docs/examples/keystone/` (its `WALKTHROUGH.md` and the artifacts beside it) is the reference for "
+            "each artifact's shape and for the order of the commands, never for design ideas; never edit it.") in first
+    assert (ROOT / "docs" / "examples" / "keystone" / "WALKTHROUGH.md").is_file()
 
 
 def test_a_named_venture_checks_its_name_once_in_strategy():

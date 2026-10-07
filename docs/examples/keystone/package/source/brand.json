@@ -3,8 +3,8 @@
   "name": "Keystone",
   "needs_name": false,
   "created": "2026-10-07T16:08:40-04:00",
-  "updated": "2026-10-07T16:41:40-04:00",
-  "phase": "package",
+  "updated": "2026-10-07T16:42:55-04:00",
+  "phase": "done",
   "industry": "invoicing for solo consultants",
   "surfaces": [
     "app icon",
@@ -84,6 +84,12 @@
       "phase": "refinement",
       "by": "user",
       "note": "Approved after the colour round (refine sheet round 1): 02-arch refined with a 5% heavier crown, a favicon redrawn on a 16 px grid, Bricolage Grotesque 700 tracked +10 with no quirk, stacked primary lockup with a 170-unit gap, Ember #c83c29 and Coal on Kiln, Ember Glow #ff8671 and Kiln on Coal. Knock-out in final/knockout.md shown with the caveat."
+    },
+    {
+      "at": "2026-10-07T16:42:55-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "Package handed over: brands/keystone/package (186 files, verify ok) and package/brand-sheet.pdf, read and found to print on one page. Headless run: the folder and sheet were not opened in Finder or Chrome; the owner opens brand-sheet.pdf once at plan closure."
     }
   ]
 }

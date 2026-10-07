@@ -6,8 +6,8 @@ Keystone's mark is an arch that stands because of one stone. The keystone sits a
 
 | Tier | File | Use |
 |---|---|---|
-| Primary (stacked) | `keystone-primary-color.svg` | website header, documents, print |
-| Horizontal | `keystone-horizontal-color.svg` | nav bars, email signatures, banners |
+| Primary (stacked) | `keystone-primary-color.svg` | the default lockup: use it wherever the layout allows |
+| Horizontal | `keystone-horizontal-color.svg` | website headers, nav bars, email signatures, banners |
 | Stacked | `keystone-stacked-color.svg` | square placements, packaging, social posts |
 | Wordmark | `keystone-wordmark-color.svg` | when the symbol is already present |
 | Mark | `keystone-mark-color.svg` | avatars, app icons, favicons over 32 px |

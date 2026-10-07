@@ -1,7 +1,7 @@
 {
   "brand": "Keystone",
   "slug": "keystone",
-  "built": "2026-10-07T16:42:00-04:00",
+  "built": "2026-10-07T18:11:04-04:00",
   "inputs": "7fa66dc254b3a1df47b4ac9a63185b970fae53587bf7f37a67a9d3f30fc82fd2",
   "files": [
     {
@@ -945,16 +945,16 @@
       "purpose": "legacy favicon, 16/32/48",
       "width": 48,
       "height": 48,
-      "sha256": "a677b5343390510eaeb9341a69530f3ca238eae84049726bbf3656d352b8f303",
-      "bytes": 1177
+      "sha256": "874788b1bae2c7a6799a1ce08060f7f1c5aee8a5ab8cfbf29bde3d78474d5c41",
+      "bytes": 1163
     },
     {
       "path": "icon.svg",
       "purpose": "SVG favicon with dark-mode style",
       "width": null,
       "height": null,
-      "sha256": "8470f213ff25fe173d7b21cc1d0ac1782e842673ff3b31eb710af58dff73740f",
-      "bytes": 1497
+      "sha256": "699820d8ab9ac83ddc412db1e0b32b522604b96bca9cb24d51a9aef5d4b5307b",
+      "bytes": 1485
     },
     {
       "path": "apple-touch-icon.png",
@@ -1417,8 +1417,8 @@
       "purpose": "brand guidelines",
       "width": null,
       "height": null,
-      "sha256": "72536c57d7fae923e360c52fd6912d4fe405b6190e22858f77877d4aac8da21c",
-      "bytes": 4087
+      "sha256": "8d3abd0001c9edbf9579db3e33f5ea02beaa8f99dd99e1156376264f582662c2",
+      "bytes": 4125
     },
     {
       "path": "rationale.md",
@@ -1465,8 +1465,8 @@
       "purpose": "regenerable source, from brands/keystone/brand.json",
       "width": null,
       "height": null,
-      "sha256": "a14df8e3bbabddf06dc3264b66e9a688ebb248bf68e447e073b69ef4f1a9d979",
-      "bytes": 4505
+      "sha256": "931dc814c1b34f93dabb3b526c95fc14e19489c461bdbb2414768dc5361a443e",
+      "bytes": 4878
     },
     {
       "path": "source/strategy.json",
@@ -1481,15 +1481,15 @@
       "purpose": "one-page brand sheet",
       "width": null,
       "height": null,
-      "sha256": "1d45fd92ff4548fcf11f12ef97de982bb29be6e769d97bd12de08e9b66a544c1",
-      "bytes": 72030
+      "sha256": "dd2be89da5fe0fe6ac28c74725afbfe930a2ed3e5ff9e8d83d4dc602d4aa4896",
+      "bytes": 82561
     },
     {
       "path": "README.md",
       "purpose": "file index",
       "width": null,
       "height": null,
-      "sha256": "abbb7fbd89ad4bbfa613db2b278517533fc0ca6bbfed7e02df52f9ae25157727",
+      "sha256": "88452eafdc2dfb1b715f34faefa28d997f15098ffdf2cb28f56490435d1aa769",
       "bytes": 18441
     }
   ],

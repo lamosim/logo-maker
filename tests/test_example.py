@@ -4,7 +4,8 @@ The first two tests are the plan's: the copy is complete, and its rationale foll
 is not taken on trust: a fast test re-runs the package check (export_docs.verify) on a copy in a tmp project, so a file
 changed after the build, or final/ and brand.json drifting from what the package was built from, fails here; and the
 render test copies the example into a tmp project, installs the package's own fonts into its assets/fonts, builds the
-package again and verifies it (spec section 14).
+package again with no warnings, finds every file made without Chrome's rasteriser byte for byte as committed, and
+verifies it (spec section 14). WALKTHROUGH.md says how to refresh the example when either breaks.
 """
 import json
 import shutil
@@ -38,6 +39,17 @@ def test_example_rationale_follows_the_rule():
     assert len(text.split()) <= 180 and text.count("\n\n") <= 1
 
 
+def made_without_chrome(path: str) -> bool:
+    """Whether package file `path` comes out of a build byte for byte the same: the vectors the kit draws (every SVG) and
+    reportlab writes (the print PDFs and EPS), the copies (fonts/, and source/ but brand.json, which the brand moves on
+    from after a build) and the documents written from templates and tokens. The rest are Chrome's: its renders, and the
+    brand sheet it prints; README.md carries the build's time."""
+    if path in ("brand-sheet.pdf", "README.md", "source/brand.json"):
+        return False
+    return (path.endswith((".svg", ".pdf", ".eps")) or path.startswith(("fonts/", "source/"))
+            or path in ("tokens.json", "favicon-head.html", "manifest.webmanifest", "BRAND.md", "rationale.md"))
+
+
 def install_example(project_root: Path) -> Path:
     """Copy the example into the tmp project as brands/keystone, the folder the skill built it in; return that folder."""
     brand = project_root / "brands" / "keystone"
@@ -61,5 +73,9 @@ def test_example_package_builds_again_and_verifies(project_root, renderer):
     manifest = export.PackageBuilder(project(), "keystone").build(renderer)
     assert sorted(entry.path for entry in manifest.files) == sorted(entry["path"] for entry in committed["files"])
     assert manifest.skipped == {} and manifest.warnings == []
+    hashes = {entry["path"]: entry["sha256"] for entry in committed["files"]}
+    same = [entry for entry in manifest.files if made_without_chrome(entry.path)]
+    assert {"BRAND.md", "icon.svg", "keystone-mark-cmyk.eps", "tokens.json", "fonts/FONT-NOTICE.md"} <= {e.path for e in same}
+    assert not [entry.path for entry in same if entry.sha256 != hashes[entry.path]]  # else rebuild the example (WALKTHROUGH.md)
     result = export_docs.verify(project(), "keystone")
     assert result["ok"], result["problems"]

@@ -1,6 +1,6 @@
 # Keystone logo package
 
-Built 2026-10-07T16:42:00-04:00 by logo-maker. To regenerate it, copy the files in `source/` back: `concept.py`, `params.json`, `tokens.json` and `rationale.md` into `brands/keystone/final/`, and `brand.json` and `strategy.json` into `brands/keystone/` beside it. The brand's font families must be in the font cache before the next step: run `uv run logomaker fonts fetch 'Bricolage Grotesque'`, or copy each folder in this package's `fonts/` into `assets/fonts/`. Then run `uv run logomaker concept run keystone final` (packaging needs a passing audit of the final mark) and `uv run logomaker package build keystone`; `package build` reads `final/`, never `source/`.
+Built 2026-10-07T18:11:04-04:00 by logo-maker. To regenerate it, copy the files in `source/` back: `concept.py`, `params.json`, `tokens.json` and `rationale.md` into `brands/keystone/final/`, and `brand.json` and `strategy.json` into `brands/keystone/` beside it. The brand's font families must be in the font cache before the next step: run `uv run logomaker fonts fetch 'Bricolage Grotesque'`, or copy each folder in this package's `fonts/` into `assets/fonts/`. Then run `uv run logomaker concept run keystone final` (packaging needs a passing audit of the final mark) and `uv run logomaker package build keystone`; `package build` reads `final/`, never `source/`.
 
 Preview the `reverse` and `white` PNGs on a dark background; they are transparent. CMYK values in the PDFs, EPS files and `tokens.json` are a naive conversion; confirm with your printer before a press run.
 

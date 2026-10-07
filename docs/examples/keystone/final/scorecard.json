@@ -5,7 +5,7 @@
     "appropriate": "unchanged from 02-arch: the keystone holding the arch is the one idea, drawn, and reads without a caption",
     "distinctive": "no competitor uses architecture or stone; Ember on Kiln and Coal sits apart from the category's blue and green and is redder and darker than Chaser's orange",
     "simple": "one arch, one stone, 21 anchors",
-    "legible": "the favicon is redrawn on a 16 px grid (band 4 px, opening 8 px, keystone 2 px proud) and holds at 16 px; the wordmark is tracked +10 for the 32 px header; x-height 9.5 px in the 120 px horizontal lockup, 20.3 px in the 160 px stacked",
+    "legible": "the favicon is redrawn at 50 units a pixel and fills the 16 px frame: as rendered, the band is 4 px and the opening 8 px on whole pixels, the keystone 2 px proud (its top and the feet's ends on half pixels, the 13 px height centred), and it holds at 16 px; the wordmark is tracked +10 for the 32 px header; x-height 9.5 px in the 120 px horizontal lockup, 20.3 px in the 160 px stacked",
     "adaptable": "colour, reverse, black, white and mono all hold on the refine sheet; the reverse is a designed dark map (Ember Glow and Kiln on Coal); the app icon draws the arch in Kiln on an Ember tile",
     "timeless": "no trend shape; a flat, two-colour mark",
     "universal": "mirrored identical; rotated readings (a funnel at 90 degrees, a magnet or plug at 180) appear only in orientations nobody uses; colour-vision strip keeps the hierarchy (final/knockout.md)",
