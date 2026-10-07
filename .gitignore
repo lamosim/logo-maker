@@ -16,6 +16,9 @@ build/
 # macOS
 .DS_Store
 
+# The font cache: every family folder under assets/fonts/ (TTFs, licence, manifest.json, instances/) is fetched again by
+# `logomaker fonts fetch`; only assets/fonts/catalog.json is tracked. A package carries its own copies in package/fonts/.
+assets/fonts/*/
 # Fetched font files are reproducible from assets/fonts/catalog.json and manifest.json
 assets/fonts/*/*.ttf
 assets/fonts/*/*.otf
