@@ -254,22 +254,24 @@ def _read_json(brand: Path, path: Path, label: str | None = None) -> tuple[dict[
     return (data, None) if isinstance(data, dict) else ({}, f"{label} is not a JSON object")
 
 
-def _check_brief(brand: Path, state: BrandState) -> list[str]:
+# Each phase check takes the brand folder, its state and `current`: whether the brand is in that check's phase (the
+# phase it is leaving) rather than past it. Only the concept check reads `current`.
+def _check_brief(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     return _need(brand, brand / "brief.md") + _need(brand, brand / "brief.json", Brief)
 
 
-def _check_naming(brand: Path, state: BrandState) -> list[str]:
+def _check_naming(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     # Only a brand leaving the naming phase owes naming.md; one that never needed a name went intake -> strategy.
     if state.phase != Phase.naming:
         return []
     return _need(brand, brand / "naming.md")
 
 
-def _check_strategy(brand: Path, state: BrandState) -> list[str]:
+def _check_strategy(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     return _need(brand, brand / "strategy.md") + _need(brand, brand / "strategy.json", Strategy)
 
 
-def _check_territories(brand: Path, state: BrandState) -> list[str]:
+def _check_territories(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     """territories.json must be a valid TerritoriesSpec (its slugs are slugs, and unique) that holds the chosen territory."""
     path = brand / "territories" / "territories.json"
     try:
@@ -281,13 +283,14 @@ def _check_territories(brand: Path, state: BrandState) -> list[str]:
     return []
 
 
-def audit_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | None = None) -> list[str]:
+def audit_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | None = None, strict: bool = True) -> list[str]:
     """Why <folder>/audit.json does not vouch for the concept as it is now, or [] when it does: it is missing or not a
     JSON object, stale (its fingerprint is not audit.concept_fingerprint of the concept now), made with --no-render, or
-    failing. Each message ends with the command that clears it, a `concept audit` of the folder (`final` for final/).
-    The concept and final gates, the concept and refine sheets and package build all ask this. Every message calls the
-    file `label`; without one, they name it as the gate always has: from the brand folder when it is missing or
-    malformed, else <concept>/audit.json."""
+    failing. With strict=False only the first two count: an audit on record, what a phase past concepts asks of the
+    chosen concept, since final/ is what ships. Each message ends with the command that clears it, a `concept audit`
+    of the folder (`final` for final/). The concept and final gates, the concept and refine sheets and package build
+    all ask this. Every message calls the file `label`; without one, they name it as the gate always has: from the
+    brand folder when it is missing or malformed, else <concept>/audit.json."""
     from .audit import concept_fingerprint  # imported here: audit imports registry
 
     brand = paths.brand(slug)
@@ -298,6 +301,8 @@ def audit_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | No
     result, error = _read_json(brand, path, label)
     if error:
         return [f"{error} (run: {audit})"]
+    if not strict:
+        return []
     label = label or f"{folder.name}/audit.json"
     problems = []
     if result.get("fingerprint") != concept_fingerprint(paths, slug, folder):
@@ -327,14 +332,15 @@ def passing_scorecard(folder: Path, label: str) -> Scorecard:
     return card
 
 
-def _check_concept(brand: Path, state: BrandState) -> list[str]:
-    """The chosen concept needs a passing, rendered audit of what it is now (audit_problems) and a scorecard that passes
-    the gate (passing_scorecard)."""
+def _check_concept(brand: Path, state: BrandState, current: bool = True) -> list[str]:
+    """The chosen concept needs a scorecard that passes the gate (passing_scorecard) and, when the brand is leaving the
+    concepts phase (`current`), a passing, rendered audit of what it is now (audit_problems). Once the brand is past it,
+    final/ is what ships and has its own gate, so the concept's audit need only be on record: present and valid JSON."""
     if not state.concept:
         return [f"concept not chosen (run: logomaker brand set {state.slug} --concept <NN-slug>)"]
     folder = brand / "concepts" / state.concept
     paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
-    missing = _need(brand, folder / "concept.py") + audit_problems(paths, state.slug, folder)
+    missing = _need(brand, folder / "concept.py") + audit_problems(paths, state.slug, folder, strict=current)
     try:
         passing_scorecard(folder, f"{state.concept}/scorecard.json")
     except CliError as err:
@@ -342,7 +348,7 @@ def _check_concept(brand: Path, state: BrandState) -> list[str]:
     return missing
 
 
-def _check_final(brand: Path, state: BrandState) -> list[str]:
+def _check_final(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     """final/ needs concept.py, params.json, a valid tokens.json, and an audit.json that vouches for the final mark as it
     is now (audit_problems: present, fresh, rendered and passing)."""
     from .color import Tokens  # imported here to keep registry import-light
@@ -356,7 +362,7 @@ def _check_final(brand: Path, state: BrandState) -> list[str]:
     return missing + audit_problems(paths, state.slug, final, "final/audit.json")
 
 
-def _check_verify(brand: Path, state: BrandState) -> list[str]:
+def _check_verify(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     """package/verify.json must report ok for a package built from final/ and the brand as they are now: the inputs
     fingerprint it checked is export_docs.inputs_fingerprint's now."""
     from .export_docs import inputs_fingerprint, out_of_date  # imported here: export_docs imports registry
@@ -374,8 +380,9 @@ def _check_verify(brand: Path, state: BrandState) -> list[str]:
     return []
 
 
-# The artifacts each phase leaves behind. Advancing to a phase re-runs the checks of every phase before it.
-PHASE_CHECKS: dict[Phase, Callable[[Path, BrandState], list[str]]] = {
+# The artifacts each phase leaves behind. Advancing to a phase re-runs the checks of every phase before it, each told
+# whether it is the brand's current phase.
+PHASE_CHECKS: dict[Phase, Callable[[Path, BrandState, bool], list[str]]] = {
     Phase.intake: _check_brief,
     Phase.naming: _check_naming,
     Phase.strategy: _check_strategy,
@@ -393,7 +400,7 @@ def prerequisites(paths: ProjectPaths, state: BrandState, target: Phase) -> list
     if target != nxt:
         missing.append(f"phase {state.phase.value} can only advance to {nxt.value if nxt else 'nothing'}, not {target.value}")
     for phase in PHASE_ORDER[: PHASE_ORDER.index(target)]:
-        missing += PHASE_CHECKS[phase](brand, state)
+        missing += PHASE_CHECKS[phase](brand, state, phase == state.phase)
     if target == Phase.strategy and state.needs_name:
         missing.append(f"brand still needs a name (run: logomaker brand rename {state.slug} --name <Name>)")
     return missing

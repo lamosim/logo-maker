@@ -437,3 +437,30 @@ def test_the_final_gate_needs_a_current_rendered_passing_audit_of_the_final_mark
     write_passing_audit(project(), "keystone", final)
     code, payload = run("brand", "advance", "keystone", "--to", "package")
     assert code == 0 and payload["brand"]["phase"] == "package"
+
+
+def test_past_concepts_the_chosen_concept_s_audit_need_only_be_on_record(project_root):
+    from logomaker import export, export_docs
+    from tests.conftest import StubRenderer
+
+    make_final_brand(project_root, phase=Phase.concepts)
+    concept = project_root / "brands" / "keystone" / "concepts" / "01-good"
+    (concept / "params.json").write_text('{"stroke": 80}')  # the chosen concept changed after its audit
+    code, payload = run("brand", "advance", "keystone", "--to", "refinement")
+    assert code == 2 and [m.split(" (")[0] for m in payload["missing"]] == ["01-good/audit.json is stale"]
+    write_passing_audit(project(), "keystone", concept)
+    assert run("brand", "advance", "keystone", "--to", "refinement")[0] == 0
+    (concept / "params.json").write_text('{"stroke": 90}')  # stale again, but final/ is what ships now
+    code, payload = run("brand", "advance", "keystone", "--to", "package")
+    assert code == 0, payload
+    builder = export.PackageBuilder(project(), "keystone")
+    builder.GROUPS = ["masters", "readme"]
+    builder.build(StubRenderer())
+    assert export_docs.verify(project(), "keystone")["ok"]
+    (concept / "audit.json").write_text(json.dumps({"ok": False}))  # failing too: on record is all a later phase asks
+    code, payload = run("brand", "advance", "keystone", "--to", "done")
+    assert code == 0 and payload["brand"]["phase"] == "done", payload
+    state = registry.load_state(project(), "keystone")
+    (concept / "audit.json").unlink()  # but an audit there must be
+    assert registry._check_concept(concept.parent.parent, state, current=False) == [
+        "concepts/01-good/audit.json is missing (run: logomaker concept audit keystone 01-good)"]
