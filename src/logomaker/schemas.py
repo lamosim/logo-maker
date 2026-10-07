@@ -1,4 +1,4 @@
-"""Pydantic models for brand state, brief, strategy and audit results. Token models live in color.py."""
+"""Pydantic models for brand state, brief, strategy, territories and audit results. Token models live in color.py."""
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -6,6 +6,8 @@ from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from .paths import SLUG
 
 
 class Phase(str, Enum):  # noqa: UP042 - StrEnum would change str() and format() of members
@@ -193,3 +195,58 @@ class AuditResult(BaseModel):
     outputs: list[str] = Field(default_factory=list)
     rendered: bool = False
     fingerprint: str = ""  # audit.concept_fingerprint of the files audited; gates and sheets compare it with the current one
+
+
+class TerritoryFont(BaseModel):
+    family: str
+    weight: int = 400
+
+
+class TerritoryColor(BaseModel):
+    hex: str
+    name: str
+
+    @field_validator("hex")
+    @classmethod
+    def normalised_hex(cls, value: str) -> str:
+        from .color import normalize_hex  # imported here: color loads coloraide, and the CLI imports schemas at startup
+
+        return normalize_hex(value)  # a value that is no colour raises ValueError, which pydantic reports against this field
+
+
+class TerritoryShapes(BaseModel):
+    corner: float = Field(0.1, ge=0, le=0.5)
+    stroke: float = Field(0.12, ge=0.02, le=0.4)
+    angularity: float = Field(0.5, ge=0, le=1)
+    symmetry: float = Field(0.7, ge=0, le=1)
+
+
+class Territory(BaseModel):
+    slug: str
+    name: str
+    embraces: list[str]
+    rejects: list[str]
+    fonts: list[TerritoryFont] = Field(min_length=1, max_length=3)
+    palette: list[TerritoryColor] = Field(min_length=2, max_length=6)
+    shapes: TerritoryShapes = Field(default_factory=TerritoryShapes)
+
+    @field_validator("slug")
+    @classmethod
+    def slug_is_a_slug(cls, value: str) -> str:
+        # `brand set --territory` takes only slugs, so a territory named otherwise could never be chosen.
+        if not SLUG.fullmatch(value):
+            raise ValueError(f"territory slug must be lowercase letters, digits and hyphens (e.g. forge-works), got {value!r}")
+        return value
+
+
+class TerritoriesSpec(BaseModel):
+    territories: list[Territory] = Field(min_length=2, max_length=3)
+
+    @field_validator("territories")
+    @classmethod
+    def slugs_are_unique(cls, value: list[Territory]) -> list[Territory]:
+        slugs = [t.slug for t in value]
+        repeated = list(dict.fromkeys(s for s in slugs if slugs.count(s) > 1))
+        if repeated:
+            raise ValueError(f"territory slugs must be unique; repeated: {', '.join(repeated)}")
+        return value

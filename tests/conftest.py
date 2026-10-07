@@ -1,3 +1,4 @@
+import copy
 import shutil
 from pathlib import Path
 
@@ -32,6 +33,7 @@ def project_root(tmp_path: Path, monkeypatch) -> Path:
     if fixture_fonts.exists():
         shutil.copytree(fixture_fonts, root / "assets" / "fonts", dirs_exist_ok=True)
     monkeypatch.setenv("LOGOMAKER_ROOT", str(root))
+    monkeypatch.setenv("LOGOMAKER_NO_OPEN", "1")
     monkeypatch.chdir(root)
     return root
 
@@ -119,3 +121,28 @@ def renderer():
         pytest.skip("Google Chrome is not installed")
     with Renderer() as r:
         yield r
+
+
+TERRITORIES = {
+    "territories": [
+        {
+            "slug": "forge", "name": "Forge",
+            "embraces": ["dense", "industrial", "warm"], "rejects": ["pastel", "thin lines"],
+            "fonts": [{"family": "Fira Code", "weight": 700}, {"family": "Fira Code", "weight": 400}],
+            "palette": [{"hex": "#1f1b18", "name": "Coal"}, {"hex": "#e8572a", "name": "Ember"}, {"hex": "#f4e9dc", "name": "Linen"}],
+            "shapes": {"corner": 0.15, "stroke": 0.12, "angularity": 0.8, "symmetry": 0.7},
+        },
+        {
+            "slug": "ledger", "name": "Ledger",
+            "embraces": ["calm", "precise", "editorial"], "rejects": ["loud colour"],
+            "fonts": [{"family": "Fira Code", "weight": 500}],
+            "palette": [{"hex": "#14213d", "name": "Ink"}, {"hex": "#fca311", "name": "Amber"}],
+            "shapes": {"corner": 0.02, "stroke": 0.08, "angularity": 0.3, "symmetry": 0.9},
+        },
+    ]
+}
+
+
+@pytest.fixture
+def territories_payload() -> dict:
+    return copy.deepcopy(TERRITORIES)

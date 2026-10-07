@@ -7,7 +7,7 @@ from logomaker import audit, registry
 from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
-from logomaker.schemas import Phase
+from logomaker.schemas import Phase, TerritoriesSpec
 from tests.conftest import install_concept
 
 
@@ -287,16 +287,55 @@ def test_every_brand_command_reports_brands_the_index_leaves_out(project_root):
     assert len(warnings) == 2 and str(delta) in warnings[1] and "missing from the index" in warnings[1]
 
 
-def test_territories_json_must_use_slugs(project_root):
+def test_territories_json_must_use_slugs(project_root, territories_payload):
     run("brand", "new", "Keystone")
     brand = project_root / "brands" / "keystone"
     spec = brand / "territories" / "territories.json"
-    spec.write_text(json.dumps({"territories": [{"slug": "forge"}, {"slug": "forge_works"}, {"slug": 7}]}))
     state = registry.set_fields(project(), "keystone", territory="forge")
-    assert registry._check_territories(brand, state) == [
-        "territories.json: territory slug 'forge_works' is not a slug", "territories.json: territory slug 7 is not a slug"]
-    spec.write_text(json.dumps({"territories": [{"slug": "forge"}, {"slug": "forge-works"}]}))
+    for slug, problem in (("forge_works", "Value error, territory slug must be lowercase letters, digits and hyphens (e.g. "
+                                          "forge-works), got 'forge_works'"),
+                          (7, "Input should be a valid string")):
+        territories_payload["territories"][1]["slug"] = slug
+        spec.write_text(json.dumps(territories_payload))
+        assert registry._check_territories(brand, state) == [f"territories/territories.json is invalid: territories.1.slug: {problem}"]
+    territories_payload["territories"][1]["slug"] = "forge-works"
+    spec.write_text(json.dumps(territories_payload))
     assert registry._check_territories(brand, state) == []
+
+
+def test_the_territories_gate_needs_a_valid_spec_holding_the_chosen_territory(project_root, territories_payload):
+    run("brand", "new", "Keystone")
+    brand = project_root / "brands" / "keystone"
+    spec = brand / "territories" / "territories.json"
+    not_chosen = "territory not chosen (run: logomaker brand set <slug> --territory <territory-slug>)"
+    state = registry.load_state(project(), "keystone")
+    assert registry._check_territories(brand, state) == ["territories/territories.json is missing"]
+    spec.write_text(json.dumps(territories_payload))
+    assert registry._check_territories(brand, state) == [not_chosen]
+    state = registry.set_fields(project(), "keystone", territory="quarry")  # a slug, but not one of the spec's
+    assert registry._check_territories(brand, state) == [not_chosen]
+    state = registry.set_fields(project(), "keystone", territory="ledger")
+    assert registry._check_territories(brand, state) == []
+    territories_payload["territories"].pop()  # one territory is too few: the spec's own problem is the one reported
+    spec.write_text(json.dumps(territories_payload))
+    [problem] = registry._check_territories(brand, state)
+    assert problem.startswith("territories/territories.json is invalid: territories: List should have at least 2 items")
+
+
+def test_load_model_returns_the_model_or_an_error_naming_the_file(project_root, territories_payload):
+    path = project_root / "spec.json"
+    with pytest.raises(CliError) as err:
+        registry.load_model(path, TerritoriesSpec, "the spec")
+    assert (str(err.value), err.value.code) == ("the spec is missing", 2)
+    path.write_text(json.dumps({"territories": []}))
+    with pytest.raises(CliError) as err:
+        registry.load_model(path, TerritoriesSpec, "the spec", code=4)
+    assert err.value.code == 4 and str(err.value).startswith("the spec is invalid: territories: List should have at least 2 items")
+    path.write_bytes(b"\xff\xfe")
+    with pytest.raises(CliError, match="^the spec is not valid JSON: "):
+        registry.load_model(path, TerritoriesSpec, "the spec")
+    path.write_text(json.dumps(territories_payload))
+    assert [t.slug for t in registry.load_model(path, TerritoriesSpec, "the spec").territories] == ["forge", "ledger"]
 
 
 def test_final_tokens_must_validate(project_root):

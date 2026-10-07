@@ -10,9 +10,9 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from .output import CliError
+from .output import EXIT_RULE, CliError
 from .paths import CONCEPT_NAME, SLUG, ProjectPaths
-from .schemas import PHASE_ORDER, BrandState, Brief, Decision, FontChoice, Phase, Strategy, now_iso
+from .schemas import PHASE_ORDER, BrandState, Brief, Decision, FontChoice, Phase, Strategy, TerritoriesSpec, now_iso
 
 BRAND_SUBDIRS = ("inspiration", "territories", "concepts", "sheets", "final", "package")
 
@@ -180,19 +180,26 @@ def allowed_next(state: BrandState) -> Phase | None:
     return PHASE_ORDER[PHASE_ORDER.index(state.phase) + 1]
 
 
-def _validate_file(path: Path, model: type[BaseModel], label: str | None = None) -> str | None:
-    """Return an error message if `path` is missing or does not validate as `model`; messages call it `label` (default: its name)."""
-    label = label or path.name
+def load_model[M: BaseModel](path: Path, model: type[M], label: str, code: int = EXIT_RULE) -> M:
+    """`path` read and validated as `model`. A missing, malformed or invalid file is a CliError (exit `code`) calling it `label`."""
     if not path.is_file():
-        return f"{label} is missing"
+        raise CliError(f"{label} is missing", code)
     try:
-        model.model_validate_json(path.read_text(encoding="utf-8"))
-    except ValidationError as err:
+        return model.model_validate_json(path.read_text(encoding="utf-8"))
+    except ValidationError as err:  # malformed JSON or the wrong fields
         first = err.errors()[0]
         loc = ".".join(str(p) for p in first["loc"]) or "root"
-        return f"{label} is invalid: {loc}: {first['msg']}"
-    except ValueError as err:
-        return f"{label} is not valid JSON: {err}"
+        raise CliError(f"{label} is invalid: {loc}: {first['msg']}", code) from err
+    except ValueError as err:  # bytes that are not UTF-8
+        raise CliError(f"{label} is not valid JSON: {err}", code) from err
+
+
+def _validate_file(path: Path, model: type[BaseModel], label: str | None = None) -> str | None:
+    """Return an error message if `path` is missing or does not validate as `model`; messages call it `label` (default: its name)."""
+    try:
+        load_model(path, model, label or path.name)
+    except CliError as err:
+        return str(err)
     return None
 
 
@@ -231,17 +238,11 @@ def _check_strategy(brand: Path, state: BrandState) -> list[str]:
 
 
 def _check_territories(brand: Path, state: BrandState) -> list[str]:
+    """territories.json must be a valid TerritoriesSpec (its slugs are slugs, and unique) that holds the chosen territory."""
     spec = brand / "territories" / "territories.json"
-    missing = _need(brand, spec)
-    if spec.is_file():
-        try:
-            slugs = [t["slug"] for t in json.loads(spec.read_text(encoding="utf-8"))["territories"]]
-        except (KeyError, TypeError, ValueError):
-            slugs = []
-            missing.append("territories.json must contain a 'territories' list with slugs")
-        # `brand set --territory` takes only slugs, so a territory named otherwise could never be chosen.
-        missing += [f"territories.json: territory slug {s!r} is not a slug"
-                    for s in slugs if not (isinstance(s, str) and SLUG.fullmatch(s))]
+    missing = _need(brand, spec, TerritoriesSpec)
+    if not missing:
+        slugs = [t.slug for t in TerritoriesSpec.model_validate_json(spec.read_text(encoding="utf-8")).territories]
         if state.territory not in slugs:
             missing.append("territory not chosen (run: logomaker brand set <slug> --territory <territory-slug>)")
     return missing

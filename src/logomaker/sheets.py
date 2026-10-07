@@ -1,19 +1,26 @@
 """Sheets rendered through Chrome. Part 1: the per-concept critique sheet Claude reads; Part 2 adds owner-facing sheets."""
 from __future__ import annotations
 
+import os
+import subprocess
 from collections.abc import Iterable
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import ValidationError
 
+from . import fonts as fontlib
+from . import registry
 from .audit import concept_fingerprint
-from .color import load_tokens
+from .color import info as color_info
+from .color import load_tokens, luminance
+from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text, union
 from .kit import concept as conceptlib
-from .output import CliError
+from .kit.mark import Mark
+from .output import EXIT_EXTERNAL, CliError
 from .paths import ProjectPaths
 from .render import Renderer, svg_size, with_size
-from .schemas import AuditResult
+from .schemas import AuditResult, TerritoriesSpec, TerritoryShapes
 
 SHEET_W, SHEET_H = 2000, 1400
 LADDER = (256, 128, 64, 48, 32, 24, 16)
@@ -26,6 +33,15 @@ SHOWN_INFO = ("anchors", "min_feature")  # passing measurements listed after the
 
 def jinja(paths: ProjectPaths) -> Environment:
     return Environment(loader=FileSystemLoader(str(paths.templates)), autoescape=select_autoescape(default=False))
+
+
+def _render_html(renderer: Renderer | None, html: str, width: int, height: int | None = None) -> bytes:
+    """`html` as a PNG through `renderer`, or through a Chrome of its own when None, so a sheet that checks its inputs first
+    starts Chrome only once they pass. The whole page when `height` is None, else exactly `width` x `height`."""
+    if renderer is None:
+        with Renderer() as own:
+            return own.html_to_png(html, width, height, full_page=height is None)
+    return renderer.html_to_png(html, width, height, full_page=height is None)
 
 
 def _first_present(outputs: dict, chain: Iterable[str]) -> str:
@@ -142,11 +158,7 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
         slug=slug, concept=concept_name, round_n=round_n, idea=module.meta.idea, panels=panels, audit=summary,
         audit_rows=AUDIT_ROWS, width=SHEET_W, height=SHEET_H,
     )
-    if renderer is None:
-        with Renderer() as own:
-            png = own.html_to_png(html, SHEET_W, SHEET_H, full_page=False)
-    else:
-        png = renderer.html_to_png(html, SHEET_W, SHEET_H, full_page=False)
+    png = _render_html(renderer, html, SHEET_W, SHEET_H)
     # The round folder is made only after the render succeeds, so a failure never leaves a half-written round.
     out_dir = folder / "renders" / f"round-{round_n}"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -154,3 +166,95 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
     html_path.write_text(html, encoding="utf-8")
     png_path.write_bytes(png)
     return {"round": round_n, "critique_png": str(png_path), "critique_html": str(html_path)}
+
+
+BOARD_W = 1600
+
+
+def open_file(path: Path, enabled: bool = True, warnings: list[str] | None = None) -> bool:
+    """Open `path` with the macOS `open` command unless `enabled` is False or LOGOMAKER_NO_OPEN is set; True if it started.
+
+    `open` writes to /dev/null, so nothing it prints can land beside the command's JSON. A failure to start it comes
+    after the command's files are written, so it is appended to `warnings` (when given), never raised.
+    """
+    if not enabled or os.environ.get("LOGOMAKER_NO_OPEN"):
+        return False
+    try:
+        subprocess.Popen(["open", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except OSError as err:
+        if warnings is not None:
+            warnings.append(f"could not open {path}: {err}")
+        return False
+    return True
+
+
+def _chip_text(hex_value: str) -> str:
+    """The colour of a label on a `hex_value` swatch: white on a dark colour (luminance under 0.35), else near-black."""
+    return "#ffffff" if luminance(hex_value) < 0.35 else "#111111"
+
+
+def shape_specimens(shapes: TerritoryShapes, initial: str, family: str, weight: int) -> list[dict]:
+    """Six black specimens of a territory's shape parameters, as {"label", "svg"}: ring, chevron, tile, loop, bars and
+    `initial` set in `family` at `weight`. `stroke` sets every band's width (300 units per 1.0); `angularity` of 0.5 or
+    more gives mitred joins and butt caps, below it round ones; `corner` rounds the tile; `symmetry` under 0.5 staggers
+    the bars and lengthens the loop from 270 to 300 degrees."""
+    width = 300 * shapes.stroke
+    join = "miter" if shapes.angularity >= 0.5 else "round"
+    cap = "butt" if shapes.angularity >= 0.5 else "round"
+    tile_radius = 300 * shapes.corner
+    bars = [rect_centered(0, y, 300, width) for y in (-100, 0, 100)]
+    if shapes.symmetry < 0.5:
+        bars = [rect_centered(-30, -100, 240, width), rect_centered(0, 0, 300, width), rect_centered(45, 100, 210, width)]
+    specimens = [
+        ("ring", ring(0, 0, 150, width)),
+        ("chevron", polyline([(-120, -70), (0, 70), (120, -70)], width, cap=cap, join=join)),
+        ("tile", rrect_centered(0, 0, 260, 260, tile_radius)),
+        ("loop", arc(0, 0, 110, 0, 270 if shapes.symmetry >= 0.5 else 300, width, cap=cap)),
+        ("bars", union(*bars)),
+        ("initial", glyph(initial, family, weight=weight, cap_height=240)),
+    ]
+    return [{"label": label, "svg": Mark(symbol=shape).to_svg("black", padding=20)} for label, shape in specimens]
+
+
+def territories_board(paths: ProjectPaths, slug: str, renderer: Renderer | None = None, open_after: bool = True) -> dict:
+    """Write territories/board.{html,png} from territories/territories.json, then open the HTML unless `open_after` is False.
+
+    Everything is checked before Chrome starts: the brand, the spec (missing or invalid exits 2, naming the file) and the
+    fonts. The board never fetches: any family the spec names that is not cached exits 3 with a `fonts fetch` hint for
+    each. The PNG is rendered before either file is written, so a failed render leaves no half-written board.
+    """
+    state = registry.load_state(paths, slug)
+    brand = paths.brand(slug)
+    folder = brand / "territories"
+    spec_path = folder / "territories.json"
+    label = str(spec_path.relative_to(brand))  # territories/territories.json, as the phase gate names it
+    if not spec_path.is_file():
+        raise CliError(f"{label} is missing; write the territories spec first")
+    spec = registry.load_model(spec_path, TerritoriesSpec, label)
+    families = dict.fromkeys(f.family for t in spec.territories for f in t.fonts)
+    uncached = [family for family in families if not fontlib.cached_files(paths, family)]
+    if uncached:
+        hints = "; ".join(f'run: logomaker fonts fetch "{family}"' for family in uncached)
+        raise CliError(f"{label} names font families that are not cached: {', '.join(uncached)} ({hints})", code=EXIT_EXTERNAL)
+    cards = []
+    for t in spec.territories:
+        fonts = []
+        for f in t.fonts:
+            word = text(state.name, f.family, weight=f.weight, cap_height=200)
+            fonts.append({"label": f"{f.family} {f.weight}", "svg": Mark(wordmark=word).to_svg("black", padding=10)})
+        palette = []
+        for c in t.palette:
+            i = color_info(c.hex)
+            palette.append({"name": c.name, "hex": i["hex"], "oklch": f"oklch({i['oklch'][0]:.2f} {i['oklch'][1]:.3f} {i['oklch'][2]:.0f})",
+                            "text": _chip_text(c.hex)})
+        cards.append({"name": t.name, "embraces": t.embraces, "rejects": t.rejects, "fonts": fonts, "palette": palette,
+                      "shapes": shape_specimens(t.shapes, state.name[:1].upper() or "A", t.fonts[0].family, t.fonts[0].weight)})
+    html = jinja(paths).get_template("sheets/territories.html").render(brand=state.name, territories=cards, width=BOARD_W)
+    png = _render_html(renderer, html, BOARD_W)
+    html_path, png_path = folder / "board.html", folder / "board.png"
+    html_path.write_text(html, encoding="utf-8")
+    png_path.write_bytes(png)
+    warnings: list[str] = []
+    open_file(html_path, open_after, warnings)
+    return {"board_html": str(html_path), "board_png": str(png_path), "territories": [t.slug for t in spec.territories],
+            "warnings": warnings}

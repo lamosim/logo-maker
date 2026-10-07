@@ -394,5 +394,23 @@ def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tok
                 result, warnings=report["warnings"])
 
 
+@main.group("sheet")
+def sheet_group() -> None:
+    """Owner-facing sheets (opened in the browser)."""
+
+
+@sheet_group.command("territories")
+@click.argument("slug")
+@click.option("--no-open", is_flag=True, help="Write the board without opening it in the browser.")
+@command
+def sheet_territories(slug: str, no_open: bool) -> None:
+    """Render the territories board from territories.json. It goes into territories/board.{html,png} and opens in the browser."""
+    from . import sheets as sheetlib
+
+    # No renderer passed: the board launches Chrome itself, only once the brand, the spec and its fonts check out.
+    info = sheetlib.territories_board(project(), slug, open_after=not no_open)
+    emit(info, warnings=info.pop("warnings"))
+
+
 if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())
