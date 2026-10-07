@@ -259,7 +259,7 @@ def test_dropping_the_wordmark_needs_a_symbol(project_root):
 
 
 def test_concept_build_with_tokens_writes_colour_variants(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
     (folder / "tokens.json").write_text(json.dumps(good_tokens()))

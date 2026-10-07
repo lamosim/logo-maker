@@ -184,7 +184,7 @@ def test_the_concept_gate_names_the_command_that_chooses_a_concept(project_root)
 
 
 def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
     (folder / "scorecard.json").write_text(json.dumps(scorecard()))
@@ -385,7 +385,7 @@ def test_load_model_returns_the_model_or_an_error_naming_the_file(project_root, 
 
 
 def test_final_tokens_must_validate(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     run("brand", "new", "Keystone")
     brand = project_root / "brands" / "keystone"

@@ -238,7 +238,7 @@ def test_colour_count_warns_over_three_roles(project_root):
 
 
 def test_tokens_contrast_feeds_the_audit(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
     bad = good_tokens()
@@ -249,7 +249,7 @@ def test_tokens_contrast_feeds_the_audit(project_root):
 
 
 def test_wordmark_contrast_follows_the_role_the_wordmark_uses(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
     (folder / "tokens.json").write_text(json.dumps(good_tokens()))
@@ -262,7 +262,7 @@ def test_wordmark_contrast_follows_the_role_the_wordmark_uses(project_root):
 
 
 def test_audit_reads_the_tokens_file_it_is_given(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
     low_contrast = good_tokens()
@@ -279,7 +279,7 @@ def test_audit_reads_the_tokens_file_it_is_given(project_root):
 
 
 def test_concept_audit_takes_the_tokens_file_it_is_given(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
     low_contrast = good_tokens()
@@ -404,7 +404,7 @@ def test_dots_that_merge_at_favicon_size_fail(project_root, renderer):
 
 
 def test_fingerprint_covers_concept_params_and_tokens(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
 

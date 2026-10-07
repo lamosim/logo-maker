@@ -94,7 +94,7 @@ def test_mockup_context_wordmark_only_warns(project_root):
 
 
 def test_mockup_context_draws_the_icon_in_paper_on_a_primary_tile(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
     (folder / "tokens.json").write_text(json.dumps(good_tokens()))
@@ -240,7 +240,7 @@ def test_the_cli_writes_the_sheet_opens_it_and_warns_about_wordmark_fallbacks(pr
 @requires_chrome
 @pytest.mark.render
 def test_concepts_sheet_renders_all_mockups(project_root, renderer):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     prepare(project_root, "01-good")
     prepare(project_root, "02-good-colour", tokens=good_tokens())
@@ -266,7 +266,7 @@ def test_concepts_sheet_renders_all_mockups(project_root, renderer):
 @pytest.mark.render
 def test_concepts_sheet_cli(project_root):
     # No renderer fixture: the command starts its own Chrome, and Playwright's sync API cannot start a second beside it.
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     prepare(project_root, "01-good")
     prepare(project_root, "02-good-colour", tokens=good_tokens())

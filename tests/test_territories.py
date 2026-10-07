@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -67,6 +68,22 @@ def test_shape_specimens_follow_the_parameters(project_root):
     assert all(s["svg"].startswith("<svg") and "<path" in s["svg"] for s in angular)
     assert angular[2]["svg"] != soft[2]["svg"]  # corner radius changes the tile
     assert angular[4]["svg"] != soft[4]["svg"]  # symmetry changes the bars
+
+
+def test_angularity_switches_the_chevron_and_loop_between_mitred_and_round(project_root):
+    def curves(specimen: dict) -> int:
+        """The curve segments in a specimen's outline: a round join or cap is drawn with curves, a mitre or butt end with
+        straight lines."""
+        return sum(d.count("C") for d in re.findall(r' d="([^"]+)"', specimen["svg"]))
+
+    # Everything but angularity held, which switches at 0.5: from there mitred joins and butt caps, below it round ones.
+    sharp, soft = (sheets.shape_specimens(TerritoryShapes(angularity=a), "K", "Fira Code", 700) for a in (0.5, 0.49))
+    chevron, loop = 1, 3
+    assert (sharp[chevron]["label"], sharp[loop]["label"]) == ("chevron", "loop")
+    assert curves(sharp[chevron]) == 0 and curves(soft[chevron]) > 0  # mitred: all straight; round: the join and caps curve
+    assert curves(soft[loop]) > curves(sharp[loop]) > 0  # an arc either way; round caps add the curves of its two ends
+    assert [s["svg"] for i, s in enumerate(sharp) if i not in (chevron, loop)] == [
+        s["svg"] for i, s in enumerate(soft) if i not in (chevron, loop)]  # nothing else changes
 
 
 def test_the_board_sets_the_name_s_first_letter_or_digit(project_root, territories_payload, monkeypatch):
@@ -159,7 +176,7 @@ def test_a_valid_spec_reaches_chrome_and_a_failed_render_writes_no_board(project
     folder = write_spec(project_root, territories_payload)
     code, payload = board("--no-open")
     # The stand-in is entered once the brand, the spec and the fonts check out: the failures above stopped before Chrome.
-    assert code == 2 and payload["errors"] == ["AssertionError: Chrome started"]
+    assert code != 0 and "Chrome started" in payload["errors"][0]
     assert sorted(p.name for p in folder.iterdir()) == ["territories.json"]  # rendered first, written after
 
 

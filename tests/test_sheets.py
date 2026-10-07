@@ -46,7 +46,7 @@ def test_critique_sheet_renders(project_root, renderer):
 @requires_chrome
 @pytest.mark.render
 def test_concept_run_cli_builds_audits_renders_and_increments_rounds(project_root):
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     folder = install_concept(project_root, "good")
     (folder / "tokens.json").write_text(json.dumps(good_tokens()))
@@ -103,7 +103,7 @@ def finding(check: str, severity: str, message: str) -> Finding:
 
 def write_palette(project_root):
     """good_tokens() outside the concept folder, so it can reach a sheet only when passed as a tokens path."""
-    from tests.test_color import good_tokens
+    from tests.conftest import good_tokens
 
     palette = project_root / "palette.json"
     palette.write_text(json.dumps(good_tokens()))

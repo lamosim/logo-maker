@@ -262,6 +262,20 @@ def territories_payload() -> dict:
     return copy.deepcopy(TERRITORIES)
 
 
+def good_tokens() -> dict:
+    """A tokens.json payload that passes check_tokens: ember on paper, coal ink, and an ember-light and paper pair on coal."""
+    return {
+        "colors": {
+            "ember": {"name": "Ember", "hex": "#e8572a"},
+            "coal": {"name": "Coal", "hex": "#1f1b18"},
+            "paper": {"name": "Paper", "hex": "#ffffff"},
+            "ember-light": {"name": "Ember Light", "hex": "#ff9a6e"},
+        },
+        "roles": {"light": {"primary": "ember", "ink": "coal"}, "dark": {"primary": "ember-light", "ink": "paper"}},
+        "paper": {"light": "paper", "dark": "coal"},
+    }
+
+
 RATIONALE = "Keystone's mark is the piece that holds the arch: a ring that closes only when the name is beside it.\n"
 
 
@@ -278,7 +292,6 @@ def make_final_brand(project_root: Path, wordmark_only: bool = False, with_token
     """
     from logomaker import registry
     from logomaker.paths import project
-    from tests.test_color import good_tokens
 
     paths = project()
     brand = project_root / "brands" / "keystone"

@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from logomaker import color
 from logomaker.cli import main
+from tests.conftest import good_tokens
 
 
 def test_normalize_and_info():
@@ -43,18 +44,6 @@ def test_ramp_is_monotonic_in_lightness():
     lightness = [color.info(s)["oklch"][0] for s in steps]
     assert all(a > b for a, b in zip(lightness, lightness[1:]))
 
-
-def good_tokens() -> dict:
-    return {
-        "colors": {
-            "ember": {"name": "Ember", "hex": "#e8572a"},
-            "coal": {"name": "Coal", "hex": "#1f1b18"},
-            "paper": {"name": "Paper", "hex": "#ffffff"},
-            "ember-light": {"name": "Ember Light", "hex": "#ff9a6e"},
-        },
-        "roles": {"light": {"primary": "ember", "ink": "coal"}, "dark": {"primary": "ember-light", "ink": "paper"}},
-        "paper": {"light": "paper", "dark": "coal"},
-    }
 
 
 def tokens_with(**light_roles: str) -> color.Tokens:
