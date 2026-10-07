@@ -1,0 +1,46 @@
+{
+  "onliness": "Keystone is the only invoicing tool that nags clients so you don't have to, for solo consultants in English-speaking markets who want to be paid on time without playing debt collector, in an era of stretched payment terms.",
+  "positioning": "For solo consultants who lose weeks to late payments and hate chasing clients, Keystone is an invoicing tool that follows up on every unpaid invoice by itself, steadily and politely, until it is paid. Unlike accounting suites such as FreshBooks and Wave, where reminders are one setting among hundreds, or credit-control tools such as Chaser, built for finance teams, Keystone makes the follow-up the product, sized for one person.",
+  "archetype": {"primary": "Everyman", "secondary": "Caregiver"},
+  "personality": {"sincerity": 0.9, "excitement": 0.4, "competence": 0.9, "sophistication": 0.4, "ruggedness": 0.6},
+  "one_idea": "The piece that holds everything together.",
+  "ladder": [
+    {"adjective": "steady (not boring)", "principle": "level baselines, a flat grounded base, a symmetric silhouette; exactly one owned detail",
+     "test": "the bottom edge is flat and nothing tilts in the 512 px panel; the mark is one shape plus one detail"},
+    {"adjective": "direct (not rude)", "principle": "one dominant silhouette, heavy enough to read at once; no spikes or acute points",
+     "test": "drawable from memory in five strokes or fewer; no point sharper than 60 degrees on the outline"},
+    {"adjective": "warm (not cute)", "principle": "an ember hue at medium saturation, softened outer corners; no faces, hearts or characters",
+     "test": "primary hue between 20 and 70 degrees in OKLCH; no character or face in any panel"}
+  ],
+  "category_uniform": {
+    "type_classes": ["lowercase geometric sans (Wave, Bonsai)", "heavy or condensed all-caps grotesque (HoneyBook, Chaser)", "CamelCase sans (FreshBooks)"],
+    "colours": ["blue (FreshBooks #0075dd, Wave #0040ff, Zoom blue #0b5cff)", "green (Bonsai, FreshBooks #038a06)", "navy text", "burnt orange (Chaser #d75e36)"],
+    "motifs": ["letter in a rounded tile or leaf (FreshBooks, Bonsai)", "slanted growth strokes (Wave)", "upward arrow", "bar chart", "shield", "pillar", "column", "coin", "dollar sign"],
+    "competitors": ["FreshBooks", "Wave", "Bonsai", "HoneyBook", "Chaser"]
+  },
+  "targets": {
+    "shape": 0.4,
+    "symmetry": 0.85,
+    "complexity": "low",
+    "weight": "heavy",
+    "hue_family": "ember orange (red-orange, OKLCH hue near 30)",
+    "saturation": "medium",
+    "lightness": "mid",
+    "typeface_class": "grotesk, title case",
+    "frame": "framed",
+    "dynamism": 0.2,
+    "descriptive_cue": false,
+    "name_sound": "KEE-stone: hard stops (K, T) and a long back o; front ratio 0.67; pair with a heavy, grounded mark rounded at the shoulders"
+  },
+  "logo_type": "combination",
+  "logo_type_reason": "Keystone is eight letters, one more than a wordmark carries into an app icon, and the app icon is the first surface: a symbol drawn from the name's DNA (the K, the arch, the keystone) serves the icon, favicon and avatar, while the wordmark leads in the website header.",
+  "constraints": {
+    "min_horizontal_px": 120, "min_stacked_px": 160, "min_mark_px": 24, "favicon_px": 16,
+    "one_colour": true, "no_hairlines": true, "no_gradients": true,
+    "surfaces": ["app icon", "website header", "social avatar"],
+    "scripts": "Latin, English only",
+    "off_limits": ["upward arrows", "shields", "columns and pillars"],
+    "colours_forbidden": ["blue", "green", "navy"],
+    "colour_note": "ember redder and darker than Chaser's #d75e36"
+  }
+}

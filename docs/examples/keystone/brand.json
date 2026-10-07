@@ -1,0 +1,95 @@
+{
+  "slug": "keystone",
+  "name": "Keystone",
+  "needs_name": false,
+  "created": "2026-10-07T16:08:40-04:00",
+  "updated": "2026-10-07T16:42:55-04:00",
+  "phase": "done",
+  "industry": "invoicing for solo consultants",
+  "surfaces": [
+    "app icon",
+    "website header",
+    "social avatar"
+  ],
+  "primary_lockup": "stacked",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "hearth-stone",
+  "concept": "02-arch",
+  "fonts": {
+    "wordmark": {
+      "family": "Bricolage Grotesque",
+      "weight": 700,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-07T16:09:40-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "Brief confirmed as written, no corrections (the owner's reply to the write-back was not scripted; the most conservative option was taken, per answer 13): Everyman with Caregiver; sincerity 0.9, excitement 0.4, competence 0.9, sophistication 0.4, ruggedness 0.6; industry tag 'invoicing for solo consultants' (fintech list)."
+    },
+    {
+      "at": "2026-10-07T16:14:09-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "Strategy approved as written (the owner's reply was not scripted; the most conservative option, per answer 13): one idea 'the piece that holds everything together'; combination mark, wordmark-led; avoid blue, green, slants, a bare letter in a tile, columns; own masonry, a grounded symmetric silhouette and an ember redder and darker than Chaser's orange."
+    },
+    {
+      "at": "2026-10-07T16:15:24-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "Chose Hearth Stone, the warmer and denser board: Bricolage Grotesque 700 for the wordmark with Fraunces 600 beside it; Ember #c83c29 on Coal #221b17 and Kiln #f6eee3, Brick and Ash as support; heavy strokes, softened corners. Site Ledger (Sora, Archivo, greys with an ember spark) set aside."
+    },
+    {
+      "at": "2026-10-07T16:35:02-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 03-dovetail after round 2: in a tile it is a figure in the category's container and reads as a bucket or keyhole at 32 px; out of the tile the joint draws a shirt collar; appropriate stays 3."
+    },
+    {
+      "at": "2026-10-07T16:35:02-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 04-wordmark after round 1: the arched o carries the arch, not the piece that holds it, and a wordmark-only mark shows the whole word on every app icon from 96 px up, against the first surface; appropriate 3."
+    },
+    {
+      "at": "2026-10-07T16:35:02-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "Name knock-out shown with the trademark caveat: an app named 'Keystone: Run Your Business' (VinTEK Solutions; vinteksolutions.com/keystone, App Store id6768339087) sells invoicing to solo service operators. Most conservative option (answer 13): keep the name as given and have a trademark attorney clear it before filing or spending."
+    },
+    {
+      "at": "2026-10-07T16:35:02-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "First reaction to the concept sheet: 'the ring one looks like a loading spinner'. Probing question: what reads wrong, at what size, in which mockup? Answer: 'at the avatar size'. Sorted as a flaw (an unintended reading at a named size, the University of California 2012 loading-icon case), not unfamiliarity: 05-ring-gap is not carried forward."
+    },
+    {
+      "at": "2026-10-07T16:35:02-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "Chose 02-arch, the direction whose symbol derives from the arch (answer 12 allows the K or the arch; 02-arch is the higher-scoring of the two, 43 against 37, the most conservative pick). Likes: none named beyond the choice (not scripted; most conservative answer). No steal from 01-k-jaw or 05-ring-gap; no blend."
+    },
+    {
+      "at": "2026-10-07T16:41:39-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "Approved after the colour round (refine sheet round 1): 02-arch refined with a 5% heavier crown, a favicon redrawn on a 16 px grid, Bricolage Grotesque 700 tracked +10 with no quirk, stacked primary lockup with a 170-unit gap, Ember #c83c29 and Coal on Kiln, Ember Glow #ff8671 and Kiln on Coal. Knock-out in final/knockout.md shown with the caveat."
+    },
+    {
+      "at": "2026-10-07T16:42:55-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "Package handed over: brands/keystone/package (186 files, verify ok) and package/brand-sheet.pdf, read and found to print on one page. Headless run: the folder and sheet were not opened in Finder or Chrome; the owner opens brand-sheet.pdf once at plan closure."
+    }
+  ]
+}

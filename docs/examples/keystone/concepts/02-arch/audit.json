@@ -1,0 +1,154 @@
+{
+  "ok": true,
+  "failures": [],
+  "warnings": [],
+  "info": [
+    {
+      "check": "anchors",
+      "severity": "info",
+      "message": "full-symbol: symbol has 19 anchors",
+      "data": {
+        "output": "full-symbol",
+        "anchors": 19
+      }
+    },
+    {
+      "check": "bounds",
+      "severity": "info",
+      "message": "full-symbol: aspect 0.84; centroid offset (0.0, -6.2)",
+      "data": {
+        "output": "full-symbol",
+        "aspect": 0.838,
+        "centroid_offset": [
+          0.0,
+          -6.23
+        ]
+      }
+    },
+    {
+      "check": "anchors",
+      "severity": "info",
+      "message": "small: symbol has 19 anchors",
+      "data": {
+        "output": "small",
+        "anchors": 19
+      }
+    },
+    {
+      "check": "bounds",
+      "severity": "info",
+      "message": "small: aspect 0.86; centroid offset (0.0, -25.7)",
+      "data": {
+        "output": "small",
+        "aspect": 0.863,
+        "centroid_offset": [
+          0.0,
+          -25.7
+        ]
+      }
+    },
+    {
+      "check": "anchors",
+      "severity": "info",
+      "message": "favicon: symbol has 16 anchors",
+      "data": {
+        "output": "favicon",
+        "anchors": 16
+      }
+    },
+    {
+      "check": "bounds",
+      "severity": "info",
+      "message": "favicon: aspect 0.88; centroid offset (0.0, -16.7)",
+      "data": {
+        "output": "favicon",
+        "aspect": 0.875,
+        "centroid_offset": [
+          0.0,
+          -16.74
+        ]
+      }
+    },
+    {
+      "check": "text_legibility",
+      "severity": "info",
+      "message": "full-horizontal: wordmark x-height 9.7 px at 120 px",
+      "data": {
+        "output": "full-horizontal",
+        "x_height_px": 9.7
+      }
+    },
+    {
+      "check": "text_legibility",
+      "severity": "info",
+      "message": "full-stacked: wordmark x-height 20.6 px at 160 px",
+      "data": {
+        "output": "full-stacked",
+        "x_height_px": 20.6
+      }
+    },
+    {
+      "check": "text_legibility",
+      "severity": "info",
+      "message": "full-wordmark: wordmark x-height 15.5 px at 120 px",
+      "data": {
+        "output": "full-wordmark",
+        "x_height_px": 15.45
+      }
+    },
+    {
+      "check": "industry",
+      "severity": "info",
+      "message": "industry 'invoicing for solo consultants' (from brand.json) resolves to fintech",
+      "data": {
+        "industry": "invoicing for solo consultants",
+        "source": "brand.json",
+        "resolved": [
+          "fintech"
+        ]
+      }
+    },
+    {
+      "check": "min_feature",
+      "severity": "info",
+      "message": "favicon: thinnest feature 4.28 px at 16 px",
+      "data": {
+        "output": "favicon",
+        "feature_px": 4.28,
+        "target": 16
+      }
+    },
+    {
+      "check": "min_feature",
+      "severity": "info",
+      "message": "small: thinnest feature 6.81 px at 32 px",
+      "data": {
+        "output": "small",
+        "feature_px": 6.81,
+        "target": 32
+      }
+    },
+    {
+      "check": "min_feature",
+      "severity": "info",
+      "message": "full-symbol: thinnest feature 13.12 px at 64 px",
+      "data": {
+        "output": "full-symbol",
+        "feature_px": 13.12,
+        "target": 64
+      }
+    }
+  ],
+  "outputs": [
+    "full-lockup",
+    "full-horizontal",
+    "full-stacked",
+    "full-symbol",
+    "full-wordmark",
+    "compact",
+    "small",
+    "favicon"
+  ],
+  "rendered": true,
+  "fingerprint": "c2d3b422c5b77654b3a7bce24d2def20724373d20cec0a1c262fe465970cb710"
+}

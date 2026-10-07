@@ -1,0 +1,30 @@
+{
+  "business": "Keystone sends invoices that get paid faster",
+  "audience": "solo consultants",
+  "problem": "late payments",
+  "one_idea": "the piece that holds everything together",
+  "onliness": "the only invoicing tool that nags clients so you don't have to",
+  "adjectives": [
+    {"adjective": "steady", "not": "boring"},
+    {"adjective": "direct", "not": "rude"},
+    {"adjective": "warm", "not": "cute"}
+  ],
+  "persona": "a calm site foreman who is good at follow-up",
+  "admired": ["Stripe: restraint", "Patagonia: conviction"],
+  "disliked": ["generic fintech blue"],
+  "surfaces": ["app icon", "website header", "social avatar"],
+  "harshest": "16 px favicon and one-colour embroidery",
+  "colours_wanted": ["ember orange"],
+  "colours_forbidden": ["fintech blue"],
+  "colours_category": ["blue", "green"],
+  "off_limits": ["upward arrows", "shields"],
+  "cultural": "no cultural constraints; English only",
+  "needs_name": false,
+  "name": "Keystone",
+  "name_written": "Keystone",
+  "name_story": "the stone that locks an arch",
+  "tagline": null,
+  "archetype": {"primary": "Everyman", "secondary": "Caregiver"},
+  "personality": {"sincerity": 0.9, "excitement": 0.4, "competence": 0.9, "sophistication": 0.4, "ruggedness": 0.6},
+  "industry": "invoicing for solo consultants"
+}

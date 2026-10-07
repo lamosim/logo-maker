@@ -1,0 +1,34 @@
+{
+  "territories": [
+    {
+      "slug": "site-ledger",
+      "name": "Site Ledger",
+      "embraces": ["air and white space", "crisp geometric type", "thin precise rules", "neutral greys", "ember as a thin accent only"],
+      "rejects": ["heavy fills", "warm grounds", "rounded corners", "decoration", "blue and green"],
+      "fonts": [{"family": "Sora", "weight": 600}, {"family": "Archivo", "weight": 400}],
+      "palette": [
+        {"hex": "#f8f8f6", "name": "Chalk"},
+        {"hex": "#2d2d2b", "name": "Graphite"},
+        {"hex": "#75756f", "name": "Steel"},
+        {"hex": "#d9d8d3", "name": "Concrete"},
+        {"hex": "#e0522a", "name": "Ember Spark"}
+      ],
+      "shapes": {"corner": 0.04, "stroke": 0.07, "angularity": 0.75, "symmetry": 0.9}
+    },
+    {
+      "slug": "hearth-stone",
+      "name": "Hearth Stone",
+      "embraces": ["dense, heavy forms", "a characterful grotesque with a warm serif beside it", "ember on coal and on kiln paper", "softened shoulders on solid masonry", "a grounded, level base"],
+      "rejects": ["hairlines", "cool greys", "tilt and slant", "gloss and gradients", "blue and green"],
+      "fonts": [{"family": "Bricolage Grotesque", "weight": 700}, {"family": "Fraunces", "weight": 600}],
+      "palette": [
+        {"hex": "#c83c29", "name": "Ember"},
+        {"hex": "#221b17", "name": "Coal"},
+        {"hex": "#f6eee3", "name": "Kiln"},
+        {"hex": "#8f3b22", "name": "Brick"},
+        {"hex": "#8a817a", "name": "Ash"}
+      ],
+      "shapes": {"corner": 0.2, "stroke": 0.2, "angularity": 0.35, "symmetry": 0.85}
+    }
+  ]
+}

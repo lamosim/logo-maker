@@ -1,0 +1,18 @@
+{
+  "scores": {"appropriate": 5, "distinctive": 4, "simple": 5, "legible": 5, "adaptable": 5,
+             "timeless": 5, "universal": 4, "clear": 3, "congruent": 5, "system": 5},
+  "evidence": {
+    "appropriate": "unchanged from 02-arch: the keystone holding the arch is the one idea, drawn, and reads without a caption",
+    "distinctive": "no competitor uses architecture or stone; Ember on Kiln and Coal sits apart from the category's blue and green and is redder and darker than Chaser's orange",
+    "simple": "one arch, one stone, 21 anchors",
+    "legible": "the favicon is redrawn on a 16 px grid (band 4 px, opening 8 px, keystone 2 px proud) and holds at 16 px; the wordmark is tracked +10 for the 32 px header; x-height 9.5 px in the 120 px horizontal lockup, 20.3 px in the 160 px stacked",
+    "adaptable": "colour, reverse, black, white and mono all hold on the refine sheet; the reverse is a designed dark map (Ember Glow and Kiln on Coal); the app icon draws the arch in Kiln on an Ember tile",
+    "timeless": "no trend shape; a flat, two-colour mark",
+    "universal": "mirrored identical; rotated readings (a funnel at 90 degrees, a magnet or plug at 180) appear only in orientations nobody uses; colour-vision strip keeps the hierarchy (final/knockout.md)",
+    "clear": "knock-out in final/knockout.md: no conflicting mark, but stock 'Keystone' arch logos exist, so the drawing, not the idea, is what is ownable; the name findings go to an attorney",
+    "congruent": "every target met: shape 0.4 (round crown on straight feet), symmetric, low complexity, heavy, ember hue near 31 at medium saturation, mid lightness with a coal ink, grotesk title case, framed (the arch encloses), static",
+    "system": "horizontal, stacked (primary), symbol, compact, small and favicon all build with no tier warnings; clear space one x; rationale written for the package"
+  },
+  "kill": false,
+  "reason": ""
+}

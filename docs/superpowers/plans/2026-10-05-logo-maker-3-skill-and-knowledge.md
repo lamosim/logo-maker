@@ -42,6 +42,7 @@
 | `CLAUDE.md`, `README.md` | project routing, rules, where things live, tests |
 | `docs/examples/keystone/` | one complete brand produced by the real workflow, plus `WALKTHROUGH.md` |
 | `tests/test_knowledge.py`, `tests/test_skill_docs.py` | structural checks on the documents |
+| `tests/test_example.py` | the example brand: complete, its rationale follows the rule, its package verifies (fast) and builds again (render) |
 
 ---
 

@@ -1,0 +1,254 @@
+{
+  "ok": true,
+  "failures": [],
+  "warnings": [
+    {
+      "check": "near_miss_angles",
+      "severity": "warn",
+      "message": "full-symbol: 2 straight segment(s) are 0.3-3 degrees off a 15-degree angle",
+      "data": {
+        "output": "full-symbol",
+        "count": 2,
+        "segments": [
+          {
+            "from": [
+              71.591,
+              -194.091
+            ],
+            "to": [
+              111.894,
+              -350.0
+            ],
+            "angle": 104.494
+          },
+          {
+            "from": [
+              302.803,
+              -350.0
+            ],
+            "to": [
+              246.591,
+              -176.061
+            ],
+            "angle": 107.909
+          }
+        ]
+      }
+    },
+    {
+      "check": "near_miss_angles",
+      "severity": "warn",
+      "message": "small: 2 straight segment(s) are 0.3-3 degrees off a 15-degree angle",
+      "data": {
+        "output": "small",
+        "count": 2,
+        "segments": [
+          {
+            "from": [
+              71.591,
+              -194.091
+            ],
+            "to": [
+              111.894,
+              -350.0
+            ],
+            "angle": 104.494
+          },
+          {
+            "from": [
+              302.803,
+              -350.0
+            ],
+            "to": [
+              246.591,
+              -176.061
+            ],
+            "angle": 107.909
+          }
+        ]
+      }
+    },
+    {
+      "check": "near_miss_angles",
+      "severity": "warn",
+      "message": "favicon: 2 straight segment(s) are 0.3-3 degrees off a 15-degree angle",
+      "data": {
+        "output": "favicon",
+        "count": 2,
+        "segments": [
+          {
+            "from": [
+              71.591,
+              -194.091
+            ],
+            "to": [
+              111.894,
+              -350.0
+            ],
+            "angle": 104.494
+          },
+          {
+            "from": [
+              302.803,
+              -350.0
+            ],
+            "to": [
+              246.591,
+              -176.061
+            ],
+            "angle": 107.909
+          }
+        ]
+      }
+    }
+  ],
+  "info": [
+    {
+      "check": "anchors",
+      "severity": "info",
+      "message": "full-symbol: symbol has 36 anchors",
+      "data": {
+        "output": "full-symbol",
+        "anchors": 36
+      }
+    },
+    {
+      "check": "bounds",
+      "severity": "info",
+      "message": "full-symbol: aspect 1.16; centroid offset (-40.1, 0.6)",
+      "data": {
+        "output": "full-symbol",
+        "aspect": 1.156,
+        "centroid_offset": [
+          -40.14,
+          0.59
+        ]
+      }
+    },
+    {
+      "check": "anchors",
+      "severity": "info",
+      "message": "small: symbol has 34 anchors",
+      "data": {
+        "output": "small",
+        "anchors": 34
+      }
+    },
+    {
+      "check": "bounds",
+      "severity": "info",
+      "message": "small: aspect 1.16; centroid offset (-39.7, 0.5)",
+      "data": {
+        "output": "small",
+        "aspect": 1.156,
+        "centroid_offset": [
+          -39.75,
+          0.46
+        ]
+      }
+    },
+    {
+      "check": "anchors",
+      "severity": "info",
+      "message": "favicon: symbol has 27 anchors",
+      "data": {
+        "output": "favicon",
+        "anchors": 27
+      }
+    },
+    {
+      "check": "bounds",
+      "severity": "info",
+      "message": "favicon: aspect 1.16; centroid offset (-39.7, 0.6)",
+      "data": {
+        "output": "favicon",
+        "aspect": 1.156,
+        "centroid_offset": [
+          -39.72,
+          0.62
+        ]
+      }
+    },
+    {
+      "check": "text_legibility",
+      "severity": "info",
+      "message": "full-horizontal: wordmark x-height 10.4 px at 120 px",
+      "data": {
+        "output": "full-horizontal",
+        "x_height_px": 10.38
+      }
+    },
+    {
+      "check": "text_legibility",
+      "severity": "info",
+      "message": "full-stacked: wordmark x-height 20.6 px at 160 px",
+      "data": {
+        "output": "full-stacked",
+        "x_height_px": 20.6
+      }
+    },
+    {
+      "check": "text_legibility",
+      "severity": "info",
+      "message": "full-wordmark: wordmark x-height 15.5 px at 120 px",
+      "data": {
+        "output": "full-wordmark",
+        "x_height_px": 15.45
+      }
+    },
+    {
+      "check": "industry",
+      "severity": "info",
+      "message": "industry 'invoicing for solo consultants' (from brand.json) resolves to fintech",
+      "data": {
+        "industry": "invoicing for solo consultants",
+        "source": "brand.json",
+        "resolved": [
+          "fintech"
+        ]
+      }
+    },
+    {
+      "check": "min_feature",
+      "severity": "info",
+      "message": "favicon: thinnest feature 4.47 px at 16 px",
+      "data": {
+        "output": "favicon",
+        "feature_px": 4.47,
+        "target": 16
+      }
+    },
+    {
+      "check": "min_feature",
+      "severity": "info",
+      "message": "small: thinnest feature 6.19 px at 32 px",
+      "data": {
+        "output": "small",
+        "feature_px": 6.19,
+        "target": 32
+      }
+    },
+    {
+      "check": "min_feature",
+      "severity": "info",
+      "message": "full-symbol: thinnest feature 11.12 px at 64 px",
+      "data": {
+        "output": "full-symbol",
+        "feature_px": 11.12,
+        "target": 64
+      }
+    }
+  ],
+  "outputs": [
+    "full-lockup",
+    "full-horizontal",
+    "full-stacked",
+    "full-symbol",
+    "full-wordmark",
+    "compact",
+    "small",
+    "favicon"
+  ],
+  "rendered": true,
+  "fingerprint": "c5bb829022407e06c1a102ceabd9cdd5f1137ebc0d8c1073df7f4bff9bef5f6c"
+}

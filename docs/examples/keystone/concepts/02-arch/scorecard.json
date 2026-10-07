@@ -1,0 +1,18 @@
+{
+  "scores": {"appropriate": 5, "distinctive": 4, "simple": 5, "legible": 4, "adaptable": 4,
+             "timeless": 5, "universal": 4, "clear": 3, "congruent": 5, "system": 4},
+  "evidence": {
+    "appropriate": "the keystone holding the arch is the one idea, drawn; it reads without a caption; sturdy and grounded (Everyman), enclosing (Caregiver)",
+    "distinctive": "none of the five (FreshBooks, Wave, Bonsai, HoneyBook, Chaser) uses architecture or stone; heavy band, square feet and a raised flat-topped keystone; no tile, no slant",
+    "simple": "one arch and one stone, 19 anchors; drawable from memory in three strokes",
+    "legible": "the 16 px favicon holds as an arch with a raised crown; the joints read from 48 px and close (by design) in the favicon tier; wordmark x-height 9.7 px at 120 px",
+    "adaptable": "black on white and white on black both hold; the app icon is the arch alone; motion: the keystone drops into the crown and locks; embroidery uses the jointless favicon silhouette",
+    "timeless": "no trend shape from trends.md; an arch and its keystone read the same a century ago",
+    "universal": "mirrored panel identical; rotated 90 reads as a D with a megaphone (an orientation nobody sees); upright there is a faint horseshoe-magnet reading",
+    "clear": "description searches ('arch with raised keystone logo', 'keystone arch logo') found stock 'Keystone' arch logos (Dreamstime 336333639, Adobe Stock 2199319247): the same idea in other hands, no registered conflict seen; full knock-out in refinement",
+    "congruent": "shape 0.4: round crown on straight feet; symmetric; low complexity; heavy; framed (the arch encloses its opening); static; the heavy, round-shouldered form suits KEE-stone's stops and long o",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all build with no tier warnings; the favicon merges the three stones; rationale draft in critique.md"
+  },
+  "kill": false,
+  "reason": ""
+}

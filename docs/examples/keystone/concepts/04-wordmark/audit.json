@@ -1,0 +1,101 @@
+{
+  "ok": true,
+  "failures": [],
+  "warnings": [],
+  "info": [
+    {
+      "check": "anchors",
+      "severity": "info",
+      "message": "small: symbol has 19 anchors",
+      "data": {
+        "output": "small",
+        "anchors": 19
+      }
+    },
+    {
+      "check": "bounds",
+      "severity": "info",
+      "message": "small: aspect 1.07; centroid offset (0.3, -0.2)",
+      "data": {
+        "output": "small",
+        "aspect": 1.072,
+        "centroid_offset": [
+          0.32,
+          -0.25
+        ]
+      }
+    },
+    {
+      "check": "anchors",
+      "severity": "info",
+      "message": "favicon: symbol has 17 anchors",
+      "data": {
+        "output": "favicon",
+        "anchors": 17
+      }
+    },
+    {
+      "check": "bounds",
+      "severity": "info",
+      "message": "favicon: aspect 1.06; centroid offset (0.3, 0.1)",
+      "data": {
+        "output": "favicon",
+        "aspect": 1.063,
+        "centroid_offset": [
+          0.26,
+          0.09
+        ]
+      }
+    },
+    {
+      "check": "text_legibility",
+      "severity": "info",
+      "message": "full-wordmark: wordmark x-height 15.5 px at 120 px",
+      "data": {
+        "output": "full-wordmark",
+        "x_height_px": 15.45
+      }
+    },
+    {
+      "check": "industry",
+      "severity": "info",
+      "message": "industry 'invoicing for solo consultants' (from brand.json) resolves to fintech",
+      "data": {
+        "industry": "invoicing for solo consultants",
+        "source": "brand.json",
+        "resolved": [
+          "fintech"
+        ]
+      }
+    },
+    {
+      "check": "min_feature",
+      "severity": "info",
+      "message": "favicon: thinnest feature 4.66 px at 16 px",
+      "data": {
+        "output": "favicon",
+        "feature_px": 4.66,
+        "target": 16
+      }
+    },
+    {
+      "check": "min_feature",
+      "severity": "info",
+      "message": "small: thinnest feature 8.56 px at 32 px",
+      "data": {
+        "output": "small",
+        "feature_px": 8.56,
+        "target": 32
+      }
+    }
+  ],
+  "outputs": [
+    "full-lockup",
+    "full-wordmark",
+    "compact",
+    "small",
+    "favicon"
+  ],
+  "rendered": true,
+  "fingerprint": "040f93adf39936b40263612ee99e9755325b55c67ca6796a30d73b849bd2aba9"
+}

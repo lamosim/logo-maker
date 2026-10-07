@@ -1,0 +1,18 @@
+{
+  "scores": {"appropriate": 4, "distinctive": 3, "simple": 4, "legible": 4, "adaptable": 4,
+             "timeless": 4, "universal": 3, "clear": 4, "congruent": 3, "system": 4},
+  "evidence": {
+    "appropriate": "round 3: the K reads first, then the stone at its junction that the arm and leg lean on; the idea takes one sentence, not a paragraph; heavy and plain (Everyman)",
+    "distinctive": "no competitor uses a K and there is no tile (unlike FreshBooks and Bonsai), but a heavy K is a common letterform; the junction stone is the only ownable detail and it closes below 48 px",
+    "simple": "one letter and one stone, 36 anchors; 'a K with a stone at its heart'",
+    "legible": "the K reads at 16 px (the favicon closes the joints into a plain K); the joints read from 48 px; the stone never turns the K into another letter (Kia test)",
+    "adaptable": "one colour and reversed both hold; the icon is the K; motion: the stone slides in from the jaw and the letter locks; at 16 px it is a plain K",
+    "timeless": "no avoid-list trend; a mono-initial app icon is a 'use carefully' item, with its reason in strategy.md section 8",
+    "universal": "mirrored reads as a reversed K, as any letter does; rotated 90 shows the construction, an arch with its keystone at the crown; at 64 to 128 px the trapezoid inside the K can read as a loudspeaker",
+    "clear": "description searches ('letter K logo with keystone wedge', 'K monogram') found generic K monograms and K-with-a-key stock logos, nothing with a keystone at the junction",
+    "congruent": "heavy, grotesk and low complexity match; shape 0.4 matches (curved arm and leg on a straight stem); symmetry (target 0.85), frame (framed) and dynamism (0.2) miss: a K is asymmetric, open and leans; the hard K suits the name's sound",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all build; the favicon is a plain K; rationale draft in critique.md"
+  },
+  "kill": false,
+  "reason": ""
+}

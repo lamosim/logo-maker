@@ -1,0 +1,18 @@
+{
+  "scores": {"appropriate": 3, "distinctive": 2, "simple": 4, "legible": 4, "adaptable": 3,
+             "timeless": 4, "universal": 2, "clear": 3, "congruent": 3, "system": 4},
+  "evidence": {
+    "appropriate": "the joint locking two blocks needs a sentence in both rounds; what reads first is a figure in a tile (round 1) or a shirt collar (round 2)",
+    "distinctive": "round 1 sits in a rounded square tile, the category's own container (FreshBooks' F tile, Bonsai's b tile); round 2 is a box",
+    "simple": "two stones and one joint, 20 to 22 anchors",
+    "legible": "the joint stays open at 16 px (favicon joint 100 to 110 units); thinnest feature 2.09 px at 16 px in round 2",
+    "adaptable": "one colour holds; round 1 is a tile everywhere, so it cannot sit on a coloured app tile without a tile in a tile",
+    "timeless": "no trend item",
+    "universal": "round 1: the tail on its neck reads as a bucket, goblet or keyhole at 32 px; round 2: the joint draws a jacket collar; rotated 90 reads as a K or H",
+    "clear": "no specific look-alike searched: killed before presenting",
+    "congruent": "symmetric, heavy, framed and static match; the square silhouette misses shape 0.4",
+    "system": "all tiers build"
+  },
+  "kill": true,
+  "reason": "Two rounds could not make the joint read as the idea: in a rounded tile (round 1) it is a figure in the category's container and reads as a bucket or keyhole at 32 px; out of the tile (round 2) the joint draws a shirt collar. Appropriate stays at 3, below the gate's 4."
+}

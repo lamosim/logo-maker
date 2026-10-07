@@ -1,0 +1,18 @@
+{
+  "scores": {"appropriate": 3, "distinctive": 3, "simple": 5, "legible": 5, "adaptable": 2,
+             "timeless": 5, "universal": 4, "clear": 3, "congruent": 3, "system": 3},
+  "evidence": {
+    "appropriate": "the quirk (the o's counter cut as an arch) carries the arch, not the piece that holds it; the one idea does not read",
+    "distinctive": "a characterful grotesque with one quirk, but HoneyBook and Chaser are wordmark-only too, and the quirk disappears below 128 px",
+    "simple": "the name and one cut",
+    "legible": "the name reads at a glance; x-height 15.5 px in the 120 px wordmark; the o icon holds at 16 px",
+    "adaptable": "no symbol: every app icon from 96 px up shows the whole word, against the brief's first surface (app icon); the o icon is a plain ring at 16 px",
+    "timeless": "a custom wordmark with one quirk is on trends.md's use list",
+    "universal": "mirrored and rotated are text; the o icon can read as a zero",
+    "clear": "no look-alike search: killed before presenting",
+    "congruent": "grotesk, heavy and title case match; frame (framed) and the icon's shape miss",
+    "system": "the lockups collapse to the wordmark; the compact, small and favicon tiers draw the o"
+  },
+  "kill": true,
+  "reason": "The quirk carries the arch, not the piece that holds it, and a wordmark-only mark fails the first surface: every app icon from 96 px up would show the whole word. Giving it a symbol would make it a combination mark repeating 01 or 02, so appropriate cannot rise to 4 inside this direction."
+}

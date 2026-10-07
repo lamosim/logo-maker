@@ -1,0 +1,1498 @@
+{
+  "brand": "Keystone",
+  "slug": "keystone",
+  "built": "2026-10-07T16:42:00-04:00",
+  "inputs": "7fa66dc254b3a1df47b4ac9a63185b970fae53587bf7f37a67a9d3f30fc82fd2",
+  "files": [
+    {
+      "path": "keystone-primary-color.svg",
+      "purpose": "primary lockup, color variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "958f3773f3e529612a921a614edd40db0741644202ffb80d20e1705bf77bb1f3",
+      "bytes": 10009
+    },
+    {
+      "path": "keystone-primary-reverse.svg",
+      "purpose": "primary lockup, reverse variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "71d5019aac3608b118e0a06e62f91625fe1d3ec2072f29c27c5acc9524dfdc3d",
+      "bytes": 10009
+    },
+    {
+      "path": "keystone-primary-black.svg",
+      "purpose": "primary lockup, black variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "1759b2c277118ecf7e6b0d141197053dd7179dea1e834c93296d807617ad22e8",
+      "bytes": 10009
+    },
+    {
+      "path": "keystone-primary-white.svg",
+      "purpose": "primary lockup, white variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "b4b3d83d275b1369cecb20ab5c77d1df91de355833857b7f857c097029b729b9",
+      "bytes": 10009
+    },
+    {
+      "path": "keystone-primary-mono.svg",
+      "purpose": "primary lockup, mono variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "78b2b42bfa8f481f8de10018894bcc7df05ad1a6e79219d8f0578b2447cd5d50",
+      "bytes": 10019
+    },
+    {
+      "path": "keystone-horizontal-color.svg",
+      "purpose": "horizontal lockup, color variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "c7f55f8b932dd84d40ab45180a80080d6d9e6beb064d0c444a4419ebde24c1d3",
+      "bytes": 10027
+    },
+    {
+      "path": "keystone-horizontal-reverse.svg",
+      "purpose": "horizontal lockup, reverse variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "572c30bacae88905b3416e250dc58f7396092599d8d87f246347b539189d7725",
+      "bytes": 10027
+    },
+    {
+      "path": "keystone-horizontal-black.svg",
+      "purpose": "horizontal lockup, black variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "16e77850e3d3e1e9877725a12d9b48c21718de966eaa8c82eeedf647a0e45fff",
+      "bytes": 10027
+    },
+    {
+      "path": "keystone-horizontal-white.svg",
+      "purpose": "horizontal lockup, white variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "e4546f2a4a0ecf54d24abf320f2a2295e35aae55f452acf1bb326b5dffa79013",
+      "bytes": 10027
+    },
+    {
+      "path": "keystone-horizontal-mono.svg",
+      "purpose": "horizontal lockup, mono variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "edb85682e4b29bd899bb53f674d4811e5dbc73d60eb14d533e6722a56284404f",
+      "bytes": 10037
+    },
+    {
+      "path": "keystone-stacked-color.svg",
+      "purpose": "stacked lockup, color variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "958f3773f3e529612a921a614edd40db0741644202ffb80d20e1705bf77bb1f3",
+      "bytes": 10009
+    },
+    {
+      "path": "keystone-stacked-reverse.svg",
+      "purpose": "stacked lockup, reverse variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "71d5019aac3608b118e0a06e62f91625fe1d3ec2072f29c27c5acc9524dfdc3d",
+      "bytes": 10009
+    },
+    {
+      "path": "keystone-stacked-black.svg",
+      "purpose": "stacked lockup, black variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "1759b2c277118ecf7e6b0d141197053dd7179dea1e834c93296d807617ad22e8",
+      "bytes": 10009
+    },
+    {
+      "path": "keystone-stacked-white.svg",
+      "purpose": "stacked lockup, white variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "b4b3d83d275b1369cecb20ab5c77d1df91de355833857b7f857c097029b729b9",
+      "bytes": 10009
+    },
+    {
+      "path": "keystone-stacked-mono.svg",
+      "purpose": "stacked lockup, mono variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "78b2b42bfa8f481f8de10018894bcc7df05ad1a6e79219d8f0578b2447cd5d50",
+      "bytes": 10019
+    },
+    {
+      "path": "keystone-wordmark-color.svg",
+      "purpose": "wordmark lockup, color variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "7e28d161138cd71c9e83db7f603a475f82d077657c1d685c1ef35e0752db55bb",
+      "bytes": 8316
+    },
+    {
+      "path": "keystone-wordmark-reverse.svg",
+      "purpose": "wordmark lockup, reverse variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "a671ffaa10600701e9053b6c3f7c80b8baf9afabf321dcf6b9f431d9cc2fbe0d",
+      "bytes": 8316
+    },
+    {
+      "path": "keystone-wordmark-black.svg",
+      "purpose": "wordmark lockup, black variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "e6edb69d166abbd57beb7aa52cac0de6362507babcd5365c037891c15ba7655c",
+      "bytes": 8316
+    },
+    {
+      "path": "keystone-wordmark-white.svg",
+      "purpose": "wordmark lockup, white variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "76f95fb9349ba3a446d1c651a2b2e0e1868808054b462c2e3ace1e0695f87c0a",
+      "bytes": 8316
+    },
+    {
+      "path": "keystone-wordmark-mono.svg",
+      "purpose": "wordmark lockup, mono variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "a8cda57da97337fa802b4b97da51a26025518118f868083b753a6f39d3816c1d",
+      "bytes": 8321
+    },
+    {
+      "path": "keystone-mark-color.svg",
+      "purpose": "mark lockup, color variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "34c50b40c6a5072c697219dd51d3a4858bddf3fb1a1ab6dacdd14dd1ac4924ed",
+      "bytes": 1601
+    },
+    {
+      "path": "keystone-mark-reverse.svg",
+      "purpose": "mark lockup, reverse variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "5ed94f0fc5e12399eba03217b11e3a8a8c16cf192fa336bc451370ea0d03c07e",
+      "bytes": 1601
+    },
+    {
+      "path": "keystone-mark-black.svg",
+      "purpose": "mark lockup, black variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "9049aebf8442b8ac02ab389c54996c9699ad743a85763eec917a522d7228d52c",
+      "bytes": 1601
+    },
+    {
+      "path": "keystone-mark-white.svg",
+      "purpose": "mark lockup, white variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "9fac1440dfe32a51b3c6861a909012f88bd28d1c4b725c18ff358e05e97745b9",
+      "bytes": 1601
+    },
+    {
+      "path": "keystone-mark-mono.svg",
+      "purpose": "mark lockup, mono variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "cb839345eebaa8152b7642c0facf4a367788eecf3a57019c995998c47c62df67",
+      "bytes": 1606
+    },
+    {
+      "path": "keystone-small-color.svg",
+      "purpose": "small lockup, color variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "ea78df10506828f14d238e6c0342cbd73b53cc08f7a38e336f61e22cef699559",
+      "bytes": 1610
+    },
+    {
+      "path": "keystone-small-reverse.svg",
+      "purpose": "small lockup, reverse variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "48a619bed74a999c0a9978b414a8d10e3d02df18bd6fefa6bea81777d4819771",
+      "bytes": 1610
+    },
+    {
+      "path": "keystone-small-black.svg",
+      "purpose": "small lockup, black variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "867a2833eaf09f3817b102ec0d1d9909556b8d3fb9f8d119855997a8023ea4d5",
+      "bytes": 1610
+    },
+    {
+      "path": "keystone-small-white.svg",
+      "purpose": "small lockup, white variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "b2edbb3a311fa5312005e77cc29c131c180a71980d4bd51bfd0c344db9bffe22",
+      "bytes": 1610
+    },
+    {
+      "path": "keystone-small-mono.svg",
+      "purpose": "small lockup, mono variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "0ae0ae55b62a36ba05d9697800941165199313b1b41f60fc010dfef976537e46",
+      "bytes": 1615
+    },
+    {
+      "path": "keystone-favicon-color.svg",
+      "purpose": "favicon lockup, color variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "8d56fd5f5d0451c09704a1423d3069d10f1c9ab80db9ea09a651bfb6b17f4528",
+      "bytes": 1349
+    },
+    {
+      "path": "keystone-favicon-reverse.svg",
+      "purpose": "favicon lockup, reverse variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "616543051e64103f9dc969edb3ac2ebc3022c21ddec0dde8d8aad6039cb51ad7",
+      "bytes": 1349
+    },
+    {
+      "path": "keystone-favicon-black.svg",
+      "purpose": "favicon lockup, black variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "da95a9871b61bdfac184ecfd293a259675380908c07fd06fc0b75d0f056a6212",
+      "bytes": 1349
+    },
+    {
+      "path": "keystone-favicon-white.svg",
+      "purpose": "favicon lockup, white variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "8fc2fcfe97d799b4c8e0c9e6d2962eec97f4ae7265049f022f7457cfaffac47b",
+      "bytes": 1349
+    },
+    {
+      "path": "keystone-favicon-mono.svg",
+      "purpose": "favicon lockup, mono variant, vector master",
+      "width": null,
+      "height": null,
+      "sha256": "061c3866cc529732fc653b0771761e4d428404a931cb6bc27aaad731ddd36dc4",
+      "bytes": 1354
+    },
+    {
+      "path": "keystone-primary-color-256.png",
+      "purpose": "primary color transparent PNG, long edge 256",
+      "width": 256,
+      "height": 182,
+      "sha256": "3e3c32e6ac0dea644eec0272129c7b6a071c6bf4430232d80575074c6c7da206",
+      "bytes": 4077
+    },
+    {
+      "path": "keystone-primary-color-512.png",
+      "purpose": "primary color transparent PNG, long edge 512",
+      "width": 512,
+      "height": 364,
+      "sha256": "8fd7cf5f5d018f922f8910485a16bed517cf73515a3ade9cd4a730b940f3c4ee",
+      "bytes": 8480
+    },
+    {
+      "path": "keystone-primary-color-1024.png",
+      "purpose": "primary color transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 728,
+      "sha256": "354d349e964ab059799c0633f60232b6235b2e899285d6204db01cab583b229f",
+      "bytes": 17780
+    },
+    {
+      "path": "keystone-primary-color-2048.png",
+      "purpose": "primary color transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "15b56e8a3ab28f4181ff96f14cfafa140c1a9dcff5962d7ad94413b0113f5651",
+      "bytes": 42600
+    },
+    {
+      "path": "keystone-primary-reverse-256.png",
+      "purpose": "primary reverse transparent PNG, long edge 256",
+      "width": 256,
+      "height": 182,
+      "sha256": "392471a95689294d1bd12ed643782ac8f4689f93c3ca40568ecb3e70086850a2",
+      "bytes": 4039
+    },
+    {
+      "path": "keystone-primary-reverse-512.png",
+      "purpose": "primary reverse transparent PNG, long edge 512",
+      "width": 512,
+      "height": 364,
+      "sha256": "0bf579c803c415236495eefecbe5188b26f7439fdcf5da96efe866a917410571",
+      "bytes": 8346
+    },
+    {
+      "path": "keystone-primary-reverse-1024.png",
+      "purpose": "primary reverse transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 728,
+      "sha256": "66e05af0a5c3889b61f3036f2189e7c6268ab03bdf7f27e7617b5c94afa95282",
+      "bytes": 17625
+    },
+    {
+      "path": "keystone-primary-reverse-2048.png",
+      "purpose": "primary reverse transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "6ebd10da352d8dd0a0ea42a1d3dd9746fab3212f9f289547544a950c0a1f70d6",
+      "bytes": 42450
+    },
+    {
+      "path": "keystone-primary-black-256.png",
+      "purpose": "primary black transparent PNG, long edge 256",
+      "width": 256,
+      "height": 182,
+      "sha256": "b8f698dc52ce49f614e118b16d42a30d331773416e1172da7e0b09fc318ef59f",
+      "bytes": 3663
+    },
+    {
+      "path": "keystone-primary-black-512.png",
+      "purpose": "primary black transparent PNG, long edge 512",
+      "width": 512,
+      "height": 364,
+      "sha256": "74cfb05141397a71ca451a54e7aa5b5286ef587ae0c7b21d3c2438acd92a8b65",
+      "bytes": 7608
+    },
+    {
+      "path": "keystone-primary-black-1024.png",
+      "purpose": "primary black transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 728,
+      "sha256": "cde46ddb8c6a5601f077eb869ae4933a4ad515eb604c56b9332de0aeddbba9bb",
+      "bytes": 16263
+    },
+    {
+      "path": "keystone-primary-black-2048.png",
+      "purpose": "primary black transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "68cb33de9fc268866f6170dec192d0836cfad5e32b54854e7b5353b6143383e4",
+      "bytes": 38647
+    },
+    {
+      "path": "keystone-primary-white-256.png",
+      "purpose": "primary white transparent PNG, long edge 256",
+      "width": 256,
+      "height": 182,
+      "sha256": "786a245c976e0d754643edf9c66095dc3374a06aa06a9efaba73233f9879b0c0",
+      "bytes": 3810
+    },
+    {
+      "path": "keystone-primary-white-512.png",
+      "purpose": "primary white transparent PNG, long edge 512",
+      "width": 512,
+      "height": 364,
+      "sha256": "61800caf8ed3c813513ed52ed8b3039911fd975b14a86acdd157bd8202e93153",
+      "bytes": 7891
+    },
+    {
+      "path": "keystone-primary-white-1024.png",
+      "purpose": "primary white transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 728,
+      "sha256": "f39dbecddb8d9bb029c0149dcccae70bf4e04c4d52664dc52c308a12c2eddbf1",
+      "bytes": 16668
+    },
+    {
+      "path": "keystone-primary-white-2048.png",
+      "purpose": "primary white transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "5ccf6a2b363eee774e0d9009b7adb8a69c1a4ec884777854acee69b800c50563",
+      "bytes": 39609
+    },
+    {
+      "path": "keystone-horizontal-color-256.png",
+      "purpose": "horizontal color transparent PNG, long edge 256",
+      "width": 256,
+      "height": 66,
+      "sha256": "d25382f57d57643555daf7a57a0456f1e5716ec2a41a78af14121f41fdf968cb",
+      "bytes": 2597
+    },
+    {
+      "path": "keystone-horizontal-color-512.png",
+      "purpose": "horizontal color transparent PNG, long edge 512",
+      "width": 512,
+      "height": 132,
+      "sha256": "47b81345f00fb7460b0083052c33a161f91572237035eda2709c30e482ea5238",
+      "bytes": 5086
+    },
+    {
+      "path": "keystone-horizontal-color-1024.png",
+      "purpose": "horizontal color transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 263,
+      "sha256": "b5ba0d25a30ac878c32e9c5c7ca430588378db7a79a45ea2229509111da774df",
+      "bytes": 10724
+    },
+    {
+      "path": "keystone-horizontal-color-2048.png",
+      "purpose": "horizontal color transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 527,
+      "sha256": "45f9746ee0a13ecbea78067d39d38122f943b11cbfc3385ca71cc4804e9a516d",
+      "bytes": 23456
+    },
+    {
+      "path": "keystone-horizontal-reverse-256.png",
+      "purpose": "horizontal reverse transparent PNG, long edge 256",
+      "width": 256,
+      "height": 66,
+      "sha256": "8c8ee0e7b6a5d79f09b3a296b9d3bf9dba0a16dee93c1651bcca1c6f3bbda71f",
+      "bytes": 2618
+    },
+    {
+      "path": "keystone-horizontal-reverse-512.png",
+      "purpose": "horizontal reverse transparent PNG, long edge 512",
+      "width": 512,
+      "height": 132,
+      "sha256": "9ffb014204934d8e147ce89792a546f80d359d588a03dab4b02796989efa5788",
+      "bytes": 5112
+    },
+    {
+      "path": "keystone-horizontal-reverse-1024.png",
+      "purpose": "horizontal reverse transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 263,
+      "sha256": "40b5df027d4b2c8f7ebf34b61bf0c848d7b201e19e5faaa2edf982138cf7e29a",
+      "bytes": 10804
+    },
+    {
+      "path": "keystone-horizontal-reverse-2048.png",
+      "purpose": "horizontal reverse transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 527,
+      "sha256": "ec7f6b6d70aaa2810883c4f844ccca88c6ddded3f52fa7ad49380e892291ad41",
+      "bytes": 23496
+    },
+    {
+      "path": "keystone-horizontal-black-256.png",
+      "purpose": "horizontal black transparent PNG, long edge 256",
+      "width": 256,
+      "height": 66,
+      "sha256": "04c743fe1d3e3b40724767d9c01f7f3d839d7e60d97146640781bc0a6782fefb",
+      "bytes": 2140
+    },
+    {
+      "path": "keystone-horizontal-black-512.png",
+      "purpose": "horizontal black transparent PNG, long edge 512",
+      "width": 512,
+      "height": 132,
+      "sha256": "c092f8b23e83931fdeab30caf2c373bfd300f77d5918d63a42ba229812d6fbc5",
+      "bytes": 4358
+    },
+    {
+      "path": "keystone-horizontal-black-1024.png",
+      "purpose": "horizontal black transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 263,
+      "sha256": "81bf593df709f2010b45b168963d0ccbf1ff299c4dbe649c729fbf5df9389373",
+      "bytes": 9228
+    },
+    {
+      "path": "keystone-horizontal-black-2048.png",
+      "purpose": "horizontal black transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 527,
+      "sha256": "835382ada3211d28a5a7563fa8dd227b527340a774286332e6eb486e68d28b4c",
+      "bytes": 20065
+    },
+    {
+      "path": "keystone-horizontal-white-256.png",
+      "purpose": "horizontal white transparent PNG, long edge 256",
+      "width": 256,
+      "height": 66,
+      "sha256": "8e9fffe12a666d031388209ff358c1e1050d7824bfbaba2394f4f83100963130",
+      "bytes": 2268
+    },
+    {
+      "path": "keystone-horizontal-white-512.png",
+      "purpose": "horizontal white transparent PNG, long edge 512",
+      "width": 512,
+      "height": 132,
+      "sha256": "80a8840643c1ee435e93f6d8e8dcda94736171b3c5da15c346d5ea96a219f10c",
+      "bytes": 4565
+    },
+    {
+      "path": "keystone-horizontal-white-1024.png",
+      "purpose": "horizontal white transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 263,
+      "sha256": "803f945e67110375947698c57ea077574d3e29ae09452dbcb7f0b8d60ce13981",
+      "bytes": 9595
+    },
+    {
+      "path": "keystone-horizontal-white-2048.png",
+      "purpose": "horizontal white transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 527,
+      "sha256": "4e6d37a7b65de72b0ab063a87f612238d346799819484f9fd094a56c5d0dc293",
+      "bytes": 20735
+    },
+    {
+      "path": "keystone-stacked-color-256.png",
+      "purpose": "stacked color transparent PNG, long edge 256",
+      "width": 256,
+      "height": 182,
+      "sha256": "3e3c32e6ac0dea644eec0272129c7b6a071c6bf4430232d80575074c6c7da206",
+      "bytes": 4077
+    },
+    {
+      "path": "keystone-stacked-color-512.png",
+      "purpose": "stacked color transparent PNG, long edge 512",
+      "width": 512,
+      "height": 364,
+      "sha256": "8fd7cf5f5d018f922f8910485a16bed517cf73515a3ade9cd4a730b940f3c4ee",
+      "bytes": 8480
+    },
+    {
+      "path": "keystone-stacked-color-1024.png",
+      "purpose": "stacked color transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 728,
+      "sha256": "354d349e964ab059799c0633f60232b6235b2e899285d6204db01cab583b229f",
+      "bytes": 17780
+    },
+    {
+      "path": "keystone-stacked-color-2048.png",
+      "purpose": "stacked color transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "15b56e8a3ab28f4181ff96f14cfafa140c1a9dcff5962d7ad94413b0113f5651",
+      "bytes": 42600
+    },
+    {
+      "path": "keystone-stacked-reverse-256.png",
+      "purpose": "stacked reverse transparent PNG, long edge 256",
+      "width": 256,
+      "height": 182,
+      "sha256": "392471a95689294d1bd12ed643782ac8f4689f93c3ca40568ecb3e70086850a2",
+      "bytes": 4039
+    },
+    {
+      "path": "keystone-stacked-reverse-512.png",
+      "purpose": "stacked reverse transparent PNG, long edge 512",
+      "width": 512,
+      "height": 364,
+      "sha256": "0bf579c803c415236495eefecbe5188b26f7439fdcf5da96efe866a917410571",
+      "bytes": 8346
+    },
+    {
+      "path": "keystone-stacked-reverse-1024.png",
+      "purpose": "stacked reverse transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 728,
+      "sha256": "66e05af0a5c3889b61f3036f2189e7c6268ab03bdf7f27e7617b5c94afa95282",
+      "bytes": 17625
+    },
+    {
+      "path": "keystone-stacked-reverse-2048.png",
+      "purpose": "stacked reverse transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "6ebd10da352d8dd0a0ea42a1d3dd9746fab3212f9f289547544a950c0a1f70d6",
+      "bytes": 42450
+    },
+    {
+      "path": "keystone-stacked-black-256.png",
+      "purpose": "stacked black transparent PNG, long edge 256",
+      "width": 256,
+      "height": 182,
+      "sha256": "b8f698dc52ce49f614e118b16d42a30d331773416e1172da7e0b09fc318ef59f",
+      "bytes": 3663
+    },
+    {
+      "path": "keystone-stacked-black-512.png",
+      "purpose": "stacked black transparent PNG, long edge 512",
+      "width": 512,
+      "height": 364,
+      "sha256": "74cfb05141397a71ca451a54e7aa5b5286ef587ae0c7b21d3c2438acd92a8b65",
+      "bytes": 7608
+    },
+    {
+      "path": "keystone-stacked-black-1024.png",
+      "purpose": "stacked black transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 728,
+      "sha256": "cde46ddb8c6a5601f077eb869ae4933a4ad515eb604c56b9332de0aeddbba9bb",
+      "bytes": 16263
+    },
+    {
+      "path": "keystone-stacked-black-2048.png",
+      "purpose": "stacked black transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "68cb33de9fc268866f6170dec192d0836cfad5e32b54854e7b5353b6143383e4",
+      "bytes": 38647
+    },
+    {
+      "path": "keystone-stacked-white-256.png",
+      "purpose": "stacked white transparent PNG, long edge 256",
+      "width": 256,
+      "height": 182,
+      "sha256": "786a245c976e0d754643edf9c66095dc3374a06aa06a9efaba73233f9879b0c0",
+      "bytes": 3810
+    },
+    {
+      "path": "keystone-stacked-white-512.png",
+      "purpose": "stacked white transparent PNG, long edge 512",
+      "width": 512,
+      "height": 364,
+      "sha256": "61800caf8ed3c813513ed52ed8b3039911fd975b14a86acdd157bd8202e93153",
+      "bytes": 7891
+    },
+    {
+      "path": "keystone-stacked-white-1024.png",
+      "purpose": "stacked white transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 728,
+      "sha256": "f39dbecddb8d9bb029c0149dcccae70bf4e04c4d52664dc52c308a12c2eddbf1",
+      "bytes": 16668
+    },
+    {
+      "path": "keystone-stacked-white-2048.png",
+      "purpose": "stacked white transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "5ccf6a2b363eee774e0d9009b7adb8a69c1a4ec884777854acee69b800c50563",
+      "bytes": 39609
+    },
+    {
+      "path": "keystone-wordmark-color-256.png",
+      "purpose": "wordmark color transparent PNG, long edge 256",
+      "width": 256,
+      "height": 50,
+      "sha256": "f35eb8b9783ec98a21af21ad85245aabadd5f791aed90f24d2bb89beb20bc06f",
+      "bytes": 2406
+    },
+    {
+      "path": "keystone-wordmark-color-512.png",
+      "purpose": "wordmark color transparent PNG, long edge 512",
+      "width": 512,
+      "height": 101,
+      "sha256": "ac60cf56cd3e8c80abb7f1002f460e81300c2540d17d2c823eae565fa312d086",
+      "bytes": 4980
+    },
+    {
+      "path": "keystone-wordmark-color-1024.png",
+      "purpose": "wordmark color transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 201,
+      "sha256": "2a3a6fb79453e0de8a3db760bda4e589dbd73de8cf2215e7bb3ec686286be250",
+      "bytes": 9934
+    },
+    {
+      "path": "keystone-wordmark-color-2048.png",
+      "purpose": "wordmark color transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 402,
+      "sha256": "7e96a995601422047b7fa912e5dd6857acdf206ed691477c06f3678e939a8077",
+      "bytes": 21630
+    },
+    {
+      "path": "keystone-wordmark-reverse-256.png",
+      "purpose": "wordmark reverse transparent PNG, long edge 256",
+      "width": 256,
+      "height": 50,
+      "sha256": "09d06ffaaab7281d4790d71e77e8c83a3cca6ed830d9f9cce964a7186b85fd00",
+      "bytes": 2372
+    },
+    {
+      "path": "keystone-wordmark-reverse-512.png",
+      "purpose": "wordmark reverse transparent PNG, long edge 512",
+      "width": 512,
+      "height": 101,
+      "sha256": "56341ba38f75ed0f1a1fdd564e1ad691c649faa06c0e27ccf8cf81d2914f90d8",
+      "bytes": 4874
+    },
+    {
+      "path": "keystone-wordmark-reverse-1024.png",
+      "purpose": "wordmark reverse transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 201,
+      "sha256": "6951ab5001a78a68500fb9e861a0abe23f649fa6917e1ba25cc08b70225189f6",
+      "bytes": 9837
+    },
+    {
+      "path": "keystone-wordmark-reverse-2048.png",
+      "purpose": "wordmark reverse transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 402,
+      "sha256": "2d684d466fcc4db58bf14b825d483b6601e5ff750a56dcd9a27c2e4113cc6614",
+      "bytes": 21522
+    },
+    {
+      "path": "keystone-wordmark-black-256.png",
+      "purpose": "wordmark black transparent PNG, long edge 256",
+      "width": 256,
+      "height": 50,
+      "sha256": "d08dd745e6fc2fea4d1a72c3af085ec4450b4fdd219c082020acec6cb1b2252d",
+      "bytes": 2142
+    },
+    {
+      "path": "keystone-wordmark-black-512.png",
+      "purpose": "wordmark black transparent PNG, long edge 512",
+      "width": 512,
+      "height": 101,
+      "sha256": "8a8ac937ff446aad13c618744f109fbd2b91cb51f454117415ae87fed416816a",
+      "bytes": 4418
+    },
+    {
+      "path": "keystone-wordmark-black-1024.png",
+      "purpose": "wordmark black transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 201,
+      "sha256": "3fd2a0503262f6d22d0bd7dff25ea8b375ac6b4bf79ab996034698472b0d0942",
+      "bytes": 8887
+    },
+    {
+      "path": "keystone-wordmark-black-2048.png",
+      "purpose": "wordmark black transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 402,
+      "sha256": "e3ca476e6062e318c5fbc8768e9e2fee73e96f35c0a9a12f93fcc41af2e6c17b",
+      "bytes": 19614
+    },
+    {
+      "path": "keystone-wordmark-white-256.png",
+      "purpose": "wordmark white transparent PNG, long edge 256",
+      "width": 256,
+      "height": 50,
+      "sha256": "779f78919f0570edc3c8de3bf5e9f28832ca519a431e2171eb613c564ab04036",
+      "bytes": 2228
+    },
+    {
+      "path": "keystone-wordmark-white-512.png",
+      "purpose": "wordmark white transparent PNG, long edge 512",
+      "width": 512,
+      "height": 101,
+      "sha256": "ad99ef7bc27ec1ea8b38ef147836f9a3732c0907e5dbb361d0ce58f379adc3db",
+      "bytes": 4639
+    },
+    {
+      "path": "keystone-wordmark-white-1024.png",
+      "purpose": "wordmark white transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 201,
+      "sha256": "4d1c287b4c4d6db64d2526cc7e26f76156dcfa9c8cf77bb4118fac9ef34c334b",
+      "bytes": 9230
+    },
+    {
+      "path": "keystone-wordmark-white-2048.png",
+      "purpose": "wordmark white transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 402,
+      "sha256": "693950a08183d78425f74f936e2c3d1dc41d8c12fcedd14132027d7ad0de0da2",
+      "bytes": 20014
+    },
+    {
+      "path": "keystone-mark-color-256.png",
+      "purpose": "mark color transparent PNG, long edge 256",
+      "width": 256,
+      "height": 214,
+      "sha256": "e55d0167d98aaf912f600095ac4e7b622239c963eff01c282954efe225c09395",
+      "bytes": 2682
+    },
+    {
+      "path": "keystone-mark-color-512.png",
+      "purpose": "mark color transparent PNG, long edge 512",
+      "width": 512,
+      "height": 429,
+      "sha256": "1e977ade9868a8a9ed29fcaf8c36d0eb5654248bee7dddb80d08bd63f968b774",
+      "bytes": 5702
+    },
+    {
+      "path": "keystone-mark-color-1024.png",
+      "purpose": "mark color transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 858,
+      "sha256": "60965b42296dbca0640e49cfca0213292e8b81114dda36855932cd4967c86c2d",
+      "bytes": 13907
+    },
+    {
+      "path": "keystone-mark-color-2048.png",
+      "purpose": "mark color transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1715,
+      "sha256": "4ef0042667c1ee6dcf72af97dbec6091035ea0596944b2f8016f12dda6144266",
+      "bytes": 37186
+    },
+    {
+      "path": "keystone-mark-reverse-256.png",
+      "purpose": "mark reverse transparent PNG, long edge 256",
+      "width": 256,
+      "height": 214,
+      "sha256": "b08b01c4bbbbdcc82c14f5749b6ac1577bb1042c9308249599c5db24bbd35c46",
+      "bytes": 2709
+    },
+    {
+      "path": "keystone-mark-reverse-512.png",
+      "purpose": "mark reverse transparent PNG, long edge 512",
+      "width": 512,
+      "height": 429,
+      "sha256": "2c17bcc570bdb4da08969d404d964f1c8bc66a5adc9d60af9641588e3b1ef78c",
+      "bytes": 5742
+    },
+    {
+      "path": "keystone-mark-reverse-1024.png",
+      "purpose": "mark reverse transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 858,
+      "sha256": "bbcb0780a000387739d806a0126837aa17a7f5a5890385a45edfb69a56cc9735",
+      "bytes": 14008
+    },
+    {
+      "path": "keystone-mark-reverse-2048.png",
+      "purpose": "mark reverse transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1715,
+      "sha256": "f85d6c3f19b909b3c48e96822d73294b3a23b4b9aa882981d5d3148043dc665e",
+      "bytes": 37333
+    },
+    {
+      "path": "keystone-mark-black-256.png",
+      "purpose": "mark black transparent PNG, long edge 256",
+      "width": 256,
+      "height": 214,
+      "sha256": "b1249a281617ad583d0811d6daea896b0cbb4659143ade90287ac2ebb8800a74",
+      "bytes": 2598
+    },
+    {
+      "path": "keystone-mark-black-512.png",
+      "purpose": "mark black transparent PNG, long edge 512",
+      "width": 512,
+      "height": 429,
+      "sha256": "0025c44db6dd79c1684e82f0bbb9adce92e18df7dce04472ce10c3cd0eff5d37",
+      "bytes": 5597
+    },
+    {
+      "path": "keystone-mark-black-1024.png",
+      "purpose": "mark black transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 858,
+      "sha256": "f52c3157689c42e621123835096ac495d3512633a086ed5cdb3de85c226b1b0d",
+      "bytes": 13186
+    },
+    {
+      "path": "keystone-mark-black-2048.png",
+      "purpose": "mark black transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1715,
+      "sha256": "eeced4ef0661ff471f0c338cae7586d96c0e9becd3104fc14143b3eb8044265e",
+      "bytes": 33377
+    },
+    {
+      "path": "keystone-mark-white-256.png",
+      "purpose": "mark white transparent PNG, long edge 256",
+      "width": 256,
+      "height": 214,
+      "sha256": "9a9d7e3657a4db919ed9925f4433e1697299d9451eb42a99379744da1b59d667",
+      "bytes": 2589
+    },
+    {
+      "path": "keystone-mark-white-512.png",
+      "purpose": "mark white transparent PNG, long edge 512",
+      "width": 512,
+      "height": 429,
+      "sha256": "f562805825e136253a9e9f1023d2303a6a626749f33396ed2e5562c87536d7bf",
+      "bytes": 5499
+    },
+    {
+      "path": "keystone-mark-white-1024.png",
+      "purpose": "mark white transparent PNG, long edge 1024",
+      "width": 1024,
+      "height": 858,
+      "sha256": "b1d98261109281cd27bce0587b1c54172c5ae0149f1f12cf309ce67d84e46397",
+      "bytes": 13291
+    },
+    {
+      "path": "keystone-mark-white-2048.png",
+      "purpose": "mark white transparent PNG, long edge 2048",
+      "width": 2048,
+      "height": 1715,
+      "sha256": "9c1ee9845685e32cd3d082d53d4d6064cc67f48a34236e3bfaae8fbe746611d0",
+      "bytes": 34820
+    },
+    {
+      "path": "keystone-primary-color-white-bg-2048.jpg",
+      "purpose": "primary on a white background, flattened JPEG",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "49e50ea84a1958dce59123354d8326132e03d4a73ea824f4c6fe5010cc82ba9a",
+      "bytes": 134192
+    },
+    {
+      "path": "keystone-primary-color-2048.webp",
+      "purpose": "primary colour transparent WebP",
+      "width": 2048,
+      "height": 1455,
+      "sha256": "e2c1264665f6236bb6720788722795246404c2fa44a74ef0465372206f2ef7a5",
+      "bytes": 31082
+    },
+    {
+      "path": "favicon.ico",
+      "purpose": "legacy favicon, 16/32/48",
+      "width": 48,
+      "height": 48,
+      "sha256": "a677b5343390510eaeb9341a69530f3ca238eae84049726bbf3656d352b8f303",
+      "bytes": 1177
+    },
+    {
+      "path": "icon.svg",
+      "purpose": "SVG favicon with dark-mode style",
+      "width": null,
+      "height": null,
+      "sha256": "8470f213ff25fe173d7b21cc1d0ac1782e842673ff3b31eb710af58dff73740f",
+      "bytes": 1497
+    },
+    {
+      "path": "apple-touch-icon.png",
+      "purpose": "iOS bookmark icon, opaque",
+      "width": 180,
+      "height": 180,
+      "sha256": "b1de35ab662c39db8c655e8997cfead0bc6b29d20928d441c1ed9a1352a1a886",
+      "bytes": 1672
+    },
+    {
+      "path": "icon-192.png",
+      "purpose": "PWA icon 192, transparent",
+      "width": 192,
+      "height": 192,
+      "sha256": "7f7c215bbc7d547723a18e573d38c72738066d43557b2d57bfaa2feef731b32e",
+      "bytes": 1700
+    },
+    {
+      "path": "icon-512.png",
+      "purpose": "PWA icon 512, transparent",
+      "width": 512,
+      "height": 512,
+      "sha256": "421cfe16286a9c3522ddc972c2966bcd57c85613a327fa3ebf1ee0bcdcad9d47",
+      "bytes": 5039
+    },
+    {
+      "path": "icon-mask-512.png",
+      "purpose": "maskable PWA icon, art inside the safe circle",
+      "width": 512,
+      "height": 512,
+      "sha256": "5173d1ead6d3244dd414ce06ec41296fdf872756f6ab2d8a69e2171746adde68",
+      "bytes": 4496
+    },
+    {
+      "path": "manifest.webmanifest",
+      "purpose": "web app manifest",
+      "width": null,
+      "height": null,
+      "sha256": "81d1f53c4b184874222fa1fca6ee5dad40952c042543afa3264ba5ca31ec3242",
+      "bytes": 398
+    },
+    {
+      "path": "favicon-head.html",
+      "purpose": "HTML head snippet for favicons and link previews",
+      "width": null,
+      "height": null,
+      "sha256": "25dbd17da55bed699b0501c8192f86331532fff010e9170f8245d3810accd827",
+      "bytes": 673
+    },
+    {
+      "path": "ios-app-icon-1024.png",
+      "purpose": "iOS, iPadOS and macOS app icon: opaque, unmasked square",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "c5036f86637ce66f8c1ffb77e0fa4ff1dafc299a3671a140470e024bd3f4eb48",
+      "bytes": 10356
+    },
+    {
+      "path": "app-icon-layers/background.svg",
+      "purpose": "Icon Composer background layer",
+      "width": null,
+      "height": null,
+      "sha256": "4c834a7790f5a170b3b954697ae7891ac18149d12cefb1472bc71f004522e67c",
+      "bytes": 114
+    },
+    {
+      "path": "app-icon-layers/foreground.svg",
+      "purpose": "Icon Composer foreground layer, mark at 60% of the canvas",
+      "width": null,
+      "height": null,
+      "sha256": "1e27c77852302b287e61b4757cff91b3eb9c2ff050527093acd3f6a1d530414c",
+      "bytes": 1615
+    },
+    {
+      "path": "android/ic_launcher_foreground.svg",
+      "purpose": "adaptive icon foreground: art fitted inside the 66 dp safe circle of the 108 dp canvas",
+      "width": null,
+      "height": null,
+      "sha256": "117123ebc1ae442e9dbef412535524073ec05614911887bb6d6ee659a9b1bd81",
+      "bytes": 1615
+    },
+    {
+      "path": "android/ic_launcher_background.svg",
+      "purpose": "adaptive icon background layer, 1080-unit canvas",
+      "width": null,
+      "height": null,
+      "sha256": "c5b02a567b410f667160f62a06f078798491051d11b776faa2a9f39f9eb1d24d",
+      "bytes": 114
+    },
+    {
+      "path": "android/ic_launcher_monochrome.svg",
+      "purpose": "adaptive icon monochrome layer (themed icons): art fitted inside the 66 dp safe circle of the 108 dp canvas",
+      "width": null,
+      "height": null,
+      "sha256": "3d8a7bcf231a1f99f3863c11d12a2a5aeec121098e2d3c43b687abb1987a3405",
+      "bytes": 1615
+    },
+    {
+      "path": "android/mipmap-mdpi/ic_launcher.png",
+      "purpose": "legacy launcher icon, mdpi",
+      "width": 48,
+      "height": 48,
+      "sha256": "63e0259d2fd2adaec569e4f261bdb865243f88d5be3b742e99899ce1bbdc6002",
+      "bytes": 453
+    },
+    {
+      "path": "android/mipmap-hdpi/ic_launcher.png",
+      "purpose": "legacy launcher icon, hdpi",
+      "width": 72,
+      "height": 72,
+      "sha256": "c27b5ef20150f8963e0a366391f8bdf5649a3dea4cfc54923c5caa7a13a201de",
+      "bytes": 644
+    },
+    {
+      "path": "android/mipmap-xhdpi/ic_launcher.png",
+      "purpose": "legacy launcher icon, xhdpi",
+      "width": 96,
+      "height": 96,
+      "sha256": "75f170e9370d402180d14c78a93b7d5b0223bda967ae46c2a991d152143c3424",
+      "bytes": 854
+    },
+    {
+      "path": "android/mipmap-xxhdpi/ic_launcher.png",
+      "purpose": "legacy launcher icon, xxhdpi",
+      "width": 144,
+      "height": 144,
+      "sha256": "a95f7a5399e7d480b50d2e5dbb6e9cad5d96d4e60a2959698f66ad50af63124a",
+      "bytes": 1218
+    },
+    {
+      "path": "android/mipmap-xxxhdpi/ic_launcher.png",
+      "purpose": "legacy launcher icon, xxxhdpi",
+      "width": 192,
+      "height": 192,
+      "sha256": "37db6992ae22cdc9c73438c39a2dcc75ee9cd70fd61a4a295b8c9d63cc6d0745",
+      "bytes": 1615
+    },
+    {
+      "path": "play-store-icon-512.png",
+      "purpose": "Google Play listing icon: full square, no corners, no shadow",
+      "width": 512,
+      "height": 512,
+      "sha256": "81c133d4f94faf62e26280bb94f1c1df5bccb1465af1fd6a846aab9239a4fb7f",
+      "bytes": 4617
+    },
+    {
+      "path": "avatar-320.png",
+      "purpose": "profile avatar 320: art inside the 80% circle crop",
+      "width": 320,
+      "height": 320,
+      "sha256": "448890d98105c7a04c959234b9f9a6ba969909507407f818d7d87323080330cb",
+      "bytes": 2607
+    },
+    {
+      "path": "avatar-400.png",
+      "purpose": "profile avatar 400: art inside the 80% circle crop",
+      "width": 400,
+      "height": 400,
+      "sha256": "11a53f003ceee09711835702985a7083b160c1969d2855145628bf11281c5a62",
+      "bytes": 3339
+    },
+    {
+      "path": "avatar-512.png",
+      "purpose": "profile avatar 512: art inside the 80% circle crop",
+      "width": 512,
+      "height": 512,
+      "sha256": "9f76156ab6400bcc7052cccd15c42d890298eedd19b0e0ff2ab1dbc11dec1aff",
+      "bytes": 4401
+    },
+    {
+      "path": "avatar-720.png",
+      "purpose": "profile avatar 720: art inside the 80% circle crop",
+      "width": 720,
+      "height": 720,
+      "sha256": "78b9f2cba47ac20ff9839023c16cbd79dfc0db4440afa2358bb6c19d0f5aabed",
+      "bytes": 6776
+    },
+    {
+      "path": "avatar-800.png",
+      "purpose": "profile avatar 800: art inside the 80% circle crop",
+      "width": 800,
+      "height": 800,
+      "sha256": "07537e3f02ae91662200d4f3bcfc00539179b4605bf470ec60cb11bdc79d0b51",
+      "bytes": 7886
+    },
+    {
+      "path": "banner-x-1500x500.png",
+      "purpose": "X header; top and bottom 60 px kept clear",
+      "width": 1500,
+      "height": 500,
+      "sha256": "49933a0625ca1dd95a423da21eee42cde7e4895c7222f8c0075b7e7d662d79e1",
+      "bytes": 11576
+    },
+    {
+      "path": "banner-linkedin-personal-1584x396.png",
+      "purpose": "LinkedIn personal banner",
+      "width": 1584,
+      "height": 396,
+      "sha256": "399f714f8f0d3ef81def1b3f5f250e9ec20071a3e37776db7e40832433c0590c",
+      "bytes": 11336
+    },
+    {
+      "path": "banner-linkedin-page-1512x256.png",
+      "purpose": "LinkedIn page cover",
+      "width": 1512,
+      "height": 256,
+      "sha256": "3833e3e7fad6bd0087b3aeb488b1094d99aed31af21d6f7eaa879aaecc9bb216",
+      "bytes": 7531
+    },
+    {
+      "path": "banner-youtube-2560x1440.png",
+      "purpose": "YouTube channel art; logo inside the 1235x338 safe area",
+      "width": 2560,
+      "height": 1440,
+      "sha256": "a691bf6e8e09e72d81a4e98fc8ba886eb4a32d94534bf2777b66e2ca3d2b633e",
+      "bytes": 24775
+    },
+    {
+      "path": "banner-facebook-851x315.png",
+      "purpose": "Facebook page cover",
+      "width": 851,
+      "height": 315,
+      "sha256": "b077fb249a07d78d3217fd80a9f88281778fa278ef2d193b6081557e3f30c69c",
+      "bytes": 6190
+    },
+    {
+      "path": "banner-bluesky-1500x500.png",
+      "purpose": "Bluesky banner",
+      "width": 1500,
+      "height": 500,
+      "sha256": "fb4ae8236d2040d749fe097dabafcab86f22b69f13d13e88f4652d0e198411d0",
+      "bytes": 11961
+    },
+    {
+      "path": "og-image-1200x630.png",
+      "purpose": "Open Graph link preview",
+      "width": 1200,
+      "height": 630,
+      "sha256": "0b32728a0c729ef7a727facc3a8d27a471936f2452fe9cc59435e136308b167f",
+      "bytes": 10664
+    },
+    {
+      "path": "x-card-1200x600.png",
+      "purpose": "X summary_large_image card",
+      "width": 1200,
+      "height": 600,
+      "sha256": "e8f078ab97a8ff9f28ef29de16f41199c09d800e132a4535787ea9b9459d80a2",
+      "bytes": 10448
+    },
+    {
+      "path": "stripe-icon-512.png",
+      "purpose": "Stripe branding icon",
+      "width": 512,
+      "height": 512,
+      "sha256": "45dba367663c6a9a63dc05b0a72c26b4e5daa2c3f61ee76a115179a3f5c67459",
+      "bytes": 4655
+    },
+    {
+      "path": "gbp-logo-720.png",
+      "purpose": "Google Business Profile logo",
+      "width": 720,
+      "height": 720,
+      "sha256": "9b854a69b16ef57d0e5f4102fc561dd3790d1c35a7f9408382b8ff88b557847a",
+      "bytes": 7058
+    },
+    {
+      "path": "email-signature-logo@2x.png",
+      "purpose": "email signature logo, shown at 200x50",
+      "width": 400,
+      "height": 100,
+      "sha256": "dab77bff2740da8a86406c1a2f417cf4d2154b414f787d549767276d03886837",
+      "bytes": 3660
+    },
+    {
+      "path": "shopify-header-logo@2x.png",
+      "purpose": "Shopify header logo, shown at 400x100",
+      "width": 800,
+      "height": 200,
+      "sha256": "7d0433a0328d7dcc77c51b23bbc6920ebf29fc0ca7efa225940d9fa8210fe016",
+      "bytes": 7605
+    },
+    {
+      "path": "stripe-logo.png",
+      "purpose": "Stripe branding logo, 1024 wide",
+      "width": 1024,
+      "height": 263,
+      "sha256": "b5ba0d25a30ac878c32e9c5c7ca430588378db7a79a45ea2229509111da774df",
+      "bytes": 10724
+    },
+    {
+      "path": "keystone-primary-rgb.pdf",
+      "purpose": "primary vector PDF, RGB, for screens and digital print",
+      "width": null,
+      "height": null,
+      "sha256": "7106209c7b36c054feea9e290ba53caf16076ecf584d4733f00ed6ad8f594a59",
+      "bytes": 8559
+    },
+    {
+      "path": "keystone-primary-cmyk.pdf",
+      "purpose": "primary vector PDF, CMYK (naive values; confirm with the printer)",
+      "width": null,
+      "height": null,
+      "sha256": "1afa3571964f433636ecab6b58a788254bda12d9b88dd3c9bceea49c0f308ce8",
+      "bytes": 8545
+    },
+    {
+      "path": "keystone-primary-black.pdf",
+      "purpose": "primary vector PDF, black only (100% K)",
+      "width": null,
+      "height": null,
+      "sha256": "2f144703aada6a9b7a520dd70063992c7107cd996618e29262e78a9c6eb996b8",
+      "bytes": 8529
+    },
+    {
+      "path": "keystone-horizontal-rgb.pdf",
+      "purpose": "horizontal vector PDF, RGB, for screens and digital print",
+      "width": null,
+      "height": null,
+      "sha256": "553c8f594aa8e6678c91e5a93a68939c47820c4f024438b2cde2366d761908a0",
+      "bytes": 8399
+    },
+    {
+      "path": "keystone-horizontal-cmyk.pdf",
+      "purpose": "horizontal vector PDF, CMYK (naive values; confirm with the printer)",
+      "width": null,
+      "height": null,
+      "sha256": "d18e5f7e65eb84f3aecaca524525934b9738a5f877633e009b6c04cfe19b7c0c",
+      "bytes": 8382
+    },
+    {
+      "path": "keystone-horizontal-black.pdf",
+      "purpose": "horizontal vector PDF, black only (100% K)",
+      "width": null,
+      "height": null,
+      "sha256": "435a1b9631761279770111832620141f6a8548ebaa5d549fa2fc70cec554deb1",
+      "bytes": 8366
+    },
+    {
+      "path": "keystone-stacked-rgb.pdf",
+      "purpose": "stacked vector PDF, RGB, for screens and digital print",
+      "width": null,
+      "height": null,
+      "sha256": "aaaf9037886b195589ff4b2ee17e783311187d112a73d14aaf3b4312491594f2",
+      "bytes": 8559
+    },
+    {
+      "path": "keystone-stacked-cmyk.pdf",
+      "purpose": "stacked vector PDF, CMYK (naive values; confirm with the printer)",
+      "width": null,
+      "height": null,
+      "sha256": "c1c8b577245e8b43c87a51434617f2a0f847ac48bb0e4b9c0d22d22a610e581c",
+      "bytes": 8545
+    },
+    {
+      "path": "keystone-stacked-black.pdf",
+      "purpose": "stacked vector PDF, black only (100% K)",
+      "width": null,
+      "height": null,
+      "sha256": "0c5619cc276ad817e6101435a8d905656133d43f43d5da1dfec4ef3bff88b54e",
+      "bytes": 8529
+    },
+    {
+      "path": "keystone-wordmark-rgb.pdf",
+      "purpose": "wordmark vector PDF, RGB, for screens and digital print",
+      "width": null,
+      "height": null,
+      "sha256": "c4fe36fa4416b9a43650a3d5ee124b17d2c3a077f41ba57b488ce7ca6d58e4e2",
+      "bytes": 7717
+    },
+    {
+      "path": "keystone-wordmark-cmyk.pdf",
+      "purpose": "wordmark vector PDF, CMYK (naive values; confirm with the printer)",
+      "width": null,
+      "height": null,
+      "sha256": "8dbffd123471bb2d9f71140d278c4b0ccefb4406c811332cb7959c53497e51ed",
+      "bytes": 7710
+    },
+    {
+      "path": "keystone-wordmark-black.pdf",
+      "purpose": "wordmark vector PDF, black only (100% K)",
+      "width": null,
+      "height": null,
+      "sha256": "7dbf4762ecf2aad27d58afca549062554dc2aa4718f39fab31f60a154bef27f8",
+      "bytes": 7704
+    },
+    {
+      "path": "keystone-mark-rgb.pdf",
+      "purpose": "mark vector PDF, RGB, for screens and digital print",
+      "width": null,
+      "height": null,
+      "sha256": "44f39cedc77bc49149cd43bf7a7b23230dda0bd482a76b68dc09622da612e9fc",
+      "bytes": 2271
+    },
+    {
+      "path": "keystone-mark-cmyk.pdf",
+      "purpose": "mark vector PDF, CMYK (naive values; confirm with the printer)",
+      "width": null,
+      "height": null,
+      "sha256": "8fa15f6f86c281075d71e0c1d6a532bd63f2c89dec6e3c9ec37112e46ff7b74b",
+      "bytes": 2259
+    },
+    {
+      "path": "keystone-mark-black.pdf",
+      "purpose": "mark vector PDF, black only (100% K)",
+      "width": null,
+      "height": null,
+      "sha256": "891a07c9899f2c94300fc3eb6fd20928dd67e2e8614e1e056aea1c68f0e903ad",
+      "bytes": 2255
+    },
+    {
+      "path": "keystone-primary-cmyk.eps",
+      "purpose": "primary legacy CMYK EPS for old print vendors (naive values; confirm with the printer)",
+      "width": null,
+      "height": null,
+      "sha256": "5baf0e15f370b328e569d8e1dd26595e03beae0330f54eaaded3d979f87e31e9",
+      "bytes": 13623
+    },
+    {
+      "path": "keystone-mark-cmyk.eps",
+      "purpose": "mark legacy CMYK EPS for old print vendors (naive values; confirm with the printer)",
+      "width": null,
+      "height": null,
+      "sha256": "f7f512f41dbee36c54b06ca168613280a61084de14ca04957b41776e61082ec5",
+      "bytes": 2362
+    },
+    {
+      "path": "tokens.json",
+      "purpose": "design tokens: every colour in HEX, RGB, HSL, OKLCH and CMYK, role maps, contrast and colour-vision results",
+      "width": null,
+      "height": null,
+      "sha256": "eb59a1b2fdd2b8bdca86e78a790debef901b6eb531d28ca5bb9df46a120ca4b7",
+      "bytes": 3920
+    },
+    {
+      "path": "fonts/bricolagegrotesque/BricolageGrotesque[opsz,wdth,wght].ttf",
+      "purpose": "Bricolage Grotesque font file",
+      "width": null,
+      "height": null,
+      "sha256": "413e7357809ddd12fd80a96a8a396de0e401638d4acd3cb3e37532f0472ac682",
+      "bytes": 408496
+    },
+    {
+      "path": "fonts/bricolagegrotesque/OFL.txt",
+      "purpose": "Bricolage Grotesque licence",
+      "width": null,
+      "height": null,
+      "sha256": "4b5a7d8f37f5602621c8a8d7358a6a2e71317e6c231c661e15aef0275d3e07ba",
+      "bytes": 4403
+    },
+    {
+      "path": "fonts/FONT-NOTICE.md",
+      "purpose": "font licences and usage note",
+      "width": null,
+      "height": null,
+      "sha256": "78022fbd6b00e18f54cf560a51c933c34ef1c6a32fe4483801959d111be311f9",
+      "bytes": 195
+    },
+    {
+      "path": "BRAND.md",
+      "purpose": "brand guidelines",
+      "width": null,
+      "height": null,
+      "sha256": "72536c57d7fae923e360c52fd6912d4fe405b6190e22858f77877d4aac8da21c",
+      "bytes": 4087
+    },
+    {
+      "path": "rationale.md",
+      "purpose": "one-paragraph rationale",
+      "width": null,
+      "height": null,
+      "sha256": "91c4156ff520f72dcd39ce1d95db064a3bfa3bc412718f0b1034c2ce0aec6dbb",
+      "bytes": 612
+    },
+    {
+      "path": "source/concept.py",
+      "purpose": "regenerable source, from brands/keystone/final/concept.py",
+      "width": null,
+      "height": null,
+      "sha256": "5cbe880d5cb3ae680eb3e2b515fc00c66121382559d05c6108152883209d44d5",
+      "bytes": 2741
+    },
+    {
+      "path": "source/params.json",
+      "purpose": "regenerable source, from brands/keystone/final/params.json",
+      "width": null,
+      "height": null,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "bytes": 3
+    },
+    {
+      "path": "source/tokens.json",
+      "purpose": "regenerable source, from brands/keystone/final/tokens.json",
+      "width": null,
+      "height": null,
+      "sha256": "d41970692bf7c0cf4ea2eab6ef96b14995d6444bc5184c5b2919b17688cf3e9c",
+      "bytes": 394
+    },
+    {
+      "path": "source/rationale.md",
+      "purpose": "regenerable source, from brands/keystone/final/rationale.md",
+      "width": null,
+      "height": null,
+      "sha256": "91c4156ff520f72dcd39ce1d95db064a3bfa3bc412718f0b1034c2ce0aec6dbb",
+      "bytes": 612
+    },
+    {
+      "path": "source/brand.json",
+      "purpose": "regenerable source, from brands/keystone/brand.json",
+      "width": null,
+      "height": null,
+      "sha256": "a14df8e3bbabddf06dc3264b66e9a688ebb248bf68e447e073b69ef4f1a9d979",
+      "bytes": 4505
+    },
+    {
+      "path": "source/strategy.json",
+      "purpose": "regenerable source, from brands/keystone/strategy.json",
+      "width": null,
+      "height": null,
+      "sha256": "8baab76cc70a498220381a7caecb952291d8a47103c08dee11453bc26490a912",
+      "bytes": 3608
+    },
+    {
+      "path": "brand-sheet.pdf",
+      "purpose": "one-page brand sheet",
+      "width": null,
+      "height": null,
+      "sha256": "1d45fd92ff4548fcf11f12ef97de982bb29be6e769d97bd12de08e9b66a544c1",
+      "bytes": 72030
+    },
+    {
+      "path": "README.md",
+      "purpose": "file index",
+      "width": null,
+      "height": null,
+      "sha256": "abbb7fbd89ad4bbfa613db2b278517533fc0ca6bbfed7e02df52f9ae25157727",
+      "bytes": 18441
+    }
+  ],
+  "warnings": [],
+  "skipped": {}
+}

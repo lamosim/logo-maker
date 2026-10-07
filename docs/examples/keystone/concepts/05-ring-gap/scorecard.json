@@ -1,0 +1,18 @@
+{
+  "scores": {"appropriate": 4, "distinctive": 2, "simple": 5, "legible": 4, "adaptable": 3,
+             "timeless": 4, "universal": 2, "clear": 3, "congruent": 3, "system": 4},
+  "evidence": {
+    "appropriate": "the keystone completes the ring: the loop holds once the last piece is in; one sentence; plain (Everyman) and enclosing (Caregiver); carried only at sizes where the joints show",
+    "distinctive": "a ring is the commonest logo shape; with one separated segment it reads like a progress ring or a donut chart, a cousin of the fintech list's pie",
+    "simple": "a ring and one stone, 16 anchors; drawable in one stroke and two cuts",
+    "legible": "holds at 16 px as a closed ring (round 2's favicon closes the joints); the segment reads from 48 px; wordmark x-height 9.7 px at 120 px",
+    "adaptable": "one colour and reversed hold, and the icon is the ring; but the natural motion for a ring with a segment is a spin, which is a loading spinner",
+    "timeless": "no avoid-list trend; concentric rings and apertures are the AI-era cliche only when the brand is AI, which Keystone is not",
+    "universal": "at 48 to 64 px a ring with a separated top segment reads as a loading spinner or progress ring (the University of California 'loading icon' case); round 1's open favicon read as a power symbol, which round 2 closed",
+    "clear": "description searches ('circle ring logo with one separated segment') found many segmented-ring and pie stock marks (Vecteezy 26452111, Dreamstime, Shutterstock 'circle segment logo'); nothing specific to the name",
+    "congruent": "symmetric, heavy, low complexity and framed (a ring encloses) match; shape 0.4 misses (fully round) and dynamism 0.2 misses (a ring implies rotation)",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all build; the favicon is a closed ring; rationale draft in critique.md"
+  },
+  "kill": false,
+  "reason": ""
+}
