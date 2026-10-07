@@ -217,7 +217,8 @@ def verify(paths: ProjectPaths, slug: str) -> dict:
     """Check brands/<slug>/package/ against its manifest.json and write the result to package/verify.json, which the done
     gate reads: the package was built from final/ and the brand as they are now (the manifest's inputs fingerprint is
     inputs_fingerprint's), each file is there, not empty and unchanged (its sha256), each raster is the size the manifest
-    gives (an ICO by its largest frame, which Pillow opens), and README.md lists each in a table row. The result holds
+    gives (an ICO by its largest frame, which Pillow opens), and README.md lists each in a table row (a README.md that
+    is not UTF-8 is a problem of its own). The result holds
     ok, problems (the out-of-date one first, then the files' in manifest order), files, the manifest's inputs and
     checked_at. An unknown brand is a CliError (exit 2), a missing or invalid manifest exit 4."""
     from .export import RASTERS  # imported here: export imports this module
@@ -227,11 +228,15 @@ def verify(paths: ProjectPaths, slug: str) -> dict:
     if not (pkg / "manifest.json").is_file():
         raise CliError(f"package/manifest.json is missing (run: logomaker package build {slug})", code=EXIT_VERIFY)
     manifest = registry.load_model(pkg / "manifest.json", Manifest, "package/manifest.json", code=EXIT_VERIFY)
-    readme = pkg / "README.md"
-    index = readme.read_text(encoding="utf-8") if readme.is_file() else None  # a missing one is reported by its own entry
     problems: list[str] = []
     if manifest.inputs != inputs_fingerprint(paths, slug):
         problems.append(out_of_date(slug))
+    readme, index = pkg / "README.md", None  # a missing README.md is reported by its own entry
+    if readme.is_file():
+        try:
+            index = readme.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            problems.append("README.md is not UTF-8 text, so the files it lists cannot be checked")
     for entry in manifest.files:
         path = pkg / entry.path
         if not path.is_file():

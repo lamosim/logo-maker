@@ -235,6 +235,67 @@ def test_the_previous_package_survives_a_swap_that_fails_or_was_killed(project_r
     assert folders() == ["package"] and not (pkg / "marker.txt").exists() and (pkg / "manifest.json").is_file()
 
 
+def test_a_swap_that_fails_says_where_each_package_is(project_root, monkeypatch):
+    make_final_brand(project_root)
+    brand = project_root / "brands" / "keystone"
+    pkg, aside = brand / "package", brand / "package.old.tmp"
+    pkg.rmdir()  # no previous package
+    real_replace, real_rmtree = os.replace, shutil.rmtree
+
+    def replace(src, dst):  # nothing can take package/'s place: neither the new package nor the previous one
+        if Path(dst).name == "package":
+            raise OSError(13, "Permission denied")
+        real_replace(src, dst)
+
+    monkeypatch.setattr(os, "replace", replace)
+    with pytest.raises(CliError) as err:
+        build(["masters"])
+    assert err.value.code == 3 and str(err.value).endswith("; there was no previous package")
+    real_rmtree(brand / "package.tmp", ignore_errors=True)
+    pkg.mkdir()
+    (pkg / "marker.txt").write_text("the previous build")
+    with pytest.raises(CliError) as err:
+        build(["masters"])
+    assert err.value.code == 3 and str(err.value).endswith(f"the previous package is in {aside}, and the next package build puts it back")
+    assert [p.name for p in aside.iterdir()] == ["marker.txt"] and not pkg.exists()  # nothing lost: it waits in package.old.tmp
+    monkeypatch.setattr(os, "replace", real_replace)
+
+    def rmtree(path, *args, **kwargs):  # the previous package cannot be deleted once the new one is in
+        if Path(path).name == "package.old.tmp" and not kwargs.get("ignore_errors"):
+            raise OSError(16, "Resource busy")
+        real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(shutil, "rmtree", rmtree)
+    with pytest.raises(CliError) as err:
+        build(["masters"])  # the build first puts the previous package back from package.old.tmp, then swaps
+    assert err.value.code == 3 and str(err.value).endswith(f"could not be deleted from {aside} ([Errno 16] Resource busy); "
+                                                           "delete it, or the next package build will")
+    assert (pkg / "manifest.json").is_file() and [p.name for p in aside.iterdir()] == ["marker.txt"]
+    monkeypatch.setattr(shutil, "rmtree", real_rmtree)
+    build(["masters"])
+    assert not aside.exists() and (pkg / "manifest.json").is_file()
+
+
+def test_a_package_file_that_cannot_be_written_exits_3_and_keeps_the_previous_package(project_root, monkeypatch):
+    make_final_brand(project_root)
+    pkg = project_root / "brands" / "keystone" / "package"
+    (pkg / "marker.txt").write_text("the previous build")
+    write_bytes = Path.write_bytes
+
+    def full_disk(self, data):
+        if self.name == "keystone-mark-color.svg":
+            raise OSError(28, "No space left on device", str(self))
+        return write_bytes(self, data)
+
+    monkeypatch.setattr(Path, "write_bytes", full_disk)
+    monkeypatch.setattr(render, "Renderer", StubRenderer)
+    monkeypatch.setattr(export.PackageBuilder, "GROUPS", ["masters"])
+    code, payload = package_build()
+    assert code == 3 and "traceback" not in payload and payload["errors"][0].startswith("could not write the package (")
+    assert "No space left on device" in payload["errors"][0] and "keystone-mark-color.svg" in payload["errors"][0]
+    assert [p.name for p in pkg.iterdir()] == ["marker.txt"] and not (pkg.parent / "package.tmp").exists()
+
+
 def test_a_build_given_no_renderer_stops_at_the_first_group_that_renders(project_root):
     make_final_brand(project_root)
     builder = export.PackageBuilder(project(), "keystone")

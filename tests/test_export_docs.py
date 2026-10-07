@@ -171,6 +171,11 @@ def test_verify_names_every_problem_and_exits_4(project_root):
                                    "icon-192.png is not a readable image", "tokens.json changed since the build", "BRAND.md is empty",
                                    "README.md does not list rationale.md", "README.md changed since the build"]
     assert payload["errors"] == payload["problems"] and json.loads((pkg / "verify.json").read_text())["problems"] == payload["problems"]
+    (pkg / "README.md").write_bytes("| `rationale.md` | Café |".encode("latin-1"))  # not UTF-8: a problem, never a traceback
+    code, payload = verify_cli()
+    assert code == 4 and "traceback" not in payload
+    assert payload["problems"][0] == "README.md is not UTF-8 text, so the files it lists cannot be checked"
+    assert "README.md changed since the build" in payload["problems"]
     (pkg / "manifest.json").write_text("{")
     code, payload = verify_cli()
     assert code == 4 and payload["errors"][0].startswith("package/manifest.json is invalid")

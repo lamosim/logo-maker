@@ -63,7 +63,9 @@ def square_fill(side: int, colour: str) -> str:
 
 def _swap_in(staging: Path, package: Path, aside: Path) -> None:
     """Put `staging` in `package`'s place. The previous package moves to `aside` first, and back again if the new one
-    cannot take its place, so neither move can lose it; `aside` is deleted once the new package is in."""
+    cannot take its place, so neither move can lose it; `aside` is deleted once the new package is in. A move or the
+    deletion that fails is a CliError (exit 3) that says where each package is: a previous package that cannot be
+    moved back, or deleted, stays in `aside`, which the next build puts back or deletes."""
     moved_aside = False
     try:
         if package.exists():
@@ -71,12 +73,23 @@ def _swap_in(staging: Path, package: Path, aside: Path) -> None:
             moved_aside = True
         os.replace(staging, package)
     except OSError as err:
-        if moved_aside:
+        if not moved_aside:
+            raise CliError(f"could not move the new package into {package} ({err}); there was no previous package",
+                           code=EXIT_EXTERNAL) from err
+        try:
             os.replace(aside, package)
+        except OSError as again:
+            raise CliError(f"could not move the new package into {package} ({err}), nor the previous one back ({again}); "
+                           f"the previous package is in {aside}, and the next package build puts it back",
+                           code=EXIT_EXTERNAL) from again
         raise CliError(f"could not move the new package into {package} ({err}); the previous package is kept",
                        code=EXIT_EXTERNAL) from err
     if moved_aside:
-        shutil.rmtree(aside)
+        try:
+            shutil.rmtree(aside)
+        except OSError as err:
+            raise CliError(f"the new package is in {package}, but the previous one could not be deleted from {aside} ({err}); "
+                           "delete it, or the next package build will", code=EXIT_EXTERNAL) from err
 
 
 class PackageBuilder(DocumentGroups):
@@ -380,17 +393,21 @@ class PackageBuilder(DocumentGroups):
     def build(self, renderer: Renderer | None = None) -> Manifest:
         """Run every group in GROUPS into package.tmp/ beside package/, write manifest.json, then swap it in for package/
         (_swap_in), so a failure anywhere leaves the previous package as it was. First it tidies what a killed build left
-        behind. self.pkg names package/ again afterwards. `renderer` draws the groups that render; a build of groups that
-        never do (print_files) can go without one (the renderer property)."""
+        behind. A file that cannot be written (an OSError) stops the build with a CliError, exit 3. self.pkg names
+        package/ again afterwards. `renderer` draws the groups that render; a build of groups that never do (print_files)
+        can go without one (the renderer property)."""
         package, staging, aside = self.brand_dir / "package", self.brand_dir / STAGING, self.brand_dir / ASIDE
-        if aside.exists():  # a swap that was killed: the previous package comes back unless the new one made it in
-            if package.exists():
-                shutil.rmtree(aside)
-            else:
-                os.replace(aside, package)
-        if staging.exists():  # a build that was killed
-            shutil.rmtree(staging)
-        staging.mkdir()
+        try:
+            if aside.exists():  # a swap that was killed: the previous package comes back unless the new one made it in
+                if package.exists():
+                    shutil.rmtree(aside)
+                else:
+                    os.replace(aside, package)
+            if staging.exists():  # a build that was killed
+                shutil.rmtree(staging)
+            staging.mkdir()
+        except OSError as err:
+            raise CliError(f"could not tidy or make {staging} for the build ({err})", code=EXIT_EXTERNAL) from err
         self._renderer, self.pkg = renderer, staging
         self.entries, self.warnings, self.skipped = [], [], {}
         try:
@@ -400,8 +417,9 @@ class PackageBuilder(DocumentGroups):
                                 warnings=self.warnings, skipped=self.skipped)
             (staging / "manifest.json").write_text(json.dumps(manifest.model_dump(), indent=2) + "\n", encoding="utf-8")
             _swap_in(staging, package, aside)
+        except OSError as err:  # a file the groups or the manifest could not write; _swap_in reports its own
+            raise CliError(f"could not write the package ({err}); the previous package is kept", code=EXIT_EXTERNAL) from err
         finally:
             self.pkg = package
-            if staging.exists():
-                shutil.rmtree(staging)
+            shutil.rmtree(staging, ignore_errors=True)  # gone already after a swap; else the next build tidies what is left
         return manifest
