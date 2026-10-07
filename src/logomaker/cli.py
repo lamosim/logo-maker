@@ -455,13 +455,13 @@ def package_build(slug: str, paper: str) -> None:
     from . import export as exportlib
     from .render import Renderer
 
-    paths = project()
-    builder = exportlib.PackageBuilder(paths, slug, paper)  # refuses an unfinished final/ before Chrome starts
+    builder = exportlib.PackageBuilder(project(), slug, paper)  # refuses an unfinished final/ before Chrome starts
     with Renderer() as renderer:
         manifest = builder.build(renderer)
     skipped = [f"{group} skipped: {reason}" for group, reason in manifest.skipped.items()]
-    emit({"package": str(builder.pkg.relative_to(paths.root)), "files": len(manifest.files), "manifest": "package/manifest.json"},
-         warnings=manifest.warnings + skipped)
+    sheet = builder.pkg / "brand-sheet.pdf"  # absolute paths, as the sheets give theirs: the skill opens them
+    emit({"package": str(builder.pkg), "files": len(manifest.files), "manifest": str(builder.pkg / "manifest.json"),
+          "brand_sheet": str(sheet) if sheet.is_file() else None}, warnings=manifest.warnings + skipped)
 
 
 @package_group.command("verify")

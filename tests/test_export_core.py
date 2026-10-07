@@ -244,7 +244,9 @@ def test_package_build_reports_the_package_and_every_warning(project_root, monke
     monkeypatch.setattr(export.PackageBuilder, "idle", lambda self: self.skip("idle", "nothing to do"), raising=False)
     code, payload = package_build("--paper", "a4")
     assert code == 0, payload
-    assert (payload["package"], payload["files"], payload["manifest"]) == ("brands/keystone/package", 35, "package/manifest.json")
+    pkg = project_root / "brands" / "keystone" / "package"
+    assert (payload["package"], payload["files"], payload["manifest"]) == (str(pkg), 35, str(pkg / "manifest.json"))
+    assert payload["brand_sheet"] is None  # the docs group, which prints it, did not run
     assert payload["warnings"] == ["primary falls back to full-lockup (the concept has no full-horizontal)",
                                    "horizontal falls back to full-lockup (the concept has no full-horizontal)",
                                    "stacked falls back to full-lockup (the concept has no full-stacked)",
@@ -254,6 +256,15 @@ def test_package_build_reports_the_package_and_every_warning(project_root, monke
                                    "idle skipped: nothing to do"]
     saved = json.loads((project_root / "brands" / "keystone" / "package" / "manifest.json").read_text())
     assert saved["skipped"] == {"idle": "nothing to do"}
+
+
+def test_package_build_gives_the_brand_sheet_s_absolute_path(project_root, monkeypatch):
+    make_final_brand(project_root)
+    monkeypatch.setattr(render, "Renderer", StubRenderer)
+    monkeypatch.setattr(export.PackageBuilder, "GROUPS", ["docs"])
+    code, payload = package_build()
+    assert code == 0 and payload["brand_sheet"] == str(project_root / "brands" / "keystone" / "package" / "brand-sheet.pdf")
+    assert Path(payload["brand_sheet"]).is_file() and Path(payload["manifest"]).is_file()
 
 
 @requires_chrome
