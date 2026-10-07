@@ -9,9 +9,9 @@ This folder turns a venture into a production-ready logo package. The `logomaker
 ## Rules
 
 - Never hand-write SVG, PNG, PDF or ICO deliverables. Write concept modules (`concept.py`) and run the CLI.
-- Never edit `registry/` or any `brand.json` directly; use the `uv run logomaker brand` commands.
+- Never edit `registry/` or any `brand.json` directly; use the `uv run logomaker brand` commands. The one exception: when a CLI message says to delete `registry/brands.json` (the index is malformed, or a valid brand is missing from it), tell the owner, delete that file, and run `uv run logomaker brand list`, which rebuilds it from `brands/*/brand.json`.
 - Never read `.env` if one appears; `.claude/settings.json` denies it.
-- Every CLI command prints one JSON object on stdout; read it instead of parsing logs. Logs go to stderr. Exit codes: 0 ok, 2 rule or input violation, 3 external failure (Chrome, network, missing font), 4 verification failure (`package verify`, or a blank render in `package build`).
+- Every CLI command prints one JSON object on stdout; read it instead of parsing logs. Logs go to stderr. Exit codes: 0 ok, 2 rule or input violation, 3 external failure (Chrome, the network, a font, or the disk; in `setup --check`, a missing Python module), 4 verification failure (`package verify`, or a blank render in `package build`).
 - Run `uv run logomaker package build` with the Bash timeout set to 300000. Every other command but `fonts fetch`, which depends on the network, finishes within about a minute (`names check` stops starting lookups after 45 s).
 - Never run `playwright install`; rendering uses the installed Google Chrome.
 - Read every critique sheet and owner sheet PNG with the Read tool before deciding about a concept.

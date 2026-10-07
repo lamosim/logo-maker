@@ -39,8 +39,13 @@ PREFIX_SECTIONS = (
     (("fonts/",), "Fonts"),
     (("source/",), "Source"),
 )
+DEFAULT_SECTION = "Documents and tokens"  # every file neither BRAND_SECTIONS nor PREFIX_SECTIONS places
 # What source/ holds, from the brand folder: what rebuilds the package (README.md says how).
 SOURCE_FILES = ("final/concept.py", "final/params.json", "final/tokens.json", "final/rationale.md", "brand.json", "strategy.json")
+# The brand sheet's logo system row, by primary lockup: the width in CSS px of the primary's two panels (light and dark
+# paper), then of the other lockup's panel. A horizontal lockup gets a wide panel and a stacked one a narrower one, so
+# the row of six stays one line on an A4 page; each art box is its panel less 18 px of padding and border, 82 px tall.
+SHEET_PANELS = {"horizontal": (190, 100), "stacked": (130, 190)}
 
 
 def font_style(font: str) -> tuple[str, str]:
@@ -107,8 +112,12 @@ class DocumentGroups:
         """What BRAND.md and the brand sheet say: the x rule as Mark.x_unit_source names it (sheets.X_RULES), each colour
         with the label colour the sheets give its chip, the roles, the contrast rows (checks), the typefaces, the web head
         snippet from favicon-head.html (a warning when the package has none), the rationale and the logo system's SVGs
-        sized for the sheet."""
+        sized for the sheet: the primary on light and dark paper, then the lockup that is not the primary (SHEET_PANELS),
+        so the sheet shows each lockup once, then the mark, small and favicon."""
         lockup = self.outputs["full-lockup"]
+        primary = self.state.primary_lockup
+        other = "stacked" if primary == "horizontal" else "horizontal"
+        primary_w, other_w = SHEET_PANELS[primary]
         head = self.pkg / "favicon-head.html"
         if not head.is_file():
             self.warn("BRAND.md and the brand sheet have no web head snippet: favicon-head.html is not in the package")
@@ -118,15 +127,17 @@ class DocumentGroups:
             return fit_box(svg, box_w, box_h) if svg else ""
 
         return {
-            "brand": self.state.name, "slug": self.slug, "prefix": self.name, "primary_lockup": self.state.primary_lockup,
+            "brand": self.state.name, "slug": self.slug, "prefix": self.name, "primary_lockup": primary,
             "has_wordmark": "full-wordmark" in self.outputs, "x_unit": round(lockup.x_unit, 1), "x_rule": X_RULES[lockup.x_unit_source],
             "ms": self.state.min_sizes, "roles_light": self._roles("light"), "roles_dark": self._roles("dark"),
             "colours": [{"key": key, **c.model_dump(), "text": chip_text(c.hex)} for key, c in self.tokens.colors.items()],
             "contrast": [row.model_dump() for row in self.checks.contrast], "fonts": self.typefaces,
             "head_snippet": head.read_text(encoding="utf-8") if head.is_file() else "",
             "rationale": (self.final / "rationale.md").read_text(encoding="utf-8").strip(),
-            "sheet": {"primary": fitted("primary", "color", 172, 82), "reverse": fitted("primary", "reverse", 172, 82),
-                      "stacked": fitted("stacked", "color", 82, 82), "mark": fitted("mark", "color", 52, 82),
+            "sheet": {"primary": fitted("primary", "color", primary_w - 18, 82), "primary_w": primary_w,
+                      "reverse": fitted("primary", "reverse", primary_w - 18, 82),
+                      "other": fitted(other, "color", other_w - 18, 82), "other_lockup": other, "other_w": other_w,
+                      "mark": fitted("mark", "color", 52, 82),
                       "small": fitted("small", "color", 32, 82), "favicon": fitted("favicon", "color", 22, 82),
                       "clear_space": fit_box(clear_space_svg(self.mark("primary"), lockup.x_unit), 282, 102)},
             "paper_light": self.light["paper"], "paper_dark": self.dark["paper"],
@@ -135,13 +146,13 @@ class DocumentGroups:
     def _section(self, path: str) -> str:
         """The README.md section of package file `path`. The brand's own files, named <prefix>-<variant>-..., go by suffix
         (BRAND_SECTIONS), so brand-sheet.pdf is no print file and a brand named like a platform file (Icon Works) keeps its
-        own; then every other file by its name's start (PREFIX_SECTIONS); the rest are documents."""
+        own; then every other file by its name's start (PREFIX_SECTIONS); the rest go under DEFAULT_SECTION."""
         from .export import VARIANT_NAMES  # imported here: export imports this module
 
         suffix = Path(path).suffix
         if path.startswith(tuple(f"{self.name}-{variant}-" for variant in VARIANT_NAMES)) and suffix in BRAND_SECTIONS:
             return BRAND_SECTIONS[suffix]
-        return next((section for starts, section in PREFIX_SECTIONS if path.startswith(starts)), "Documents and tokens")
+        return next((section for starts, section in PREFIX_SECTIONS if path.startswith(starts)), DEFAULT_SECTION)
 
     def _groups(self) -> list[tuple[str, list[ManifestEntry]]]:
         """The entries written so far by README.md section (_section), the sections in the order their first file came."""

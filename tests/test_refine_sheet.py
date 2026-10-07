@@ -139,6 +139,8 @@ def test_the_sheet_draws_every_section_at_its_size(project_root):
     assert captions(part["Lockups"]) == ["horizontal", "stacked", "symbol", "wordmark"]
     assert captions(part["Colour variants"]) == ["color", "reverse", "black", "white", "mono (currentColor)"]
     assert 'fill="currentColor"' in part["Colour variants"]
+    # mono takes the colour of the CSS around it: previewed in the light palette's primary, the tokens' own colour
+    assert re.findall(r";color:([^\"]+)\">", part["Colour variants"]) == ["inherit"] * 4 + ["#e8572a"]
     widths = [int(w) for w in re.findall(r'<figure class="panel[^"]*" style="width:(\d+)px', part["Colour variants"])]
     assert len(widths) == 5 and sum(widths) + 4 * 16 <= sheets.REFINE_W - 2 * 24  # one row: the body's padding is 24 px a side
     assert captions(part["Clear space"]) == ["clear space = one x on every side"]

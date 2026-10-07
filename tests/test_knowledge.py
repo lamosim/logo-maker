@@ -2,8 +2,9 @@
 
 The skill reads these files phase by phase. The tests keep each one complete (its title, its "Read this when:" line, its
 headings, its length and its sources), keep the two generated pages equal to their data, keep every CLI command and option
-the skill's documents mention real, and keep the documented code honest: kit-api.md's worked examples build and pass the
-audit, craft.md's recipes make what they say, and the JSON blocks validate.
+the skill's documents mention real, in code or in prose, and keep the documented code honest: kit-api.md's worked examples
+build and pass the audit (its raster checks too, in the render suite), craft.md's recipes make what they say, and the JSON
+blocks validate.
 """
 from __future__ import annotations
 
@@ -12,15 +13,15 @@ import importlib.util
 import json
 import re
 from pathlib import Path
-from types import SimpleNamespace
 
 import click
+import pytest
 
 from logomaker import audit, kit, registry
 from logomaker.cli import main as cli_main
 from logomaker.color import Tokens, check_tokens
 from logomaker.export import ADAPTIVE_RADIUS, MASK_SAFE, PackageBuilder
-from logomaker.export_docs import BRAND_SECTIONS, PREFIX_SECTIONS, DocumentGroups
+from logomaker.export_docs import BRAND_SECTIONS, DEFAULT_SECTION, PREFIX_SECTIONS
 from logomaker.kit import Composite, Mark, Shape
 from logomaker.kit import concept as conceptlib
 from logomaker.paths import project
@@ -62,6 +63,8 @@ COMMANDS = dict(cli_main.commands)  # group (or command) name -> click object
 # A CLI mention in code: an optional "logomaker", a group name standing as a word, and the word after it (its command).
 MENTION = re.compile(r"(?<![^\s(`\"'])(?:logomaker[ \t]+)?(?P<group>" + "|".join(map(re.escape, COMMANDS)) + r")(?=[\s`\"')]|$)"
                      r"(?:[ \t]+(?P<command>[a-z][\w-]*))?")
+# A CLI mention in prose, outside backticks: "logomaker", then a group, then the word after it.
+PROSE_MENTION = re.compile(r"(?<![\w.-])logomaker[ \t]+(?P<group>[a-z][\w-]*)(?:[ \t]+(?P<command>[a-z][\w-]*))?")
 
 
 def read(name: str) -> str:
@@ -73,22 +76,46 @@ def code_blocks(text: str, language: str) -> list[str]:
 
 
 def code_units(text: str) -> list[str]:
-    """The code in Markdown `text`: each line of a fenced block, and each inline code span outside one."""
+    """The code in Markdown `text`: each line of a fenced block, and each inline code span outside one. A fenced line
+    that ends in a backslash is joined to the lines it continues, as one command; a comment line in a Python block is
+    prose about the code and left out."""
     units: list[str] = []
-    fenced = False
+    fence: str | None = None  # the open block's language ("" when it names none); None outside a block
+    held = ""  # a backslash-continued command, so far
     for line in text.splitlines():
         if line.startswith("```"):
-            fenced = not fenced
-        elif fenced:
-            units.append(line)
+            if fence is not None and held:
+                units.append(held)
+            fence, held = (line[3:].strip() if fence is None else None), ""
+        elif fence is not None:
+            if fence == "python" and line.lstrip().startswith("#"):
+                continue
+            if line.endswith("\\"):
+                held += line[:-1] + " "
+            else:
+                units.append(held + line)
+                held = ""
         else:
             units += re.findall(r"`([^`]+)`", line)
     return units
 
 
+def prose_lines(text: str) -> list[str]:
+    """The prose in Markdown `text`: each line outside a fenced block, with its inline code spans taken out."""
+    lines: list[str] = []
+    fenced = False
+    for line in text.splitlines():
+        if line.startswith("```"):
+            fenced = not fenced
+        elif not fenced:
+            lines.append(re.sub(r"`[^`]*`", " ", line))
+    return lines
+
+
 def cli_problems(text: str) -> list[str]:
-    """Each CLI mention in `text`'s code that cli.main lacks: a group after "logomaker", a `<group> <command>`, or a
-    `--option` written after a command (up to the next mention) that the command does not take."""
+    """Each CLI mention in `text` that cli.main lacks. In code: a group after "logomaker", a `<group> <command>`, or a
+    `--option` written after a command, or after a group named without one (up to the next mention), that it does not
+    take. In prose, outside backticks: a `logomaker <group> [<command>]` naming a group or command that does not exist."""
     problems: list[str] = []
     for unit in code_units(text):
         for word in re.findall(r"(?<![\w.])logomaker[ \t]+([a-z][\w-]*)", unit):
@@ -98,9 +125,7 @@ def cli_problems(text: str) -> list[str]:
         for i, mention in enumerate(mentions):
             name, word = mention["group"], mention["command"]
             target = COMMANDS[name]
-            if isinstance(target, click.Group):
-                if word is None:
-                    continue
+            if isinstance(target, click.Group) and word is not None:  # a group named alone takes only its own options
                 if word not in target.commands:
                     problems.append(f"no command `{name} {word}` (in `{unit.strip()}`)")
                     continue
@@ -109,6 +134,14 @@ def cli_problems(text: str) -> list[str]:
             rest = unit[mention.end(): mentions[i + 1].start() if i + 1 < len(mentions) else len(unit)]
             problems += [f"`{target.name}` takes no {opt} (in `{unit.strip()}`)"
                          for opt in re.findall(r"(?<![\w-])--[a-z][\w-]*", rest) if opt not in known]
+    for line in prose_lines(text):
+        for mention in PROSE_MENTION.finditer(line):
+            name, word = mention["group"], mention["command"]
+            target = COMMANDS.get(name)
+            if target is None:
+                problems.append(f"no group `logomaker {name}` (in prose: {line.strip()})")
+            elif isinstance(target, click.Group) and word is not None and word not in target.commands:
+                problems.append(f"no command `{name} {word}` (in prose: {line.strip()})")
     return problems
 
 
@@ -196,12 +229,14 @@ def test_kit_api_names_every_public_kit_name():
     assert not missing, f"kit-api.md does not document {missing}"
 
 
-def test_kit_api_worked_examples_build_and_pass_the_audit(project_root):
+def audit_worked_examples(project_root: Path, renderer=None) -> list:
+    """Each of kit-api.md's worked examples written as a concept of a throwaway brand, built and audited (the raster
+    checks only with a `renderer`); the audits, in order, once each has passed with the warnings EXAMPLE_WARNINGS gives."""
     blocks = code_blocks(section(read("kit-api.md"), "Worked examples"), "python")
     assert len(blocks) == 4
     paths = project()
     registry.new_brand(paths, "Examples", slug="examples")
-    types = []
+    types, results = [], []
     for i, code in enumerate(blocks, start=1):
         assert len(code.splitlines()) < 40, f"example {i} has {len(code.splitlines())} lines"
         folder = project_root / "brands" / "examples" / "concepts" / f"0{i}-example"
@@ -210,11 +245,26 @@ def test_kit_api_worked_examples_build_and_pass_the_audit(project_root):
         module = conceptlib.load_concept(folder)
         outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
         assert {"full-lockup", "small", "favicon"} <= set(outputs), (i, list(outputs))
-        result = audit.audit_concept(paths, "examples", folder.name)  # no renderer: the raster checks are skipped
+        result = audit.audit_concept(paths, "examples", folder.name, renderer=renderer)
         assert result.ok, (i, [f.message for f in result.failures])
         assert [f.check for f in result.warnings] == EXAMPLE_WARNINGS[i - 1], (i, [f.message for f in result.warnings])
         types.append(module.meta.logo_type)
+        results.append(result)
     assert types == ["lettermark", "pictorial", "abstract", "wordmark"]
+    return results
+
+
+def test_kit_api_worked_examples_build_and_pass_the_audit(project_root):
+    assert not any(result.rendered for result in audit_worked_examples(project_root))  # no renderer: no raster checks
+
+
+@pytest.mark.render
+def test_kit_api_worked_examples_pass_the_rendered_audit(project_root, renderer):
+    # With a renderer, min_feature and one_colour_merge run too: each size the audit checks (the full symbol when there is
+    # one, small and favicon) keeps its thinnest feature, no part merges or splits at its size, and nothing new warns.
+    for result in audit_worked_examples(project_root, renderer):
+        checked = {"small", "favicon"} | ({"full-symbol"} & set(result.outputs))
+        assert result.rendered and {f.data["output"] for f in result.info if f.check == "min_feature"} == checked
 
 
 def test_craft_recipes_make_what_they_say(project_root):
@@ -262,15 +312,18 @@ def test_process_md_mirrors_the_phases_and_their_checks(project_root):
     for phase in Phase:
         assert f"`{phase.value}`" in phases, phase.value
     # The files the gates ask for, from the phase checks' own messages on a brand with nothing yet but a chosen concept, in
-    # the naming phase, whose check runs only then.
+    # the naming phase, whose check runs only then: every file any check can report missing (a concept's own files by
+    # name, as process.md lists them under the concepts phase).
     paths = project()
     state = registry.new_brand(paths, "Gates", slug="gates").model_copy(update={"phase": Phase.naming, "concept": "01-idea"})
     messages = " ".join(m for check in registry.PHASE_CHECKS.values() for m in check(paths.brand("gates"), state, True))
     files = {re.sub(r"^(?:concepts/)?01-idea/", "", name) for name in re.findall(r"([\w./-]+\.(?:md|json|py)) is missing", messages)}
-    assert {"brief.json", "naming.md", "scorecard.json", "final/tokens.json", "package/verify.json"} <= files  # every phase answered
+    assert files == {"brief.md", "brief.json", "naming.md", "strategy.md", "strategy.json", "territories/territories.json",
+                     "concept.py", "audit.json", "scorecard.json", "final/concept.py", "final/params.json", "final/tokens.json",
+                     "final/audit.json", "package/verify.json"}
     artifacts = section(text, "Artifacts each phase must contain")
-    for name in sorted(files | {"src/logomaker/schemas.py"}):
-        assert name in artifacts, name
+    for name in sorted(files | {"src/logomaker/schemas.py"}):  # each as a whole path in code, never inside a longer one
+        assert f"`{name}`" in artifacts, name
 
 
 def test_deliverables_md_mirrors_the_package_builder():
@@ -278,8 +331,7 @@ def test_deliverables_md_mirrors_the_package_builder():
     manifest = section(text, "Package manifest")
     for group in PackageBuilder.GROUPS:
         assert f"`{group}`" in manifest, group
-    default = DocumentGroups._section(SimpleNamespace(name="brand"), "any-other-file.txt")  # where README.md puts the rest
-    for readme_section in {*BRAND_SECTIONS.values(), *(name for _, name in PREFIX_SECTIONS), default}:
+    for readme_section in {*BRAND_SECTIONS.values(), *(name for _, name in PREFIX_SECTIONS), DEFAULT_SECTION}:
         assert readme_section in manifest, readme_section
     platforms = section(text, "Platform specs")
     assert f"{MASK_SAFE} px" in platforms and f"radius {ADAPTIVE_RADIUS}" in platforms
@@ -299,8 +351,13 @@ def test_every_cli_command_and_option_the_documents_mention_exists():
 
 def test_the_cli_check_catches_what_does_not_exist():
     injected = ("Run `uv run logomaker brand frob x`, `brand frob`, `brand set <slug> --min-size 3`, `concept run a b --render` and "
-                "`uv run logomaker frob x`; `uv run logomaker brand set <slug> --industry fintech` is real.")
+                "`uv run logomaker frob x`; `uv run logomaker brand set <slug> --industry fintech` is real.\n"
+                "In prose, run logomaker brand zap first, then logomaker concept run (which exists), then `sheet --wide`.\n"
+                "```bash\nuv run logomaker brand set keystone --industry fintech \\\n  --surface \"app icon\" --size 3\n```\n"
+                "```python\n# the CLI's `concept frob` is no command, but a comment is prose about the code\nMark(symbol=ring())\n```\n")
     problems = cli_problems(injected)
-    assert len(problems) == 5, problems
-    for expected in ("`brand frob`", "--min-size", "--render", "`logomaker frob`"):
+    assert len(problems) == 8, problems
+    for expected in ("`brand frob`", "--min-size", "--render", "`logomaker frob`", "`brand zap` (in prose", "`sheet` takes no --wide",
+                     "`set` takes no --size"):
         assert any(expected in problem for problem in problems), expected
+    assert not any("concept frob" in problem for problem in problems)

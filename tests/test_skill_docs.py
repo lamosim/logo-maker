@@ -104,8 +104,8 @@ def test_skill_pins_the_review_focus_behaviours():
     assert "If none exist, say so in one line and ask the first intake question" in first
     assert "Never draw, search the web, or propose names before the brief is confirmed." in first
     # 2. A resumed concepts phase scores every unscored concept before the concept sheet, which refuses one.
-    assert ("score every concept that has no `scorecard.json` from its latest critique before calling `sheet concepts`, which refuses an "
-            "unscored concept") in flat(section(text, "Resuming"))
+    assert ("In the `concepts` phase, score every concept that has no `scorecard.json` from its latest critique before calling "
+            "`sheet concepts`, which refuses an unscored concept") in flat(section(text, "Resuming"))
     # 3. A blacklisted motif the owner asks for: the finding shown once, a twist offered, the decision recorded.
     assert ("If the owner asks for a motif on the blacklist, show the finding from `reference/cliches.md` once, offer a twist, and record "
             "their decision with `brand decide`. Do not refuse and do not silently comply.") in flat(section(text, "Conversation rules"))
@@ -126,6 +126,12 @@ def test_skill_shows_the_owner_only_what_it_checked_and_read():
     in_order(flat(section(runbook, "Refinement", level=3)), "reading `final/renders/round-N/critique.png`", "Unintended readings:",
              "Knock-out:", "Only then present the round: `uv run logomaker sheet refine <slug> --no-open`", "read `sheets/refine-N.png`",
              "open the sheet for the owner")
+
+
+def test_a_named_venture_checks_its_name_once_in_strategy():
+    strategy = flat(section(section(SKILL.read_text(encoding="utf-8"), "Phase runbook"), "Strategy", level=3))
+    assert ('A named venture has no naming phase, so run `uv run logomaker names check "<Name>"` once and report its domains and '
+            'handles to the owner with the trademark caveat') in strategy
 
 
 def test_each_phase_reads_what_the_reference_files_say():

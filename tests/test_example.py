@@ -49,8 +49,7 @@ def test_example_package_matches_its_manifest_and_the_brand_now(project_root):
     install_example(project_root)
     result = export_docs.verify(project(), "keystone")
     assert result["ok"], result["problems"]
-    manifest = json.loads((EXAMPLE / "package" / "manifest.json").read_text())
-    assert result["files"] == len(manifest["files"]) and not manifest["skipped"]
+    assert not json.loads((EXAMPLE / "package" / "manifest.json").read_text())["skipped"]
 
 
 @pytest.mark.render
@@ -61,6 +60,6 @@ def test_example_package_builds_again_and_verifies(project_root, renderer):
     committed = json.loads((brand / "package" / "manifest.json").read_text())
     manifest = export.PackageBuilder(project(), "keystone").build(renderer)
     assert sorted(entry.path for entry in manifest.files) == sorted(entry["path"] for entry in committed["files"])
-    assert manifest.skipped == {}
+    assert manifest.skipped == {} and manifest.warnings == []
     result = export_docs.verify(project(), "keystone")
     assert result["ok"], result["problems"]

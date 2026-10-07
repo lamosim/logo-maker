@@ -124,8 +124,11 @@ def test_raster_icons_draw_the_tier_for_their_size(project_root):
 
     renders = {max(width, height): svg for svg, width, height, _ in stub.calls}
     assert len(stub.calls) == 7 and sorted(renders) == [16, 32, 48, 140, 154, 289, 410]  # ICO frames, then tile art (apple, PWA, mask)
-    assert renders[48] == export.square_viewbox(colour("small"), 0.9)
-    assert renders[32] == renders[16] == export.square_viewbox(colour("favicon"), 0.9)
+    # The ICO frames and icon.svg fill their square (no inset), as the audit measures the favicon tier and craft.md's grid assumes
+    assert renders[48] == export.square_viewbox(colour("small"), 1.0)
+    assert renders[32] == renders[16] == export.square_viewbox(colour("favicon"), 1.0)
+    icon = builder.outputs["favicon"].to_svg("color", palette=builder.light, dark_palette=builder.dark)
+    assert (project_root / "brands" / "keystone" / "package" / "icon.svg").read_text() == export.square_viewbox(icon, 1.0)
     assert {renders[side] for side in (140, 154, 289, 410)} == {colour("full-symbol")}
     with Image.open(project_root / "brands" / "keystone" / "package" / "favicon.ico") as ico:
         for size in (16, 32, 48):  # each frame is the render made for its size, never the 48 px one scaled down

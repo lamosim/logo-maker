@@ -47,7 +47,7 @@ Pairing rules [synthesis from 03 §4.4 and 02 §G]:
 3. The cheapest pairing is one family at two weights (a 650 wordmark, a 400 tagline).
 4. Never pair two display faces, and never two near-identical families of one class: it reads as a mistake.
 5. A territory names one to three families; the first one sets the board's initial-letter specimen [code].
-6. Record the wordmark with `uv run logomaker brand set <slug> --font wordmark=<Family>:<weight>`, naming the family and weight `concept.py` draws. BRAND.md lists brand.json's fonts and every family the type is drawn in, so a mismatch shows up as two families [code].
+6. Record the wordmark with `uv run logomaker brand set <slug> --font "wordmark=<Family>:<weight>"` (quoted, so a family of two or more words stays one value), naming the family and weight `concept.py` draws. BRAND.md lists brand.json's fonts and every family the type is drawn in, so a mismatch shows up as two families [code].
 
 ## Licensing
 

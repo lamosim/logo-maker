@@ -1,8 +1,8 @@
 # Scorecard
 
-Read this when: scoring a concept after reading its critique sheet (phase 4), before running `sheet concepts`, and when re-scoring `final/` in refinement.
+Read this when: scoring a concept after reading its critique sheet (phase 4), before running `sheet concepts`, and when re-scoring `final/` after the last refinement round, before `package build`.
 
-The ten criteria merge the judging lists the research found: Haviv's three (appropriate, distinctive and memorable, simple), Rand's seven questions, Bierut's written rationale, Romaniuk's distinctiveness and the composite scorecard derived from them [01 §4] [05 §5.1] [spec §8.2]. Score only after reading the critique PNG with the Read tool; write the evidence in critique.md and the numbers in scorecard.json.
+The ten criteria merge the judging lists the research found: Haviv's three (appropriate, distinctive and memorable, simple), Rand's seven questions, Bierut's written rationale, Romaniuk's distinctiveness and the composite scorecard derived from them [01 §4] [05 §5.1] [spec §8.2]. Score only after reading the critique PNG with the Read tool; write the numbers in scorecard.json, each with one line of evidence, and longer notes in critique.md.
 
 ## Ten criteria
 
@@ -65,6 +65,8 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
   "reason": ""
 }
 ```
+
+`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format; no gate reads it [code].
 
 A killed card keeps every score:
 

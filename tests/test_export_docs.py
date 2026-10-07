@@ -284,6 +284,18 @@ def test_brand_md_for_a_concept_without_a_wordmark(project_root):
     assert "wordmark skipped: the concept has no full-wordmark" in manifest.warnings
 
 
+def test_brand_md_leaves_the_placements_to_the_horizontal_and_stacked_rows(project_root):
+    make_final_brand(project_root)
+    registry.set_fields(project(), "keystone", primary_lockup="stacked")
+    builder = export.PackageBuilder(project(), "keystone")
+    brand_md = sheets.jinja(project()).get_template("brand.md.j2").render(**builder.doc_context())
+    rows = {row.split(" | ")[0].removeprefix("| "): row for row in brand_md.splitlines() if row.startswith("| ")}
+    # A stacked primary is no website header: the Primary row is the default, and the header is the horizontal's place.
+    assert rows["Primary (stacked)"].endswith(" | the default lockup: use it wherever the layout allows |")
+    assert rows["Horizontal"].endswith(" | website headers, nav bars, email signatures, banners |")
+    assert rows["Stacked"].endswith(" | square placements, packaging, social posts |")
+
+
 def brand_sheet_html(builder: export.PackageBuilder) -> str:
     """The brand sheet's HTML for `builder`, as the docs group prints it."""
     return sheets.jinja(project()).get_template("brand-sheet.html").render(**builder.doc_context())
@@ -304,6 +316,19 @@ def test_the_brand_sheet_carries_every_colour_value_and_the_head_snippet(project
     assert "Fira Code 600 (OFL), files in <code>fonts/firacode/</code>" in html and "Inter 400 (OFL), not in this package" in html
     (project_root / "brands" / "keystone" / "package" / "favicon-head.html").unlink()
     assert "Web head snippet" not in brand_sheet_html(export.PackageBuilder(project(), "keystone"))
+
+
+@pytest.mark.parametrize(("primary", "other"), [("horizontal", "stacked"), ("stacked", "horizontal")])
+def test_the_brand_sheet_shows_each_lockup_once_labelled(project_root, primary, other):
+    make_final_brand(project_root)
+    registry.set_fields(project(), "keystone", primary_lockup=primary)
+    builder = export.PackageBuilder(project(), "keystone")
+    system = brand_sheet_html(builder).split("<h2>Logo system</h2>")[1].split("<h2>")[0]
+    # The primary on light and dark paper, then the lockup that is not the primary, then the mark and its two small tiers.
+    assert re.findall(r"<figcaption>(.*?)</figcaption>", system) == [f"primary ({primary})", "reverse", other, "mark", "small", "favicon"]
+    unsized = re.sub(r'<svg width="\d+" height="\d+" ', "<svg ", system)
+    for lockup in ("horizontal", "stacked"):  # each in colour exactly once: as the primary, or in the third panel
+        assert unsized.count(builder.svg(lockup, "color")) == 1, lockup
 
 
 class TwoPagePdf(StubRenderer):

@@ -304,16 +304,19 @@ class PackageBuilder(DocumentGroups):
                    *image.size)
 
     def favicons(self) -> None:
+        """favicon.ico's frames and icon.svg fill their square, with no inset, as the audit measures each tier (the
+        favicon tier across all 16 px, the small tier across 32): any margin is drawn into the tier itself. Then the
+        tiles, the web app manifest and the head snippet."""
         frames = []
         for size in (48, 32, 16):  # each frame drawn by the tier for its own size, and checked before the ICO packs it
-            png = self.render_fit(square_viewbox(self.mark_at(size).to_svg("color", palette=self.light), 0.9), size, size)
+            png = self.render_fit(square_viewbox(self.mark_at(size).to_svg("color", palette=self.light), 1.0), size, size)
             self._refuse_blank(f"favicon.ico ({size} px frame)", png)
             with Image.open(io.BytesIO(png)) as frame:
                 frames.append(frame.convert("RGBA"))
         self.write("favicon.ico", encoded(frames[0], "ICO", sizes=[(48, 48), (32, 32), (16, 16)], append_images=frames[1:]),
                    "legacy favicon, 16/32/48", 48, 48)
         favicon = self.mark("favicon")  # the favicon master, plus a style that switches to the dark roles
-        self.write("icon.svg", square_viewbox(favicon.to_svg("color", palette=self.light, dark_palette=self.dark), 0.9),
+        self.write("icon.svg", square_viewbox(favicon.to_svg("color", palette=self.light, dark_palette=self.dark), 1.0),
                    "SVG favicon with dark-mode style")
         paper = self.light["paper"]
         for relpath, size, fraction, background, purpose in (

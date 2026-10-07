@@ -27,9 +27,9 @@ Each line is one idea, tagged with its motifs. Struck lines use a motif on the f
 
 Directions taken forward (five; at least three structurally different):
 
-- 01-k-jaw (lettermark, built from the glyph): idea 1.
+- 01-k-jaw (lettermark, built from the glyph): idea 1 in rounds 1 and 2; from round 3 the stone sits at the K's junction, idea 6's construction.
 - 02-arch (pictorial, from primitives): idea 2.
-- 03-dovetail (abstract, a tile cut by one joint): idea 3.
+- 03-dovetail (abstract): idea 3, a tile cut by one joint in round 1; from round 2 no tile, a lower stone locked to an upper one by the dovetail.
 - 04-wordmark (wordmark, type with one parametric quirk): idea 4.
 - 05-ring-gap (a ring with a gap and its keystone, from the ring primitive): idea 5.
 

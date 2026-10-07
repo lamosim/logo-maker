@@ -1,6 +1,6 @@
 # Keystone: knock-out and unintended readings
 
-The final mark: 02-arch refined (final/concept.py, stacked primary lockup, Ember on Kiln, Ember Glow and Kiln on Coal). Read and searched on 7 Oct 2026, before the first refine sheet.
+The final mark: 02-arch refined (final/concept.py, stacked primary lockup, Ember on Kiln, Ember Glow and Kiln on Coal). Read and searched on 7 Oct 2026, before the owner saw the first refine sheet; its colour-vision strip (sheets/refine-1.png) was read once the sheet was rendered, as the runbook asks.
 
 These checks are a knock-out only, not legal clearance: they can surface an obvious conflict but cannot prove there is none, so have a trademark attorney run a clearance search before you file the name or spend money on it.
 

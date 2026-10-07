@@ -32,7 +32,7 @@ All rows from 05 §2 unless marked [01 §2]; 01 §2 adds the recoveries: Burberr
 
 The six generalisable rules [05 §2], and what each means for a new venture:
 
-1. Inventory and score existing assets before designing. A new venture may already own something: a holding page, a colour on the pitch deck, a shipped app icon. Ask about it in intake and score it for fame and uniqueness (strategy-frameworks.md) [05 §3.3].
+1. Inventory and score existing assets before designing. A new venture may already own something: a holding page, a colour on the pitch deck, a shipped app icon. Ask about it in intake (questionnaire.md, question 6) and score it for fame and uniqueness (strategy-frameworks.md) [05 §3.3].
 2. The mark should explain itself in a glance, not in a 27-page document. Write one paragraph for the owner, never "represents", never a construction diagram, ratio or golden ratio [spec §3.3] [05 §5.3].
 3. Run the strangers-read, unintended-readings and accessibility tests. Read the critique sheet's mirrored and rotated panels; turn the 512 px panel upside down in your mind for 180 degrees; squint at the 16 and 24 px panels; read the refine sheet's colour-vision strip. Record findings in `final/knockout.md` [spec §4.6] [05 §5.4].
 4. Keep silhouette or colour continuity when evolving. For a first mark, build a silhouette and one owned colour that can survive the first redesign [02 §K rule 17].

@@ -32,7 +32,7 @@ The groups, in `PackageBuilder.GROUPS` order, with counts for a symbol plus a wo
 
 That is 186 manifest entries, plus `manifest.json` and, after verifying, `verify.json`. A concept without a wordmark makes fewer files; a variant the concept cannot draw falls back to the next larger output, with a warning [code].
 
-A wordmark-only concept (no symbol) shows its full lockup, the wordmark, wherever the package draws the mark at 96 px and above: the `mark` masters, PNGs and PDFs, `ios-app-icon-1024.png` and the Icon Composer foreground, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-mask-512.png`, the Android adaptive layers and the xhdpi to xxxhdpi launchers, the Play icon, and the Stripe and Google Business tiles. Its `small` tier draws the mdpi and hdpi launchers and the 48 px favicon frame, its `favicon` tier the 32 and 16 px frames and `icon.svg`, and its `compact` tier, when built, the avatars. Tell the owner, or give the concept a symbol (logo-types.md) [code].
+A wordmark-only concept (no symbol) shows its full lockup, the wordmark, wherever the package draws the mark at 96 px and above: the `mark` masters, PNGs and PDFs and `<name>-mark-cmyk.eps`, `ios-app-icon-1024.png` and the Icon Composer foreground, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-mask-512.png`, the Android adaptive layers and the xhdpi to xxxhdpi launchers, the Play icon, and the Stripe and Google Business tiles. Its `small` tier draws the mdpi and hdpi launchers and the 48 px favicon frame, its `favicon` tier the 32 and 16 px frames and `icon.svg`, and its `compact` tier, when built, the avatars. Tell the owner, or give the concept a symbol (logo-types.md) [code].
 
 README.md lists the files under these sections, in this order: SVG masters, PNG exports, Flattened, Favicons and web app icons, Apple app icon, Android, Social, Email and commerce, Print, Documents and tokens, Fonts, Source; then a "Package files" table for README.md and manifest.json [code]. The research's naming pattern `{brand}-{variant}-{color}-{size}.{ext}` is followed, with the brand name slugified [03 §7].
 
@@ -42,8 +42,8 @@ Every number is the code's [code]; the platform's own rule is in the last column
 
 | File | What the package does | Platform rule |
 |---|---|---|
-| `favicon.ico` | frames of 48, 32 and 16 px, each drawn by the tier for its size, art at 90% of the square | 32 px, with a hand-tuned 16; 48 for Windows [03 §2.4] |
-| `icon.svg` | the favicon tier in a square viewBox, art at 90%, with a `prefers-color-scheme: dark` style switching to the dark roles | square, dark-mode style [03 §2.1, §2.4] |
+| `favicon.ico` | frames of 48, 32 and 16 px, each drawn by the tier for its size, the art filling the square: no inset, so any margin is drawn into the tier | 32 px, with a hand-tuned 16; 48 for Windows [03 §2.4] |
+| `icon.svg` | the favicon tier filling a square viewBox, with a `prefers-color-scheme: dark` style switching to the dark roles | square, dark-mode style [03 §2.1, §2.4] |
 | `apple-touch-icon.png` | 180 px on the light paper, opaque, art 140 px | 180 x 180, opaque, art about 140 [03 §2.4] |
 | `icon-192.png`, `icon-512.png` | transparent, art at 80% | manifest "any" icons [03 §2.4] |
 | `icon-mask-512.png` | 512 px on the light paper; the art's box is fitted into a 289 px square, whose corners stay inside the 409.6 px safe circle (radius 40%, 204.8 px) | maskable safe zone: a centred circle of radius 2/5 [03 §2.4] |

@@ -8,6 +8,13 @@
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .panel{border:1px solid #ddd;padding:8px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#fff}
   .panel.dark{background:#111}
+  /* The logo system: each panel's art centred in an 82 px tall box, its caption under it. */
+  .system{display:flex;gap:10px}
+  .system figure{margin:0;height:112px;border:1px solid #ddd;padding:6px 8px 3px;box-sizing:border-box;display:flex;flex-direction:column;background:#fff}
+  .system figure.dark{background:#111}
+  .system .art{flex:1;display:flex;align-items:center;justify-content:center}
+  .system figcaption{font-size:8px;line-height:10px;color:#888;text-align:center;white-space:nowrap}
+  .system figure.dark figcaption{color:#aaa}
   .colours{display:flex;flex-wrap:wrap;gap:8px}
   /* Each colour: a swatch with its name, then every notation in small type; the 1 px border keeps a white swatch visible. */
   .colour{width:166px;border:1px solid #ccc;border-radius:4px;overflow:hidden;font-size:8px;line-height:1.35}
@@ -22,13 +29,13 @@
 <div class="rationale">{{ rationale }}</div>
 
 <h2>Logo system</h2>
-<div class="row">
-  <div class="panel" style="width:190px;height:100px;background:{{ paper_light }}">{{ sheet.primary|safe }}</div>
-  <div class="panel dark" style="width:190px;height:100px;background:{{ paper_dark }}">{{ sheet.reverse|safe }}</div>
-  <div class="panel" style="width:100px;height:100px">{{ sheet.stacked|safe }}</div>
-  <div class="panel" style="width:70px;height:100px">{{ sheet.mark|safe }}</div>
-  <div class="panel" style="width:50px;height:100px">{{ sheet.small|safe }}</div>
-  <div class="panel" style="width:40px;height:100px">{{ sheet.favicon|safe }}</div>
+<div class="system">
+  <figure style="width:{{ sheet.primary_w }}px;background:{{ paper_light }}"><div class="art">{{ sheet.primary|safe }}</div><figcaption>primary ({{ primary_lockup }})</figcaption></figure>
+  <figure class="dark" style="width:{{ sheet.primary_w }}px;background:{{ paper_dark }}"><div class="art">{{ sheet.reverse|safe }}</div><figcaption>reverse</figcaption></figure>
+  <figure style="width:{{ sheet.other_w }}px"><div class="art">{{ sheet.other|safe }}</div><figcaption>{{ sheet.other_lockup }}</figcaption></figure>
+  <figure style="width:70px"><div class="art">{{ sheet.mark|safe }}</div><figcaption>mark</figcaption></figure>
+  <figure style="width:50px"><div class="art">{{ sheet.small|safe }}</div><figcaption>small</figcaption></figure>
+  <figure style="width:40px"><div class="art">{{ sheet.favicon|safe }}</div><figcaption>favicon</figcaption></figure>
 </div>
 
 <h2>Clear space</h2>

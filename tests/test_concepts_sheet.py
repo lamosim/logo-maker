@@ -15,8 +15,10 @@ from logomaker.kit.mark import Mark
 from logomaker.kit.text import text
 from logomaker.output import CliError
 from logomaker.paths import project
+from logomaker.render import fit_box
 from logomaker.schemas import CRITERIA, Scorecard
-from tests.conftest import StubChrome, install_concept, no_open_command, requires_chrome, scorecard, write_passing_audit
+from tests.conftest import REPO, StubChrome, install_concept, no_open_command, requires_chrome, scorecard, write_passing_audit
+from tests.test_skill_docs import canonical
 
 GATE = "scorecard.json fails the gate (appropriate, simple and legible must be 4 or more, and not killed)"
 AUDIT = "logomaker concept audit keystone 01-good"
@@ -83,6 +85,11 @@ def test_render_mockup_knows_the_seven_kinds(project_root):
         mockups.render_mockup(sheets.jinja(project()), "sign", {})
 
 
+def test_the_sheet_prints_the_collins_preface_as_process_md_words_it():
+    template = (REPO / "templates" / "sheets" / "concepts.html").read_text(encoding="utf-8")
+    assert canonical("process.md") in template  # the passage SKILL.md quotes, word for word
+
+
 def test_mockup_context_wordmark_only_warns(project_root):
     registry.new_brand(project(), "Keystone")
     state = registry.load_state(project(), "keystone")
@@ -91,6 +98,29 @@ def test_mockup_context_wordmark_only_warns(project_root):
     ctx = sheets.mockup_context(state, outputs, None, None)
     assert ctx["brand"] == "Keystone" and ctx["warnings"] and "wordmark" in ctx["warnings"][0]
     assert ctx["icon_svg"].startswith("<svg") and len(ctx["neighbours"]) == 11
+
+
+@pytest.mark.parametrize(("tiers", "warnings"), [
+    ((), ["no symbol in this concept: icon, favicon and avatar mockups use the wordmark"]),
+    (("favicon",), ["no symbol in this concept: icon and avatar mockups use the wordmark"]),
+    (("compact", "favicon"), ["no symbol in this concept: icon mockup uses the wordmark"]),
+    (("small",), []),  # the small tier draws the icon and the avatar, and stands in for the favicon
+])
+def test_the_wordmark_warning_names_only_the_mockups_the_wordmark_draws(project_root, tiers, warnings):
+    registry.new_brand(project(), "Keystone")
+    word = Mark(wordmark=text("Keystone", "Fira Code", weight=700, cap_height=180), lockup="wordmark")
+    initial = Mark(wordmark=text("K", "Fira Code", weight=800, cap_height=180), lockup="wordmark")
+    outputs = conceptlib.build_outputs({"full": word, **{tier: initial for tier in tiers}})
+    assert sheets.mockup_context(registry.load_state(project(), "keystone"), outputs, None, None)["warnings"] == warnings
+
+
+def test_the_avatar_mockup_draws_the_compact_tier_when_the_concept_builds_one(project_root):
+    folder = install_concept(project_root, "good")  # compact is the full lockup, small the ring alone
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
+    state = registry.load_state(project(), "keystone")
+    assert sheets.mockup_context(state, outputs, None, None)["avatar_svg"] == fit_box(outputs["compact"].to_svg("black"), 48, 48)
+    del outputs["compact"]  # without it, the tier for the avatar's 80 px
+    assert sheets.mockup_context(state, outputs, None, None)["avatar_svg"] == fit_box(outputs["small"].to_svg("black"), 48, 48)
 
 
 def test_mockup_context_draws_the_icon_in_paper_on_a_primary_tile(project_root):

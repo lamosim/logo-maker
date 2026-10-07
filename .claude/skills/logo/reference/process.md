@@ -46,7 +46,7 @@ What no gate reads, and Claude still owes:
 
 - `strategy.md` with all nine sections of spec §4.3: (1) positioning, the "only" statement and a Moore-format statement; (2) archetype, primary and secondary, each with its row from strategy-frameworks.md; (3) personality, the five Aaker scores with one sentence each; (4) the one idea in one sentence; (5) the adjective ladder; (6) the category audit: the uniform's type classes, colours and motifs from cliches.md and a web look at the five nearest competitors, what to avoid and what is free to own; (7) feature targets from evidence-rules.md; (8) the logo-type decision; (9) constraints: minimum sizes, one-colour use, surfaces, scripts [spec §4.3].
 - Congruence. No CLI check reads `strategy.json`'s `targets`; scorecard criterion 9 is Claude's judgment of shape, weight, colour, type and name sound against them, written into the evidence [code].
-- `critique.md` per concept: the scorecard evidence, and every audit warning either fixed or justified [spec §8.1].
+- `critique.md` per concept: notes longer than the line of evidence per criterion in `scorecard.json`, and every audit warning either fixed or justified [spec §8.1].
 - `final/knockout.md`: the look-alike and trademark queries and findings, with the caveat from naming.md [spec §4.6].
 
 ## Agency rules

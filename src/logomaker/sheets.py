@@ -282,14 +282,25 @@ def territories_board(paths: ProjectPaths, slug: str, renderer: Renderer | None 
             "warnings": warnings}
 
 
+def mark_mockups(outputs: dict) -> dict[str, str]:
+    """The output each mockup that draws the mark rather than a lockup shows, as exports pick it: the phone's icon the
+    tier for 60 px, the browser tab's favicon the tier for 16 px, and the avatar the `compact` tier when the concept
+    builds one (as the avatar exports do), else the tier for 80 px."""
+    avatar = "compact" if "compact" in outputs else conceptlib.pick_output(outputs, 80)
+    return {"icon": conceptlib.pick_output(outputs, 60), "favicon": conceptlib.pick_output(outputs, 16), "avatar": avatar}
+
+
 def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: dict | None) -> dict:
     """What the seven mockups (templates/mockups) draw for one concept: its outputs in colour from `light` and `dark`
-    (black and white without tokens), each tier picked by size as exports pick it, generated neighbour icons for the
-    home screen and the other browser tabs, and `warnings`: a concept without a symbol stands its wordmark in for the
-    icon, favicon and avatar."""
+    (black and white without tokens), each mark picked as exports pick it (mark_mockups), generated neighbour icons for
+    the home screen and the other browser tabs, and `warnings`: a concept without a symbol names the mockups among the
+    icon, favicon and avatar that no tier of its own draws, so its wordmark (the full lockup) stands in."""
+    drawn = mark_mockups(outputs)
+    stand_ins = [mockup for mockup, output in drawn.items() if output == "full-lockup"]  # only without a symbol
     warnings: list[str] = []
-    if "full-symbol" not in outputs:
-        warnings.append("no symbol in this concept: icon, favicon and avatar mockups use the wordmark")
+    if stand_ins:
+        named = stand_ins[0] if len(stand_ins) == 1 else f"{', '.join(stand_ins[:-1])} and {stand_ins[-1]}"
+        warnings.append(f"no symbol in this concept: {named} {'mockup uses' if len(stand_ins) == 1 else 'mockups use'} the wordmark")
     try:
         handle = registry.slugify(state.name)  # follows the name, so a renamed working title gets its new handle
     except CliError:  # a name with no ASCII letters or digits to keep
@@ -314,11 +325,11 @@ def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: d
         "handle": handle.replace("-", ""),
         "paper_light": paper_light, "paper_dark": paper_dark, "primary": tile_fill,
         "primary_dark": dark["primary"] if dark else "#eeeeee", "tile_fill": tile_fill,
-        "icon_svg": fit_box(outputs[conceptlib.pick_output(outputs, 60)].to_svg("color", palette=on_tile), 36, 36),
-        "favicon_svg": colour(outputs[conceptlib.pick_output(outputs, 16)], 16, 16),
+        "icon_svg": fit_box(outputs[drawn["icon"]].to_svg("color", palette=on_tile), 36, 36),
+        "favicon_svg": colour(outputs[drawn["favicon"]], 16, 16),
         "header_svg": colour(horizontal, 260, 32),
         "header_dark_svg": reverse(horizontal, 260, 32),
-        "avatar_svg": colour(outputs[conceptlib.pick_output(outputs, 80)], 48, 48),
+        "avatar_svg": colour(outputs[drawn["avatar"]], 48, 48),
         "card_svg": colour(horizontal, 200, 60),
         "sign_svg": fit_box(outputs["full-lockup"].to_svg("white"), 360, 110),
         "neighbours": mockuplib.neighbour_icons(60),
@@ -430,7 +441,8 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
         for variant in VARIANTS:
             variants.append({"label": variant + (" (currentColor)" if variant == "mono" else ""), "background": backgrounds[variant],
                              "svg": fit_box(lockup.to_svg(variant, palette=dark if variant == "reverse" else light), 264, 150),
-                             "dark": variant in ("reverse", "white"), "css_color": "#1f6feb" if variant == "mono" else "inherit"})
+                             "dark": variant in ("reverse", "white"),  # mono takes currentColor: previewed in the primary
+                             "css_color": light["primary"] if variant == "mono" else "inherit"})
         for kind in CVD_KINDS:
             simulated = {role: simulate_cvd(hex_value, kind) for role, hex_value in light.items()}
             cvd.append({"kind": kind, "background": simulated["paper"],
