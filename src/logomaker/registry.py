@@ -64,7 +64,17 @@ def save_state(paths: ProjectPaths, state: BrandState) -> None:
     _update_registry(paths, state)
 
 
+def brand_name(name: str) -> str:
+    """`name` without the spaces around it. An empty name, or one of spaces only, is a CliError: the sheets draw its first
+    letter or digit, and the package's files are named after it."""
+    stripped = name.strip()
+    if not stripped:
+        raise CliError(f"A brand name cannot be empty or only spaces, got {name!r}")
+    return stripped
+
+
 def new_brand(paths: ProjectPaths, name: str, slug: str | None = None, unnamed: bool = False) -> BrandState:
+    name = brand_name(name)
     slug = slug or slugify(name)
     folder = paths.brand(slug)  # refuses anything but a slug
     if folder.exists():
@@ -151,6 +161,7 @@ def decide(paths: ProjectPaths, slug: str, phase: Phase, by: str, note: str) -> 
 
 
 def rename(paths: ProjectPaths, slug: str, name: str) -> BrandState:
+    name = brand_name(name)  # before the brand is read, so a refused name changes nothing
     state = load_state(paths, slug)
     state.name = name
     state.needs_name = False

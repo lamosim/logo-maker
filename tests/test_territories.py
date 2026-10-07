@@ -53,6 +53,11 @@ def test_spec_validation(territories_payload):
     shouted = json.loads(json.dumps(territories_payload))
     shouted["territories"][0]["palette"][1]["hex"] = "#E8572A"
     assert TerritoriesSpec.model_validate(shouted).territories[0].palette[1].hex == "#e8572a"
+    for weight in (50, 950):  # a font weight runs from 100 to 900
+        bad = json.loads(json.dumps(territories_payload))
+        bad["territories"][0]["fonts"][0]["weight"] = weight
+        with pytest.raises(ValidationError, match=r"territories\.0\.fonts\.0\.weight"):
+            TerritoriesSpec.model_validate(bad)
 
 
 def test_shape_specimens_follow_the_parameters(project_root):
@@ -62,6 +67,20 @@ def test_shape_specimens_follow_the_parameters(project_root):
     assert all(s["svg"].startswith("<svg") and "<path" in s["svg"] for s in angular)
     assert angular[2]["svg"] != soft[2]["svg"]  # corner radius changes the tile
     assert angular[4]["svg"] != soft[4]["svg"]  # symmetry changes the bars
+
+
+def test_the_board_sets_the_name_s_first_letter_or_digit(project_root, territories_payload, monkeypatch):
+    assert [sheets.initial_of(name) for name in (" Keystone", "3M", "·kite", "—", "")] == ["K", "3", "K", "A", "A"]
+    folder = write_spec(project_root, territories_payload)
+    state = registry.load_state(project(), "keystone")
+    state.name = " keystone"  # as a brand.json written before names were stripped may hold it
+    registry.save_state(project(), state)
+    initials = []
+    specimens = sheets.shape_specimens
+    monkeypatch.setattr(sheets, "shape_specimens", lambda shapes, ch, *args: initials.append(ch) or specimens(shapes, ch, *args))
+    monkeypatch.setattr(sheets, "Renderer", StubChrome)
+    code, payload = board("--no-open")
+    assert code == 0 and initials == ["K", "K"] and (folder / "board.html").is_file(), payload
 
 
 def test_open_file_respects_env(monkeypatch, tmp_path):

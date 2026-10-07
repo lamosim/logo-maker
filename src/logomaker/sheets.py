@@ -189,6 +189,11 @@ def open_file(path: Path, enabled: bool = True, warnings: list[str] | None = Non
 
 
 
+def initial_of(name: str) -> str:
+    """The letter the territories board sets as a specimen: the name's first letter or digit, upper-cased, else "A"."""
+    return next((ch for ch in name if ch.isalnum()), "A").upper()
+
+
 def shape_specimens(shapes: TerritoryShapes, initial: str, family: str, weight: int) -> list[dict]:
     """Six black specimens of a territory's shape parameters, as {"label", "svg"}: ring, chevron, tile, loop, bars and
     `initial` set in `family` at `weight`. `stroke` sets every band's width (300 units per 1.0); `angularity` of 0.5 or
@@ -244,7 +249,7 @@ def territories_board(paths: ProjectPaths, slug: str, renderer: Renderer | None 
             palette.append({"name": c.name, "hex": i["hex"], "oklch": f"oklch({i['oklch'][0]:.2f} {i['oklch'][1]:.3f} {i['oklch'][2]:.0f})",
                             "text": chip_text(c.hex)})
         cards.append({"name": t.name, "embraces": t.embraces, "rejects": t.rejects, "fonts": fonts, "palette": palette,
-                      "shapes": shape_specimens(t.shapes, state.name[:1].upper() or "A", t.fonts[0].family, t.fonts[0].weight)})
+                      "shapes": shape_specimens(t.shapes, initial_of(state.name), t.fonts[0].family, t.fonts[0].weight)})
     html = jinja(paths).get_template("sheets/territories.html").render(brand=state.name, territories=cards, width=BOARD_W)
     png = _render_html(renderer, html, BOARD_W)
     html_path, png_path = folder / "board.html", folder / "board.png"

@@ -37,6 +37,17 @@ def test_new_brand_creates_structure_and_registry(project_root):
     assert "cafe-nuit" in (project_root / "registry" / "INDEX.md").read_text()
 
 
+def test_brand_names_are_stripped_and_a_blank_one_is_refused(project_root):
+    code, payload = run("brand", "new", " Keystone")
+    assert code == 0 and (payload["brand"]["name"], payload["brand"]["slug"]) == ("Keystone", "keystone")
+    code, payload = run("brand", "rename", "keystone", "--name", "  Keystone Labs ")
+    assert code == 0 and payload["brand"]["name"] == "Keystone Labs"
+    for args, name in ((("new", "   ", "--slug", "blank"), "   "), (("rename", "keystone", "--name", " "), " ")):
+        code, payload = run("brand", *args)
+        assert code == 2 and payload["errors"] == [f"A brand name cannot be empty or only spaces, got {name!r}"], args
+    assert registry.load_state(project(), "keystone").name == "Keystone Labs" and not (project_root / "brands" / "blank").exists()
+
+
 def test_duplicate_brand_exits_2(project_root):
     assert run("brand", "new", "Keystone")[0] == 0
     code, payload = run("brand", "new", "Keystone")

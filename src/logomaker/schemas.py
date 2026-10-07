@@ -199,7 +199,7 @@ class AuditResult(BaseModel):
 
 class TerritoryFont(BaseModel):
     family: str
-    weight: int = 400
+    weight: int = Field(400, ge=100, le=900)
 
 
 class TerritoryColor(BaseModel):
