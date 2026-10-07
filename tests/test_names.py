@@ -142,15 +142,52 @@ def test_whois_verdicts(whois, answer, status):
         assert names.check_domain("keystone.io", client) == {"domain": "keystone.io", "status": status, "method": "whois"}
 
 
-def test_github_unknown_names_the_reason():
-    def handler(request: httpx.Request) -> httpx.Response:
-        if request.url.path == "/users/keystone":
-            return httpx.Response(403, json={"message": "API rate limit exceeded"})
-        raise httpx.ConnectError("boom", request=request)
+def github_api(answers: dict[str, int | type[httpx.HTTPError]], asked: list[str] | None = None) -> httpx.MockTransport:
+    """Stands in for the GitHub API: a path in `answers` gets that status, or raises that httpx error; any other path gets
+    404. `asked` collects the paths requested."""
 
-    result = names.check("Keystone", tlds=(), transport=httpx.MockTransport(handler))
-    assert result["handles"] == {"github": {"user": "unknown", "org": "unknown"}}
-    assert result["warnings"] == ["github: user rate limited (HTTP 403); org unreachable (ConnectError); try again later"]
+    def handler(request: httpx.Request) -> httpx.Response:
+        if asked is not None:
+            asked.append(request.url.path)
+        answer = answers.get(request.url.path, 404)
+        if isinstance(answer, int):
+            return httpx.Response(answer, json={})
+        raise answer("boom", request=request)
+
+    return httpx.MockTransport(handler)
+
+
+USER, ORG = "/users/keystone", "/orgs/keystone"
+
+
+# Users and organisations share one login namespace: /orgs is asked only when /users does not know the login. The real
+# /users also answers 200 for an organisation's login, which then takes the first case; "held-by-an-org" is a login that
+# only /orgs knows.
+@pytest.mark.parametrize(("answers", "handle", "asked"), [
+    pytest.param({USER: 200}, {"user": "registered", "org": "registered"}, [USER], id="held-by-a-user"),
+    pytest.param({ORG: 200}, {"user": "available", "org": "registered"}, [USER, ORG], id="held-by-an-org"),
+    pytest.param({}, {"user": "available", "org": "available"}, [USER, ORG], id="free"),
+    pytest.param({USER: 403}, {"user": "unknown", "org": "unknown"}, [USER], id="user-unknown"),
+])
+def test_github_logins_share_one_namespace(answers, handle, asked):
+    paths: list[str] = []
+    with httpx.Client(transport=github_api(answers, paths)) as client:
+        assert names.check_github("keystone", client) == handle
+    assert paths == asked
+
+
+@pytest.mark.parametrize(("answers", "handle", "warning"), [
+    pytest.param({USER: 403}, {"user": "unknown", "org": "unknown"}, "github: user rate limited (HTTP 403); try again later",
+                 id="user-rate-limited"),
+    pytest.param({ORG: httpx.ConnectError}, {"user": "available", "org": "unknown"},
+                 "github: org unreachable (ConnectError); try again later", id="org-unreachable"),
+    pytest.param({USER: 502}, {"user": "unknown", "org": "unknown"}, "github: user answered HTTP 502; try again later",
+                 id="user-other-status"),
+])
+def test_github_unknown_names_the_reason(answers, handle, warning):
+    result = names.check("Keystone", tlds=(), transport=github_api(answers))
+    assert result["handles"] == {"github": handle}
+    assert result["warnings"] == [warning]
 
 
 def test_deadline_leaves_the_rest_unknown(monkeypatch, whois):
@@ -205,3 +242,5 @@ def test_live_checks():
     result = names.check("google", tlds=("com",), handles=("github",))
     assert result["domains"][0]["status"] == "registered"
     assert names.check("zq7v3kx9plmw", tlds=("com",), handles=())["domains"][0]["status"] == "available"
+    # torvalds is a personal account, so its login is no organisation's to take either
+    assert names.check("torvalds", tlds=(), handles=("github",))["handles"]["github"] == {"user": "registered", "org": "registered"}

@@ -112,28 +112,38 @@ def check_domain(domain: str, client: httpx.Client, warnings: list[str] | None =
     return {"domain": domain, "status": status, "method": method}
 
 
-def check_github(label: str, client: httpx.Client, warnings: list[str] | None = None) -> dict:
-    """GitHub user and organisation status for `label`: {user, org}, each registered (200), available (404) or unknown.
+def _github_lookup(key: str, url: str, client: httpx.Client, problems: list[str]) -> str:
+    """One GitHub API lookup: registered (200), available (404) or unknown, whose reason is added to `problems`."""
+    try:
+        code = client.get(url).status_code
+    except httpx.HTTPError as err:
+        problems.append(f"{key} unreachable ({type(err).__name__})")
+        return "unknown"
+    if code == 200:
+        return "registered"
+    if code == 404:
+        return "available"
+    if code in (403, 429):  # how the API answers once the 60 unauthenticated requests an hour are used up
+        problems.append(f"{key} rate limited (HTTP {code})")
+    else:
+        problems.append(f"{key} answered HTTP {code}")
+    return "unknown"
 
-    Unknown statuses add one warning to `warnings`, when given, with each reason: rate limited, another HTTP status, or
-    unreachable with the network error's class.
+
+def check_github(label: str, client: httpx.Client, warnings: list[str] | None = None) -> dict:
+    """GitHub user and organisation status for `label`: {user, org}, each registered, available or unknown.
+
+    Users and organisations share one login namespace, so a login the users endpoint knows (200) is registered for an
+    organisation too. The orgs endpoint is asked only when the users endpoint does not know the login (404), and an
+    unknown user lookup leaves the organisation unknown. Unknown statuses add one warning to `warnings`, when given,
+    with each reason: rate limited, another HTTP status, or unreachable with the network error's class.
     """
-    out, problems = {}, []
-    for key, url in (("user", GITHUB_USER), ("org", GITHUB_ORG)):
-        try:
-            code = client.get(url.format(label=label)).status_code
-        except httpx.HTTPError as err:
-            out[key] = "unknown"
-            problems.append(f"{key} unreachable ({type(err).__name__})")
-            continue
-        out[key] = "registered" if code == 200 else "available" if code == 404 else "unknown"
-        if code in (403, 429):  # how the API answers once the 60 unauthenticated requests an hour are used up
-            problems.append(f"{key} rate limited (HTTP {code})")
-        elif out[key] == "unknown":
-            problems.append(f"{key} answered HTTP {code}")
+    problems: list[str] = []
+    user = _github_lookup("user", GITHUB_USER.format(label=label), client, problems)
+    org = _github_lookup("org", GITHUB_ORG.format(label=label), client, problems) if user == "available" else user
     if problems and warnings is not None:
         warnings.append(f"github: {'; '.join(problems)}; try again later")
-    return out
+    return {"user": user, "org": org}
 
 
 def check(name: str, tlds: tuple[str, ...] = TLDS, handles: tuple[str, ...] = HANDLES,
