@@ -475,5 +475,35 @@ def package_verify(slug: str) -> None:
     emit(result, ok=result["ok"], errors=result["problems"], code=0 if result["ok"] else EXIT_VERIFY)
 
 
+@main.group("names")
+def names_group() -> None:
+    """Name analysis and availability checks."""
+
+
+@names_group.command("analyze")
+@click.argument("name")
+@command
+def names_analyze(name: str) -> None:
+    """Show a name's sound and letterform features: syllables, vowels, initial letter, pronounceability."""
+    from . import names as nameslib
+
+    emit(nameslib.analyze(name))
+
+
+@names_group.command("check")
+@click.argument("name")
+@click.option("--tlds", default="com,co,io,ai,app,dev", help="Comma-separated top-level domains to check")
+@click.option("--handles", default="github", help="Comma-separated handle services to check: github, or empty for none")
+@command
+def names_check(name: str, tlds: str, handles: str) -> None:
+    """Check domains over RDAP (then whois) and GitHub handles; a failed or late lookup is unknown, with a warning."""
+    from . import names as nameslib
+
+    tld_list = tuple(t.strip() for t in tlds.split(",") if t.strip())
+    handle_list = tuple(h.strip() for h in handles.split(",") if h.strip())
+    result = nameslib.check(name, tld_list, handle_list)
+    emit(result, warnings=result.pop("warnings"))
+
+
 if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

@@ -1,0 +1,207 @@
+import json
+import subprocess
+
+import httpx
+import pytest
+from click.testing import CliRunner
+
+from logomaker import names
+from logomaker.cli import main
+
+REGISTRY = "rdap.registry.test"  # the registry's own RDAP server, where rdap.org redirects
+
+# whois answers as macOS whois prints them, trimmed from real ones (October 2026) unless marked as made up.
+COM_NO_MATCH = (
+    '# whois.verisign-grs.com\n\nNo match for domain "KEYSTONE.COM".\n'
+    ">>> Last update of whois database: 2026-10-07T14:55:18Z <<<\n"
+)
+IO_NOT_FOUND = "# whois.nic.io\n\nDomain not found.\n>>> Last update of WHOIS database: 2026-10-07T14:54:39Z <<<\n"
+CO_NOT_FOUND = (
+    "# whois.registry.co\n\nThe queried object does not exist: DOMAIN NOT FOUND\n\n"
+    ">>> Last update of WHOIS database: 2026-10-07T14:54:40.0Z <<<\n"
+)
+IANA_ONLY = (  # .app and .dev have no whois server: only IANA's record of the TLD comes back
+    "% IANA WHOIS server\n\ndomain:       DEV\n\nwhois:        \n\nstatus:       ACTIVE\n"
+    "remarks:      Registration information: https://www.registry.google\n"
+)
+IO_REGISTERED = (  # made-up terms of use whose lines start with not-found phrases
+    "# whois.nic.io\n\nDomain Name: keystone.io\nRegistrar: MarkMonitor Inc.\nDomain Status: clientTransferProhibited\n\n"
+    "Not found in this answer: the registrant's contact details.\nAvailable on request from the registrar.\n"
+)
+OTHER_LABELS = (  # made up: a registered domain under other field labels, inside prose that says "not found" and "available"
+    "% The whois service on port 43 does not disclose the domain holder, which is not found\n"
+    "% here but is available through the registry's web whois.\n\nDomain: keystone.io\nStatus: connect\n"
+)
+
+
+class Whois:
+    """Stands in for the whois command (`names.subprocess.run`): it prints answers[domain], or fails as if whois were not
+    installed for a domain with no answer. `asked` lists the domains looked up."""
+
+    def __init__(self):
+        self.answers: dict[str, str] = {}
+        self.asked: list[str] = []
+
+    def __call__(self, argv, **kwargs):
+        assert argv[0] == "whois", argv
+        self.asked.append(argv[-1])
+        if argv[-1] not in self.answers:
+            raise FileNotFoundError(2, "No such file or directory", "whois")
+        return subprocess.CompletedProcess(argv, 0, stdout=self.answers[argv[-1]], stderr="")
+
+
+@pytest.fixture(autouse=True)
+def whois(request, monkeypatch):
+    """No test shells out to whois but the live one."""
+    if request.node.get_closest_marker("live"):
+        return None
+    stub = Whois()
+    monkeypatch.setattr(names.subprocess, "run", stub)
+    return stub
+
+
+def test_analyze_features():
+    k = names.analyze("Keystone")
+    assert k["length"] == 8 and k["syllables"] == 2 and k["initial"]["diagonal"] and not k["initial"]["round"]
+    assert k["vowels"]["front"] == 2 and k["vowels"]["back"] == 1 and k["double_letters"] == []
+    assert k["pronounceable"] and not k["camel_case"]
+    assert names.analyze("Lumen")["initial"]["l_warning"]
+    assert names.analyze("Coffee")["double_letters"] == ["ff", "ee"]
+    assert names.analyze("PayPal")["camel_case"] and names.analyze("Octo")["initial"]["round"]
+    assert not names.analyze("Strngth")["pronounceable"]
+    assert names.domain_label("Café Nuit!") == "cafenuit"
+
+
+def fake_transport(registered: set[str], github_taken: set[str], fail: set[str] | frozenset[str] = frozenset(),
+                   no_rdap: set[str] | frozenset[str] = frozenset()) -> httpx.MockTransport:
+    """Stands in for RDAP and GitHub. rdap.org redirects to the registry's RDAP server, which answers 200 for a domain in
+    `registered` and 404 for any other. rdap.org answers 404 itself for a TLD in `no_rdap` (it knows no RDAP server for
+    it) and fails to connect for a domain in `fail`. GitHub answers 200 for a user or org in `github_taken`, else 404."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        host, last = request.url.host, request.url.path.rsplit("/", 1)[1]
+        if host == "rdap.org":
+            if last in fail:
+                raise httpx.ConnectError("boom", request=request)
+            tld = last.rsplit(".", 1)[1]
+            if tld in no_rdap:
+                return httpx.Response(404, json={"errorCode": 404, "title": "Not Found"})
+            return httpx.Response(302, headers={"Location": f"https://{REGISTRY}/{tld}/v1/domain/{last}"})
+        if host == REGISTRY:
+            return httpx.Response(200 if last in registered else 404, json={"objectClassName": "domain"})
+        if host == "api.github.com":
+            return httpx.Response(200 if last in github_taken else 404, json={})
+        return httpx.Response(500)
+
+    return httpx.MockTransport(handler)
+
+
+def test_check_with_mocked_services(whois):
+    transport = fake_transport({"keystone.com"}, {"keystone"})
+    result = names.check("Keystone", tlds=("com", "io"), transport=transport)
+    statuses = {d["domain"]: d["status"] for d in result["domains"]}
+    assert statuses == {"keystone.com": "registered", "keystone.io": "available"}
+    assert result["handles"]["github"]["user"] == "registered" and result["handles"]["github"]["org"] == "registered"
+    assert result["warnings"] == []
+    assert [d["method"] for d in result["domains"]] == ["rdap", "rdap"] and whois.asked == []
+
+
+def test_network_failure_degrades_to_unknown(whois):
+    result = names.check("Keystone", tlds=("ai",), handles=(), transport=fake_transport(set(), set(), fail={"keystone.ai"}))
+    assert result["domains"][0]["status"] == "unknown" and result["domains"][0]["method"] == "none"
+    assert result["warnings"] == ["keystone.ai: RDAP ConnectError and whois gave nothing"]
+    assert whois.asked == ["keystone.ai"]
+
+
+def test_rdap_org_404_is_not_availability(whois):
+    # rdap.org answers 404 itself for a TLD it knows no RDAP server for (.io and .co): whois decides instead.
+    whois.answers = {"keystone.io": IO_REGISTERED, "keystone.co": CO_NOT_FOUND, "keystone.dev": IANA_ONLY}
+    transport = fake_transport(set(), set(), no_rdap={"io", "co", "dev"})
+    result = names.check("Keystone", tlds=("io", "co", "dev", "com"), handles=(), transport=transport)
+    assert result["domains"] == [
+        {"domain": "keystone.io", "status": "registered", "method": "whois"},
+        {"domain": "keystone.co", "status": "available", "method": "whois"},
+        {"domain": "keystone.dev", "status": "unknown", "method": "whois"},
+        {"domain": "keystone.com", "status": "available", "method": "rdap"},  # a 404 from the registry's own server
+    ]
+    assert result["warnings"] == ["keystone.dev: RDAP 404 from rdap.org and whois gave nothing"]
+    assert whois.asked == ["keystone.io", "keystone.co", "keystone.dev"]
+
+
+@pytest.mark.parametrize(("answer", "status"), [
+    pytest.param(IO_REGISTERED, "registered", id="registered-markers-first"),  # they win over not-found phrases further down
+    pytest.param(COM_NO_MATCH, "available", id="com-no-match"),
+    pytest.param(IO_NOT_FOUND, "available", id="io-domain-not-found"),
+    pytest.param(CO_NOT_FOUND, "available", id="co-not-found-field-value"),
+    pytest.param(OTHER_LABELS, "unknown", id="phrases-inside-prose"),  # "not found" and "available" mid-sentence say nothing
+    pytest.param(IANA_ONLY, "unknown", id="no-whois-server"),
+])
+def test_whois_verdicts(whois, answer, status):
+    whois.answers["keystone.io"] = answer
+    with httpx.Client(transport=fake_transport(set(), set(), no_rdap={"io"})) as client:
+        assert names.check_domain("keystone.io", client) == {"domain": "keystone.io", "status": status, "method": "whois"}
+
+
+def test_github_unknown_names_the_reason():
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/users/keystone":
+            return httpx.Response(403, json={"message": "API rate limit exceeded"})
+        raise httpx.ConnectError("boom", request=request)
+
+    result = names.check("Keystone", tlds=(), transport=httpx.MockTransport(handler))
+    assert result["handles"] == {"github": {"user": "unknown", "org": "unknown"}}
+    assert result["warnings"] == ["github: user rate limited (HTTP 403); org unreachable (ConnectError); try again later"]
+
+
+def test_deadline_leaves_the_rest_unknown(monkeypatch, whois):
+    clock = [1000.0]
+    monkeypatch.setattr(names, "monotonic", lambda: clock[0])
+    services, asked = fake_transport({"keystone.com"}, set()), []
+
+    def slow(request: httpx.Request) -> httpx.Response:  # each RDAP lookup takes 30 s on the patched clock
+        asked.append(request.url.host)
+        if request.url.host == "rdap.org":
+            clock[0] += 30
+        return services.handle_request(request)
+
+    result = names.check("Keystone", tlds=("com", "io", "ai", "app"), transport=httpx.MockTransport(slow))
+    assert result["domains"] == [
+        {"domain": "keystone.com", "status": "registered", "method": "rdap"},
+        {"domain": "keystone.io", "status": "available", "method": "rdap"},
+        {"domain": "keystone.ai", "status": "unknown", "method": "none"},
+        {"domain": "keystone.app", "status": "unknown", "method": "none"},
+    ]
+    assert result["handles"] == {"github": {"user": "unknown", "org": "unknown"}}
+    assert result["warnings"] == ["deadline reached after 45 s; not checked: keystone.ai, keystone.app, github"]
+    assert asked.count("rdap.org") == 2 and "api.github.com" not in asked and whois.asked == []
+
+
+def test_check_needs_letters_or_digits():
+    result = names.check("!!!", transport=httpx.MockTransport(lambda request: pytest.fail("no lookup expected")))
+    assert result["label"] == "" and result["domains"] == [] and result["handles"] == {}
+    assert result["warnings"] == ["name has no letters or digits to check"]
+
+
+def test_cli(monkeypatch):
+    monkeypatch.setattr(names, "default_transport", lambda: fake_transport({"keystone.com"}, set()))
+    runner = CliRunner()
+    payload = json.loads(runner.invoke(main, ["names", "analyze", "Keystone"]).stdout)
+    assert payload["ok"] and payload["length"] == 8
+    result = runner.invoke(main, ["names", "check", "Keystone", "--tlds", "com,dev", "--handles", "github"])
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 0 and payload["domains"][0]["status"] == "registered" and payload["handles"]["github"]["user"] == "available"
+
+
+def test_cli_rejects_an_unknown_handle_service(monkeypatch):
+    monkeypatch.setattr(names, "default_transport", lambda: pytest.fail("no lookup expected"))
+    result = CliRunner().invoke(main, ["names", "check", "Keystone", "--handles", "github,twitter"])
+    payload = json.loads(result.stdout)
+    assert result.exit_code == 2 and payload["ok"] is False
+    assert payload["errors"] == ["Unknown handle service 'twitter'; choose one of: github"]
+
+
+@pytest.mark.live
+def test_live_checks():
+    result = names.check("google", tlds=("com",), handles=("github",))
+    assert result["domains"][0]["status"] == "registered"
+    assert names.check("zq7v3kx9plmw", tlds=("com",), handles=())["domains"][0]["status"] == "available"
