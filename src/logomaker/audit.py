@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
 
 from . import registry
@@ -39,10 +40,16 @@ def concept_fingerprint(paths: ProjectPaths, slug: str, folder: Path, tokens_pat
              ("cliches.json", paths.cliches))
     entries = [(name, path.read_bytes()) for name, path in files if path.is_file()]
     entries.append(("brand settings", json.dumps(settings, sort_keys=True).encode()))
-    digest = hashlib.sha256()
+    return digest(entries)
+
+
+def digest(entries: Iterable[tuple[str, bytes]]) -> str:
+    """sha256 (hex) of named byte strings, each entering as its name and byte count, then its bytes: the rule of every
+    fingerprint (concept_fingerprint, export.inputs_fingerprint)."""
+    sha = hashlib.sha256()
     for name, data in entries:
-        digest.update(f"{name} {len(data)}\n".encode() + data)
-    return digest.hexdigest()
+        sha.update(f"{name} {len(data)}\n".encode() + data)
+    return sha.hexdigest()
 
 
 def text_roles(outputs: dict[str, Mark]) -> list[str]:

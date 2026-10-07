@@ -326,12 +326,18 @@ def _check_final(brand: Path, state: BrandState) -> list[str]:
 
 
 def _check_verify(brand: Path, state: BrandState) -> list[str]:
+    """package/verify.json must report ok for a package built from final/ and the brand as they are now: the inputs
+    fingerprint it checked is export.inputs_fingerprint's now."""
+    from .export import inputs_fingerprint, out_of_date  # imported here: export imports registry
+
     verify = brand / "package" / "verify.json"
     missing = _need(brand, verify)
     if verify.is_file():
         result, error = _read_json(brand, verify)
         if error or not result.get("ok"):
             missing.append(error or "package/verify.json reports failures")
+        elif result.get("inputs") != inputs_fingerprint(ProjectPaths(brand.parent.parent), state.slug):
+            missing.append(out_of_date(state.slug))
     return missing
 
 

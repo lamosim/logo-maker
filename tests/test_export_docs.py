@@ -12,7 +12,7 @@ from logomaker.color import check_tokens
 from logomaker.kit import Mark, rect_centered, ring
 from logomaker.paths import project
 from logomaker.schemas import Phase
-from tests.conftest import make_final_brand, requires_chrome
+from tests.conftest import make_final_brand, requires_chrome, write_passing_audit
 from tests.test_export_core import FAVICONS, build
 from tests.test_export_platforms import use_concept
 
@@ -95,6 +95,7 @@ def test_document_groups_index_and_verify_without_chrome(project_root):
     brand_md = (pkg / "BRAND.md").read_text()
     assert "`icon-works-wordmark-color.svg`" in brand_md and "- Fira Code 600 (OFL); files in `fonts/firacode/`" in brand_md
     assert "primary: Ember, ink: Coal, paper: Paper" in brand_md and "primary: Ember Light, ink: Paper, paper: Coal" in brand_md
+
     assert PdfReader(str(pkg / "brand-sheet.pdf")).pages
 
     readme = (pkg / "README.md").read_text()
@@ -116,6 +117,38 @@ def test_document_groups_index_and_verify_without_chrome(project_root):
     assert code == 0 and payload["ok"] and payload["errors"] == [] and payload["files"] == len(paths)
     cli = CliRunner().invoke(main, ["brand", "advance", "keystone", "--to", "done"])
     assert cli.exit_code == 0 and json.loads(cli.stdout)["brand"]["phase"] == "done"
+
+
+def test_a_package_built_before_final_or_the_name_changed_is_out_of_date(project_root):
+    final = make_final_brand(project_root, phase=Phase.package)
+    stale = "package is out of date (final/ or the brand changed since the build); run: logomaker package build keystone"
+
+    def advance_done() -> tuple[int, dict]:
+        result = CliRunner().invoke(main, ["brand", "advance", "keystone", "--to", "done"])
+        return result.exit_code, json.loads(result.stdout)
+
+    build(DOCS)
+    assert verify_cli()[0] == 0
+    tokens = json.loads((final / "tokens.json").read_text())
+    tokens["colors"]["ember"]["hex"] = "#c2410c"  # a new primary, and the final mark audited again: the final gate passes
+    (final / "tokens.json").write_text(json.dumps(tokens))
+    write_passing_audit(project(), "keystone", final)
+    code, payload = advance_done()  # package/verify.json still says ok, for the package of the old colour
+    assert code == 2 and payload["missing"] == [stale]
+    code, payload = verify_cli()
+    assert code == 4 and payload["problems"] == [stale]
+    build(DOCS)
+    assert verify_cli()[0] == 0
+    registry.rename(project(), "keystone", "Keystone Labs")  # the file names and the documents carry the name
+    code, payload = advance_done()
+    assert code == 2 and payload["missing"] == [stale]
+    code, payload = verify_cli()
+    assert code == 4 and payload["problems"] == [stale]
+    build(DOCS)
+    assert verify_cli()[0] == 0
+    registry.decide(project(), "keystone", Phase.package, "user", "approved")  # brand.json changes, but nothing the build reads
+    code, payload = advance_done()
+    assert code == 0 and payload["brand"]["phase"] == "done"
 
 
 def test_verify_names_every_problem_and_exits_4(project_root):

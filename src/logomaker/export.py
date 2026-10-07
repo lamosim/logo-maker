@@ -15,7 +15,7 @@ from PIL import Image
 
 from . import fonts as fontlib
 from . import pdfout, registry
-from .audit import TIER_FALLBACKS, text_roles
+from .audit import TIER_FALLBACKS, digest, text_roles
 from .color import CheckResult, check_tokens, enrich_tokens, load_tokens
 from .kit import concept as conceptlib
 from .kit.mark import ROLES, Mark
@@ -121,6 +121,7 @@ class PackageBuilder:
         if problems:
             raise CliError(f"packaging needs a passing audit of the final mark: {'; '.join(problems)} "
                            f"(run: logomaker concept run {slug} final)")
+        self.inputs = inputs_fingerprint(paths, slug)  # what this build reads, as the manifest records it
         self.outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(self.final)))
         self.tokens = enrich_tokens(load_tokens(self.final / "tokens.json"))
         self.light, self.dark = _palettes_of(self.tokens)
@@ -568,8 +569,8 @@ class PackageBuilder:
         try:
             for group in self.GROUPS:
                 getattr(self, group)()
-            manifest = Manifest(brand=self.state.name, slug=self.slug, built=now_iso(), files=self.entries, warnings=self.warnings,
-                                skipped=self.skipped)
+            manifest = Manifest(brand=self.state.name, slug=self.slug, built=now_iso(), inputs=self.inputs, files=self.entries,
+                                warnings=self.warnings, skipped=self.skipped)
             (staging / "manifest.json").write_text(json.dumps(manifest.model_dump(), indent=2) + "\n", encoding="utf-8")
             _swap_in(staging, package, aside)
         finally:
@@ -579,12 +580,31 @@ class PackageBuilder:
         return manifest
 
 
+def inputs_fingerprint(paths: ProjectPaths, slug: str) -> str:
+    """sha256 (hex) of what a package build reads (audit.digest): final/'s concept.py, params.json, tokens.json and
+    rationale.md and the brand's strategy.json, each when present, then brand.json's name, primary_lockup, min_sizes and
+    fonts as canonical JSON (its other fields, such as phase or updated, change without changing the package). The
+    manifest records it; verify and the done gate compare it with the current one."""
+    state = registry.load_state(paths, slug)
+    brand = paths.brand(slug)
+    settings = state.model_dump(mode="json", include={"name", "primary_lockup", "min_sizes", "fonts"})
+    files = [*(f"final/{name}" for name in REQUIRED_FINAL), "strategy.json"]
+    entries = [(name, (brand / name).read_bytes()) for name in files if (brand / name).is_file()]
+    return digest([*entries, ("brand settings", json.dumps(settings, sort_keys=True).encode())])
+
+
+def out_of_date(slug: str) -> str:
+    """The problem verify and the done gate report when the package was built from other inputs than the brand's now."""
+    return f"package is out of date (final/ or the brand changed since the build); run: logomaker package build {slug}"
+
+
 def verify(paths: ProjectPaths, slug: str) -> dict:
     """Check brands/<slug>/package/ against its manifest.json and write the result to package/verify.json, which the done
-    gate reads: each file is there, not empty and unchanged (its sha256), each raster is the size the manifest gives (an
-    ICO by its largest frame, which Pillow opens), and README.md lists each in a table row. The result holds ok, problems
-    (in manifest order), files and checked_at. An unknown brand is a CliError (exit 2), a missing or invalid manifest
-    exit 4."""
+    gate reads: the package was built from final/ and the brand as they are now (the manifest's inputs fingerprint is
+    inputs_fingerprint's), each file is there, not empty and unchanged (its sha256), each raster is the size the manifest
+    gives (an ICO by its largest frame, which Pillow opens), and README.md lists each in a table row. The result holds
+    ok, problems (the out-of-date one first, then the files' in manifest order), files, the manifest's inputs and
+    checked_at. An unknown brand is a CliError (exit 2), a missing or invalid manifest exit 4."""
     registry.load_state(paths, slug)  # an unknown brand stops here, not at the manifest it lacks
     pkg = paths.brand(slug) / "package"
     if not (pkg / "manifest.json").is_file():
@@ -593,6 +613,8 @@ def verify(paths: ProjectPaths, slug: str) -> dict:
     readme = pkg / "README.md"
     index = readme.read_text(encoding="utf-8") if readme.is_file() else None  # a missing one is reported by its own entry
     problems: list[str] = []
+    if manifest.inputs != inputs_fingerprint(paths, slug):
+        problems.append(out_of_date(slug))
     for entry in manifest.files:
         path = pkg / entry.path
         if not path.is_file():
@@ -614,6 +636,7 @@ def verify(paths: ProjectPaths, slug: str) -> dict:
                     problems.append(f"{entry.path} is {width}x{height}, expected {entry.width}x{entry.height}")
         if index is not None and f"| `{entry.path}` |" not in index:
             problems.append(f"README.md does not list {entry.path}")
-    result = {"ok": not problems, "problems": problems, "files": len(manifest.files), "checked_at": now_iso()}
+    result = {"ok": not problems, "problems": problems, "files": len(manifest.files), "inputs": manifest.inputs,
+              "checked_at": now_iso()}
     (pkg / "verify.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     return result

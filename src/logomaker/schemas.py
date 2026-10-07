@@ -294,11 +294,14 @@ class ManifestEntry(BaseModel):
 
 
 class Manifest(BaseModel):
-    """package/manifest.json: every file the build wrote, its warnings, and each group that could not run, with the reason."""
+    """package/manifest.json: every file the build wrote, its warnings, each group that could not run, with the reason,
+    and `inputs`, the fingerprint of what the build read (export.inputs_fingerprint), which verify and the done gate
+    compare with the current one."""
 
     brand: str
     slug: str
     built: str
+    inputs: str = ""
     files: list[ManifestEntry] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     skipped: dict[str, str] = Field(default_factory=dict)
