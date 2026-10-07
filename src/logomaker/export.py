@@ -10,7 +10,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from . import registry
+from . import pdfout, registry
 from .audit import TIER_FALLBACKS
 from .color import enrich_tokens, load_tokens
 from .kit import concept as conceptlib
@@ -79,7 +79,8 @@ def _swap_in(staging: Path, package: Path, aside: Path) -> None:
 
 
 class PackageBuilder:
-    GROUPS: list[str] = ["masters", "pngs", "flattened", "favicons", "apple", "android", "social", "banners", "previews", "commerce"]
+    GROUPS: list[str] = ["masters", "pngs", "flattened", "favicons", "apple", "android", "social", "banners", "previews", "commerce",
+                         "print_files"]
 
     def __init__(self, paths: ProjectPaths, slug: str, paper: str = "letter"):
         """Check final/ before anything renders: its four files, then an audit.json that vouches for the final mark as it
@@ -106,7 +107,7 @@ class PackageBuilder:
         self.entries: list[ManifestEntry] = []
         self.warnings: list[str] = []
         self.skipped: dict[str, str] = {}
-        self.renderer: Renderer | None = None
+        self._renderer: Renderer | None = None  # set by build(); groups read it through the renderer property
 
     # ---- helpers -------------------------------------------------------
     def warn(self, message: str) -> None:
@@ -116,6 +117,14 @@ class PackageBuilder:
     def skip(self, group: str, reason: str) -> None:
         """Record that `group` could not run, and why; package build reports it as a warning."""
         self.skipped[group] = reason
+
+    @property
+    def renderer(self) -> Renderer:
+        """The renderer build() was given. Only a group that renders reaches for it, so a build of groups that never render
+        (print_files) can go without Chrome; one that does stops with a CliError rather than failing on None."""
+        if self._renderer is None:
+            raise CliError("this package group renders through Chrome, but build() was given no renderer")
+        return self._renderer
 
     def mark(self, variant: str) -> Mark | None:
         """The output that draws `variant` (one of VARIANT_NAMES): the first in its chain that was built
@@ -171,6 +180,10 @@ class PackageBuilder:
         target.write_bytes(raw)
         self.entries.append(self._entry(relpath, raw, purpose, width, height))
         return target
+
+    def register(self, relpath: str, purpose: str, width: int | None = None, height: int | None = None) -> None:
+        """Add the manifest entry of `relpath`, a file already in the package that write() did not write (pdfout's)."""
+        self.entries.append(self._entry(relpath, (self.pkg / relpath).read_bytes(), purpose, width, height))
 
     def render_fit(self, svg: str, box_w: int, box_h: int, background: str | None = None) -> bytes:
         """`svg` rendered as large as fits a `box_w` x `box_h` box, keeping its aspect (sheets.fit_size)."""
@@ -350,11 +363,38 @@ class PackageBuilder:
         png = self.renderer.svg_to_png(svg, 1024)  # 1024 wide whatever the lockup's shape, as tall as its aspect makes it
         self.write("stripe-logo.png", png, "Stripe branding logo, 1024 wide", *image_size(png))
 
+    def print_files(self) -> None:
+        """Vector print files drawn from the kit's paths (pdfout), never through Chrome: an RGB, a CMYK and a black PDF of
+        each named lockup, and a CMYK EPS of the primary lockup and of the mark. A lockup the concept cannot draw is left
+        out (mark() warns); when it can draw none, the group is skipped."""
+        printed = False
+        for variant in PNG_VARIANTS:
+            mark = self.mark(variant)
+            if mark is None:
+                continue
+            for suffix, colour, palette, mode in (("rgb", "color", self.light, "rgb"), ("cmyk", "color", self.light, "cmyk"),
+                                                  ("black", "black", None, "cmyk")):
+                relpath = f"{self.name}-{variant}-{suffix}.pdf"
+                pdfout.mark_to_pdf(mark, self.pkg / relpath, colour, palette, mode)
+                self.register(relpath, f"{variant} vector PDF, {suffix} (CMYK values are naive; confirm with the printer)")
+            printed = True
+        for variant in ("primary", "mark"):
+            mark = self.mark(variant)
+            if mark is None:
+                continue
+            relpath = f"{self.name}-{variant}-cmyk.eps"
+            pdfout.mark_to_eps(mark, self.pkg / relpath, "color", self.light, "cmyk")
+            self.register(relpath, f"{variant} legacy EPS for old print vendors")
+            printed = True
+        if not printed:
+            self.skip("print_files", "the concept has no lockup to print")
+
     # ---- driver --------------------------------------------------------
-    def build(self, renderer: Renderer) -> Manifest:
+    def build(self, renderer: Renderer | None = None) -> Manifest:
         """Run every group in GROUPS into package.tmp/ beside package/, write manifest.json, then swap it in for package/
         (_swap_in), so a failure anywhere leaves the previous package as it was. First it tidies what a killed build left
-        behind. self.pkg names package/ again afterwards."""
+        behind. self.pkg names package/ again afterwards. `renderer` draws the groups that render; a build of groups that
+        never do (print_files) can go without one (the renderer property)."""
         package, staging, aside = self.brand_dir / "package", self.brand_dir / STAGING, self.brand_dir / ASIDE
         if aside.exists():  # a swap that was killed: the previous package comes back unless the new one made it in
             if package.exists():
@@ -364,7 +404,7 @@ class PackageBuilder:
         if staging.exists():  # a build that was killed
             shutil.rmtree(staging)
         staging.mkdir()
-        self.renderer, self.pkg = renderer, staging
+        self._renderer, self.pkg = renderer, staging
         self.entries, self.warnings, self.skipped = [], [], {}
         try:
             for group in self.GROUPS:

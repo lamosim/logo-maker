@@ -213,6 +213,15 @@ def test_the_previous_package_survives_a_swap_that_fails_or_was_killed(project_r
     assert folders() == ["package"] and not (pkg / "marker.txt").exists() and (pkg / "manifest.json").is_file()
 
 
+def test_a_build_given_no_renderer_stops_at_the_first_group_that_renders(project_root):
+    make_final_brand(project_root)
+    builder = export.PackageBuilder(project(), "keystone")
+    builder.GROUPS = ["masters", "pngs"]  # the masters are written from the kit's paths, the PNGs rendered through Chrome
+    with pytest.raises(CliError, match="given no renderer") as err:
+        builder.build()
+    assert err.value.code == 2
+
+
 def test_package_build_reports_the_package_and_every_warning(project_root, monkeypatch):
     make_final_brand(project_root, wordmark_only=True)
     monkeypatch.setattr(render, "Renderer", StubRenderer)
