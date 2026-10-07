@@ -1,12 +1,14 @@
 import copy
+import io
 import json
 import shutil
 from pathlib import Path
 
 import pytest
+from PIL import Image, ImageDraw
 
 from logomaker.paths import ProjectPaths
-from logomaker.render import CHROME_APP, Renderer
+from logomaker.render import CHROME_APP, Renderer, svg_size
 from logomaker.schemas import PHASE_ORDER, Phase
 
 REPO = Path(__file__).resolve().parent.parent
@@ -188,6 +190,44 @@ class StubChrome:
 
     def html_to_png(self, *args, **kwargs):
         return b"png"
+
+
+class StubRenderer:
+    """Stands in for render.Renderer without Chrome, for the package builder: svg_to_png and html_to_png return real PNGs
+    of the size asked for, a block of `ink` (RGBA) over the middle half of a transparent canvas (of `background`, when
+    given); `ink=None` draws nothing, a blank render. html_to_pdf returns a one-page PDF. `calls` records every svg_to_png
+    as (svg, width, height, background)."""
+
+    def __init__(self, ink: tuple[int, int, int, int] | None = (31, 27, 24, 255)):
+        self.ink = ink
+        self.calls: list[tuple[str, int, int, str | None]] = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def _png(self, width: int, height: int, background: str | None = None) -> bytes:
+        image = Image.new("RGBA", (width, height), background or (0, 0, 0, 0))
+        if self.ink is not None:
+            ImageDraw.Draw(image).rectangle((width // 4, height // 4, 3 * width // 4, 3 * height // 4), fill=self.ink)
+        out = io.BytesIO()
+        image.save(out, format="PNG")
+        return out.getvalue()
+
+    def svg_to_png(self, svg: str, width: int, height: int | None = None, background: str | None = None) -> bytes:
+        height = height or svg_size(svg, width)[1]
+        self.calls.append((svg, width, height, background))
+        return self._png(width, height, background)
+
+    def html_to_png(self, html: str, width: int, height: int | None = None, full_page: bool = True, transparent: bool = False) -> bytes:
+        return self._png(width, height or width, None if transparent else "#ffffff")
+
+    def html_to_pdf(self, html: str, paper: str = "letter") -> bytes:
+        out = io.BytesIO()
+        Image.new("RGB", (8, 8), "#ffffff").save(out, format="PDF")
+        return out.getvalue()
 
 
 def no_open_command(argv, **kwargs):

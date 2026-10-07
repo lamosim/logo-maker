@@ -441,5 +441,28 @@ def sheet_refine(slug: str, round_n: int | None, no_open: bool) -> None:
     emit(info, warnings=info.pop("warnings"))
 
 
+@main.group("package")
+def package_group() -> None:
+    """Build and verify the export package."""
+
+
+@package_group.command("build")
+@click.argument("slug")
+@click.option("--paper", default="letter", type=click.Choice(["letter", "a4"]), help="Paper size of the brand sheet PDF.")
+@command
+def package_build(slug: str, paper: str) -> None:
+    """Build brands/<slug>/package/ from final/ (rationale.md and a passing audit needed); a failed build keeps the previous package."""
+    from . import export as exportlib
+    from .render import Renderer
+
+    paths = project()
+    builder = exportlib.PackageBuilder(paths, slug, paper)  # refuses an unfinished final/ before Chrome starts
+    with Renderer() as renderer:
+        manifest = builder.build(renderer)
+    skipped = [f"{group} skipped: {reason}" for group, reason in manifest.skipped.items()]
+    emit({"package": str(builder.pkg.relative_to(paths.root)), "files": len(manifest.files), "manifest": "package/manifest.json"},
+         warnings=manifest.warnings + skipped)
+
+
 if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

@@ -63,11 +63,16 @@ def pick_output(outputs: dict, size: int) -> str:
     return _first_present(outputs, chain)
 
 
-def fit_box(svg: str, box_w: int, box_h: int) -> str:
+def fit_size(svg: str, box_w: int, box_h: int) -> tuple[int, int]:
+    """The largest pixel size with the SVG's aspect that fits a `box_w` x `box_h` box."""
     _, h_at_w = svg_size(svg, box_w)
     if h_at_w <= box_h:
-        return with_size(svg, box_w, h_at_w)
-    return with_size(svg, max(1, round(box_w * box_h / h_at_w)), box_h)
+        return box_w, h_at_w
+    return max(1, round(box_w * box_h / h_at_w)), box_h
+
+
+def fit_box(svg: str, box_w: int, box_h: int) -> str:
+    return with_size(svg, *fit_size(svg, box_w, box_h))
 
 
 def next_round(folder: Path, pattern: str = "renders/round-*") -> int:

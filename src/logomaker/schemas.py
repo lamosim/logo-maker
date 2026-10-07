@@ -282,3 +282,23 @@ class Scorecard(BaseModel):
     @property
     def total(self) -> int:
         return sum(self.scores[c] for c in CRITERIA)
+
+
+class ManifestEntry(BaseModel):
+    path: str
+    purpose: str
+    width: int | None = None
+    height: int | None = None
+    sha256: str
+    bytes: int
+
+
+class Manifest(BaseModel):
+    """package/manifest.json: every file the build wrote, its warnings, and each group that could not run, with the reason."""
+
+    brand: str
+    slug: str
+    built: str
+    files: list[ManifestEntry] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    skipped: dict[str, str] = Field(default_factory=dict)
