@@ -5,7 +5,7 @@ import pytest
 from click.testing import CliRunner
 from pypdf import PdfReader
 
-from logomaker import export, registry, sheets
+from logomaker import export, export_docs, registry, sheets
 from logomaker import fonts as fontlib
 from logomaker.cli import main
 from logomaker.color import check_tokens, chip_text
@@ -62,7 +62,7 @@ def test_full_build_verify_and_done(project_root, renderer):
         assert f"`{entry.path}`" in readme, entry.path
     assert "dark background" in readme and "confirm with your printer" in readme
 
-    result = export.verify(project(), "keystone")
+    result = export_docs.verify(project(), "keystone")
     assert result["ok"], result["problems"]
     assert json.loads((pkg / "verify.json").read_text())["ok"]
     cli = CliRunner().invoke(main, ["brand", "advance", "keystone", "--to", "done"])
@@ -113,7 +113,7 @@ def test_document_groups_index_and_verify_without_chrome(project_root):
     assert "outlines only" in readme.split("\n## Print\n")[1].split("\n## ")[0]  # the print note sits in the print section
     assert "into `brands/keystone/final/`" in readme and "`uv run logomaker package build keystone`" in readme
 
-    assert export.verify(project(), "keystone")["ok"]
+    assert export_docs.verify(project(), "keystone")["ok"]
     code, payload = verify_cli()
     assert code == 0 and payload["ok"] and payload["errors"] == [] and payload["files"] == len(paths)
     cli = CliRunner().invoke(main, ["brand", "advance", "keystone", "--to", "done"])
@@ -192,9 +192,9 @@ def test_font_weights_come_from_brand_json_else_from_the_type_as_set(project_roo
 
 
 def test_font_style_reads_multi_word_and_italic_families():
-    assert export.font_style("Fira Code 600") == ("Fira Code", "600")
-    assert export.font_style("Playfair Display SC 700 italic") == ("Playfair Display SC", "700 italic")
-    assert export.font_style("Noto Sans 650.5") == ("Noto Sans", "650.5")
+    assert export_docs.font_style("Fira Code 600") == ("Fira Code", "600")
+    assert export_docs.font_style("Playfair Display SC 700 italic") == ("Playfair Display SC", "700 italic")
+    assert export_docs.font_style("Noto Sans 650.5") == ("Noto Sans", "650.5")
 
 
 def test_an_uncached_font_and_a_missing_source_file_are_left_out_with_warnings(project_root):
@@ -229,7 +229,7 @@ def test_the_token_checks_and_each_licence_are_computed_once(project_root, monke
     make_final_brand(project_root)
     calls = []
     find_family = fontlib.find_family
-    monkeypatch.setattr(export, "check_tokens", lambda *args, **kwargs: calls.append("check_tokens") or check_tokens(*args, **kwargs))
+    monkeypatch.setattr(export_docs, "check_tokens", lambda *args, **kwargs: calls.append("check_tokens") or check_tokens(*args, **kwargs))
     monkeypatch.setattr(fontlib, "find_family", lambda paths, family: calls.append(family) or find_family(paths, family))
     _, manifest = build(["tokens_file", "fonts", "docs"])
     assert calls == ["check_tokens", "Fira Code"]

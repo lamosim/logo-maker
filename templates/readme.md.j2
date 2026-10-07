@@ -11,12 +11,12 @@ The PDFs and EPS files hold outlines only, no live text, so the default font ent
 {% endif %}
 | File | Purpose | Size |
 |---|---|---|
-{% for e in entries %}| `{{ e.path }}` | {{ e.purpose }} | {% if e.width %}{{ e.width }}x{{ e.height }}{% endif %} |
+{% for e in entries %}{{ row(e.path, e.purpose, (e.width ~ "x" ~ e.height) if e.width else "") }}
 {% endfor %}
 {% endfor %}
 ## Package files
 
 | File | Purpose |
 |---|---|
-| `README.md` | this index |
-| `manifest.json` | every file with dimensions and sha256 |
+{{ row("README.md", "this index") }}
+{{ row("manifest.json", "every file with dimensions and sha256") }}

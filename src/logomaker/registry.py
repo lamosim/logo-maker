@@ -327,8 +327,8 @@ def _check_final(brand: Path, state: BrandState) -> list[str]:
 
 def _check_verify(brand: Path, state: BrandState) -> list[str]:
     """package/verify.json must report ok for a package built from final/ and the brand as they are now: the inputs
-    fingerprint it checked is export.inputs_fingerprint's now."""
-    from .export import inputs_fingerprint, out_of_date  # imported here: export imports registry
+    fingerprint it checked is export_docs.inputs_fingerprint's now."""
+    from .export_docs import inputs_fingerprint, out_of_date  # imported here: export_docs imports registry
 
     verify = brand / "package" / "verify.json"
     missing = _need(brand, verify)

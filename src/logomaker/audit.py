@@ -44,7 +44,7 @@ def concept_fingerprint(paths: ProjectPaths, slug: str, folder: Path, tokens_pat
 
 def digest(entries: Iterable[tuple[str, bytes]]) -> str:
     """sha256 (hex) of named byte strings, each entering as its name and byte count, then its bytes: the rule of every
-    fingerprint (concept_fingerprint, export.inputs_fingerprint)."""
+    fingerprint (concept_fingerprint, export_docs.inputs_fingerprint)."""
     sha = hashlib.sha256()
     for name, data in entries:
         sha.update(f"{name} {len(data)}\n".encode() + data)

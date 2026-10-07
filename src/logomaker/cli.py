@@ -469,9 +469,9 @@ def package_build(slug: str, paper: str) -> None:
 @command
 def package_verify(slug: str) -> None:
     """Check package/ against its manifest and write package/verify.json, which the done phase needs; problems exit 4."""
-    from . import export as exportlib
+    from . import export_docs
 
-    result = exportlib.verify(project(), slug)
+    result = export_docs.verify(project(), slug)
     emit(result, ok=result["ok"], errors=result["problems"], code=0 if result["ok"] else EXIT_VERIFY)
 
 
