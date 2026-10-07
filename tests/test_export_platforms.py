@@ -105,19 +105,28 @@ def test_platform_groups_without_chrome(project_root):
     symbol = builder.outputs["full-symbol"]  # the tier for 1024 px (Apple) and 108 px (Android)
     art = symbol.to_svg("color", palette=palettes["tile"])
     assert (pkg / "app-icon-layers/foreground.svg").read_text() == export.square_viewbox(art, 0.6)
-    assert (pkg / "android/ic_launcher_foreground.svg").read_text() == export.square_viewbox(art, 466 / 1080)
-    assert (pkg / "android/ic_launcher_monochrome.svg").read_text() == export.square_viewbox(symbol.to_svg("black"), 466 / 1080)
+    assert (pkg / "android/ic_launcher_foreground.svg").read_text() == export.circle_viewbox(art, 330 / 1080)
+    assert (pkg / "android/ic_launcher_monochrome.svg").read_text() == export.circle_viewbox(symbol.to_svg("black"), 330 / 1080)
     _, _, art_w, art_h = viewbox(art)
     for name in ("android/ic_launcher_foreground.svg", "android/ic_launcher_monochrome.svg"):
         side = viewbox((pkg / name).read_text())[2]  # the adaptive icon's 108 dp, as 1080 units
-        assert math.hypot(art_w, art_h) / 2 * 1080 / side <= 330, name  # the art's corners inside the 66 dp safe circle
+        assert math.hypot(art_w, art_h) / 2 * 1080 / side <= 330 + 1e-9, name  # the art's corners inside the 66 dp safe circle
         assert "inside the 66 dp safe circle" in entries[name].purpose and "1080" not in entries[name].purpose, name
 
 
 def test_adaptive_icon_art_fits_the_safe_circle_even_when_square():
     square = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0 0H100V100H0Z"/></svg>'  # the worst case
-    side = viewbox(export.square_viewbox(square, export.ADAPTIVE_SAFE / 1080))[2]
-    assert math.hypot(100, 100) / 2 * 1080 / side <= 330  # its corners inside the 66 dp (660-unit) circle of 108 dp (1080)
+    side = viewbox(export.circle_viewbox(square, export.ADAPTIVE_RADIUS / 1080))[2]
+    assert math.hypot(100, 100) / 2 * 1080 / side <= 330 + 1e-9  # its corners inside the 66 dp (660-unit) circle of 108 dp (1080)
+    assert 100 * 1080 / side == pytest.approx(466.7, abs=0.05)  # a square box can span only 660 / √2 of the 1080
+
+
+def test_a_wide_adaptive_icon_layer_grows_to_its_own_half_diagonal():
+    wide = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-150 -50 300 100"><path d="M-150 -50H150V50H-150Z"/></svg>'
+    x, y, side, _ = viewbox(export.circle_viewbox(wide, export.ADAPTIVE_RADIUS / 1080))
+    assert math.hypot(300, 100) / 2 * 1080 / side == pytest.approx(330, abs=0.01)  # its corners on the safe circle
+    assert 300 * 1080 / side > 600 > 466  # far wider than the square worst case would allow it
+    assert (x + side / 2, y + side / 2) == pytest.approx((0, 0), abs=0.01)  # centred, to the viewBox's two decimals
 
 
 @pytest.mark.parametrize(("fixture", "drawn", "warnings"), [
@@ -166,11 +175,11 @@ def test_the_stripe_logo_is_1024_wide_whatever_the_lockup_shape(project_root, fi
 
 def test_a_render_that_fills_its_canvas_is_not_blank(project_root):
     # A solid mark with no holes fills its own viewBox, so its render on transparent is opaque edge to edge in one colour, as
-    # a square small tier is on the primary tile. Only a raster composed onto a background is blank in one flat colour. (The
-    # flattened JPEG is left out: it lays the render edge to edge on white, where one flat colour is blank by that rule.)
+    # a square small tier is on the primary tile; the flattened JPEG lays it edge to edge on white. Only a raster that is
+    # all its background colour is blank, so none of these is.
     make_final_brand(project_root)
-    _, manifest = build(["pngs", "favicons", *PLATFORM], StubRenderer(bleed=True))
-    assert len(manifest.files) == 80 + 8 + 30
+    _, manifest = build(["pngs", "flattened", "favicons", *PLATFORM], StubRenderer(bleed=True))
+    assert len(manifest.files) == 80 + 2 + 8 + 30
 
 
 @pytest.mark.parametrize(("group", "named"), [

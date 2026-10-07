@@ -5,10 +5,11 @@ from __future__ import annotations
 import io
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageColor
 from scipy import ndimage
 
 _STRUCTURE = np.ones((3, 3), dtype=bool)
+BACKGROUND_TOLERANCE = 2  # levels per channel: a lossy encoder (JPEG) can round a flat colour by one or two
 
 
 def load_rgba(png: bytes) -> np.ndarray:
@@ -38,17 +39,20 @@ def image_size(data: bytes) -> tuple[int, int]:
         return image.size
 
 
-def blank(data: bytes, *, opaque: bool) -> bool:
+def blank(data: bytes, background: str | None = None) -> bool:
     """Whether an encoded image shows nothing: spec section 13's "empty or fully transparent" render. Only the caller
-    knows which kind it made. A render on transparent is blank when every pixel is fully transparent, and never for
-    filling its canvas in one colour, as a solid mark with no holes does. An `opaque` raster, art composed onto a
-    background, is blank in one flat colour: the background with nothing on it. ink_mask's cut-offs measure ink, not
-    this: they would call a faint render blank, and a light mark on light paper."""
+    knows what it made. A render on transparent (`background` None) is blank when every pixel is fully transparent,
+    and never for filling its canvas in one colour, as a solid mark with no holes does. A raster composed onto
+    `background` is blank when every pixel is that colour, opaque (within BACKGROUND_TOLERANCE): the background with
+    nothing on it; art that fills its box in another colour is drawn. ink_mask's cut-offs measure ink, not this: they
+    would call a faint render blank, and a light mark on light paper."""
     with Image.open(io.BytesIO(data)) as image:
         extrema = image.convert("RGBA").getextrema()
-    if opaque:
-        return all(low == high for low, high in extrema)
-    return extrema[3][1] == 0
+    if background is None:
+        return extrema[3][1] == 0
+    target = (*ImageColor.getrgb(background)[:3], 255)
+    return all(value - BACKGROUND_TOLERANCE <= low and high <= value + BACKGROUND_TOLERANCE
+               for (low, high), value in zip(extrema, target, strict=True))
 
 
 def component_count(mask: np.ndarray) -> int:

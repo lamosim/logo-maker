@@ -5,8 +5,10 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import math
 import os
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 
 from PIL import Image
@@ -30,7 +32,7 @@ PNG_VARIANTS = ("primary", "horizontal", "stacked", "wordmark", "mark")
 PNG_COLOURS = ("color", "reverse", "black", "white")
 PNG_SIZES = (256, 512, 1024, 2048)
 MASK_SAFE = 289  # centred in 512, its corners stay inside the maskable safe circle (radius 40% = 204.8 px)
-ADAPTIVE_SAFE = 466  # of the adaptive icon's 1080 units: centred, its corners stay inside the 66 dp safe circle (660 / √2 = 466.7)
+ADAPTIVE_RADIUS = 330  # of the adaptive icon's 1080 units (108 dp): the radius of its 66 dp safe circle
 REQUIRED_FINAL = ("concept.py", "params.json", "tokens.json", "rationale.md")
 RASTERS = (".png", ".jpg", ".webp")  # written files that write() refuses when blank
 STAGING, ASIDE = "package.tmp", "package.old.tmp"  # beside package/: the build in progress; the previous package mid-swap
@@ -47,13 +49,25 @@ CHAINS = {
 TIER_VARIANTS = {"full-symbol": "mark", "small": "small", "favicon": "favicon"}
 
 
-def square_viewbox(svg: str, fraction: float) -> str:
-    """Rewrite the viewBox to a square in which the artwork's longer side spans `fraction` of the side."""
+def _square_view(svg: str, side_of: Callable[[float, float], float]) -> str:
+    """Rewrite the viewBox to a square centred on the artwork, `side_of(w, h)` across for an artwork w x h."""
     match = VIEWBOX.search(svg)
     x, y, w, h = (float(v) for v in match.group(1).replace(",", " ").split())
-    side = max(w, h) / fraction
+    side = side_of(w, h)
     view = (x + w / 2 - side / 2, y + h / 2 - side / 2, side, side)
     return svg.replace(match.group(0), f'viewBox="{" ".join(fmt(v) for v in view)}"', 1)
+
+
+def square_viewbox(svg: str, fraction: float) -> str:
+    """Rewrite the viewBox to a square in which the artwork's longer side spans `fraction` of the side."""
+    return _square_view(svg, lambda w, h: max(w, h) / fraction)
+
+
+def circle_viewbox(svg: str, radius: float) -> str:
+    """Rewrite the viewBox to a square in which the artwork's box, centred, has its corners on a circle `radius` of the
+    side across: the box's own half-diagonal sets the size, so a wide or tall mark grows as far as the circle allows
+    where a square one cannot. The side is rounded up to the viewBox's two decimals, never shrinking the circle."""
+    return _square_view(svg, lambda w, h: math.ceil(math.hypot(w, h) / 2 / radius * 100) / 100)
 
 
 def square_fill(side: int, colour: str) -> str:
@@ -182,20 +196,20 @@ class PackageBuilder(DocumentGroups):
         return ManifestEntry(path=relpath, purpose=purpose, width=width, height=height, sha256=hashlib.sha256(raw).hexdigest(),
                              bytes=len(raw))
 
-    def _refuse_blank(self, name: str, raster: bytes, *, opaque: bool) -> None:
+    def _refuse_blank(self, name: str, raster: bytes, background: str | None = None) -> None:
         """Stop the build with exit 4, naming `name`, when `raster` shows nothing (raster.blank): a render on transparent
-        when no pixel is drawn, an `opaque` one, composed onto a background, when it is one flat colour."""
-        if blank(raster, opaque=opaque):
+        when no pixel is drawn, a raster composed onto `background` when every pixel is that colour."""
+        if blank(raster, background):
             raise CliError(f"{name} came out blank: its render drew nothing", code=EXIT_VERIFY)
 
     def write(self, relpath: str, data: bytes | str, purpose: str, width: int | None = None, height: int | None = None, *,
-              opaque: bool = False) -> Path:
+              background: str | None = None) -> Path:
         """Write `data` to `relpath` in the package and add its manifest entry. A raster (RASTERS) that came out blank
-        stops the build with exit 4 instead: `opaque` when it was composed onto a background, else a render on
+        stops the build with exit 4 instead: `background` is the colour it was composed onto, None for a render on
         transparent (_refuse_blank)."""
         raw = data.encode("utf-8") if isinstance(data, str) else data
         if Path(relpath).suffix in RASTERS:
-            self._refuse_blank(relpath, raw, opaque=opaque)
+            self._refuse_blank(relpath, raw, background)
         target = self.pkg / relpath
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(raw)
@@ -245,15 +259,15 @@ class PackageBuilder(DocumentGroups):
                safe: tuple[int, int, int, int] | None = None, alpha: bool = True) -> None:
         """Write a `width` x `height` PNG on `background` (transparent when None): `art_svg` rendered as large as fits
         `fraction` of the `safe` box (x, y, w, h; the whole canvas by default), centred in it. Blank art stops the build
-        (exit 4) before it is composed: on one flat colour the composite would be refused too, on a surface of several
-        colours it would not. alpha=False writes the PNG without an alpha channel (compose)."""
+        (exit 4) before it is composed, naming the art; then the composite is checked against `background` as it is
+        written. alpha=False writes the PNG without an alpha channel (compose)."""
         bx, by, bw, bh = safe or (0, 0, width, height)
         art_w, art_h = round(bw * fraction), round(bh * fraction)
         art = self.render_fit(art_svg, art_w, art_h)
-        self._refuse_blank(f"{relpath} (art)", art, opaque=False)
+        self._refuse_blank(f"{relpath} (art)", art)
         x, y, _, _ = self._centered(bw, bh, art_w, art_h)
         self.write(relpath, self.compose(width, height, background, art, (bx + x, by + y, art_w, art_h), alpha), purpose, width, height,
-                   opaque=background is not None)
+                   background=background)
 
     def _on_primary(self) -> dict[str, str]:
         """The palette of art on a primary-colour tile: every role, paper too, in the light paper colour (as the concept
@@ -285,7 +299,7 @@ class PackageBuilder(DocumentGroups):
             image = opened.convert("RGBA")
         white = Image.alpha_composite(Image.new("RGBA", image.size, "#ffffff"), image).convert("RGB")
         self.write(f"{self.name}-primary-color-white-bg-2048.jpg", encoded(white, "JPEG", quality=92),
-                   "primary on a white background, flattened JPEG", *image.size, opaque=True)
+                   "primary on a white background, flattened JPEG", *image.size, background="#ffffff")
         self.write(f"{self.name}-primary-color-2048.webp", encoded(image, "WEBP", quality=90), "primary colour transparent WebP",
                    *image.size)
 
@@ -293,7 +307,7 @@ class PackageBuilder(DocumentGroups):
         frames = []
         for size in (48, 32, 16):  # each frame drawn by the tier for its own size, and checked before the ICO packs it
             png = self.render_fit(square_viewbox(self.mark_at(size).to_svg("color", palette=self.light), 0.9), size, size)
-            self._refuse_blank(f"favicon.ico ({size} px frame)", png, opaque=False)
+            self._refuse_blank(f"favicon.ico ({size} px frame)", png)
             with Image.open(io.BytesIO(png)) as frame:
                 frames.append(frame.convert("RGBA"))
         self.write("favicon.ico", encoded(frames[0], "ICO", sizes=[(48, 48), (32, 32), (16, 16)], append_images=frames[1:]),
@@ -326,10 +340,11 @@ class PackageBuilder(DocumentGroups):
     def android(self) -> None:
         on_primary, primary = self._on_primary(), self.light["primary"]
         layer = self.mark_at(108)  # the tier for the adaptive icon's 108 dp canvas
-        self.write("android/ic_launcher_foreground.svg", square_viewbox(layer.to_svg("color", palette=on_primary), ADAPTIVE_SAFE / 1080),
+        safe = ADAPTIVE_RADIUS / 1080  # each layer's art box fitted by its own half-diagonal: a wide mark grows past a square one
+        self.write("android/ic_launcher_foreground.svg", circle_viewbox(layer.to_svg("color", palette=on_primary), safe),
                    "adaptive icon foreground: art fitted inside the 66 dp safe circle of the 108 dp canvas")
         self.write("android/ic_launcher_background.svg", square_fill(1080, primary), "adaptive icon background layer, 1080-unit canvas")
-        self.write("android/ic_launcher_monochrome.svg", square_viewbox(layer.to_svg("black"), ADAPTIVE_SAFE / 1080),
+        self.write("android/ic_launcher_monochrome.svg", circle_viewbox(layer.to_svg("black"), safe),
                    "adaptive icon monochrome layer (themed icons): art fitted inside the 66 dp safe circle of the 108 dp canvas")
         for density, px in (("mdpi", 48), ("hdpi", 72), ("xhdpi", 96), ("xxhdpi", 144), ("xxxhdpi", 192)):
             art = self.mark_at(px).to_svg("color", palette=on_primary)

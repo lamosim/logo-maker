@@ -24,21 +24,24 @@ def test_ink_mask_from_opaque_and_transparent_images():
 
 def test_blank_means_nothing_drawn_at_all():
     clear = Image.new("RGBA", (40, 20), (0, 0, 0, 0))
-    assert blank(encoded(clear, "PNG"), opaque=False) and image_size(encoded(clear, "PNG")) == (40, 20)
+    assert blank(encoded(clear, "PNG")) and image_size(encoded(clear, "PNG")) == (40, 20)
     faint = clear.copy()
     ImageDraw.Draw(faint).rectangle([5, 5, 8, 8], fill=(31, 27, 24, 60))  # drawn, though under ink_mask's alpha cut
-    assert not blank(encoded(faint, "PNG"), opaque=False) and not ink_mask(encoded(faint, "PNG")).any()
+    assert not blank(encoded(faint, "PNG")) and not ink_mask(encoded(faint, "PNG")).any()
     paper = Image.new("RGB", (40, 20), "#ffffff")
-    assert blank(encoded(paper, "JPEG", quality=92), opaque=True)  # opaque in one flat colour: a background with nothing on it
+    assert blank(encoded(paper, "JPEG", quality=92), "#ffffff")  # the background with nothing on it
     ImageDraw.Draw(paper).rectangle([5, 5, 14, 14], fill="#3b9ae1")  # lighter than ink_mask's luma cut, yet drawn
-    assert not blank(encoded(paper, "PNG"), opaque=True) and not ink_mask(encoded(paper, "PNG")).any()
+    assert not blank(encoded(paper, "PNG"), "#ffffff") and not ink_mask(encoded(paper, "PNG")).any()
+    linen = encoded(Image.new("RGB", (40, 20), "#f4e9dc"), "JPEG", quality=92)  # decodes a level off: (245, 233, 221)
+    assert blank(linen, "#f4e9dc") and not blank(linen, "#ffffff")
 
 
-def test_a_render_that_fills_its_canvas_is_blank_only_as_a_composite():
+def test_one_flat_colour_is_blank_only_when_it_is_the_background():
     # A solid mark with no holes fills its own viewBox: rendered on transparent, every pixel is opaque and one colour. That
-    # is ink. One flat colour means nothing drawn only in a raster composed onto a background.
+    # is ink, and so is the same block composed onto a background of another colour, as the flattened JPEG lays a
+    # hole-free rectangular lockup edge to edge on white. Only the background colour alone is nothing drawn.
     solid = encoded(Image.new("RGBA", (40, 20), (31, 27, 24, 255)), "PNG")
-    assert not blank(solid, opaque=False) and blank(solid, opaque=True)
+    assert not blank(solid) and not blank(solid, "#ffffff") and blank(solid, "#1f1b18")
 
 
 def test_component_count_and_min_feature():
