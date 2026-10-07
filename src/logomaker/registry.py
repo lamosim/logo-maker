@@ -28,6 +28,13 @@ from .schemas import (
 )
 
 BRAND_SUBDIRS = ("inspiration", "territories", "concepts", "sheets", "final", "package")
+# What to do about each of final/'s files when it is missing: the final gate and package build both say it.
+FINAL_REMEDIES = {
+    "concept.py": "copy the chosen concept's concept.py into final/",
+    "params.json": "write final/params.json ({} if the concept has no parameters)",
+    "tokens.json": "write final/tokens.json (the approved colours)",
+    "rationale.md": "write final/rationale.md (one paragraph on why this mark)",
+}
 
 
 def slugify(name: str) -> str:
@@ -227,12 +234,13 @@ def _validate_file(path: Path, model: type[BaseModel], label: str | None = None)
     return None
 
 
-def _need(brand: Path, path: Path, model: type[BaseModel] | None = None) -> list[str]:
-    """Return a message if `path` is missing or, when `model` is given, does not validate as it."""
+def _need(brand: Path, path: Path, model: type[BaseModel] | None = None, remedy: str = "") -> list[str]:
+    """Return a message if `path` is missing (followed by `remedy`, when given) or, when `model` is given, does not
+    validate as it."""
     label = str(path.relative_to(brand))
-    if model is None:
-        return [] if path.is_file() else [f"{label} is missing"]
-    err = _validate_file(path, model, label)
+    if not path.is_file():
+        return [f"{label} is missing; {remedy}" if remedy else f"{label} is missing"]
+    err = _validate_file(path, model, label) if model is not None else None
     return [err] if err else []
 
 
@@ -263,39 +271,51 @@ def _check_strategy(brand: Path, state: BrandState) -> list[str]:
 
 def _check_territories(brand: Path, state: BrandState) -> list[str]:
     """territories.json must be a valid TerritoriesSpec (its slugs are slugs, and unique) that holds the chosen territory."""
-    spec = brand / "territories" / "territories.json"
-    missing = _need(brand, spec, TerritoriesSpec)
-    if not missing:
-        slugs = [t.slug for t in TerritoriesSpec.model_validate_json(spec.read_text(encoding="utf-8")).territories]
-        if state.territory not in slugs:
-            missing.append("territory not chosen (run: logomaker brand set <slug> --territory <territory-slug>)")
-    return missing
+    path = brand / "territories" / "territories.json"
+    try:
+        spec = load_model(path, TerritoriesSpec, str(path.relative_to(brand)))
+    except CliError as err:  # missing, malformed or invalid, named as the gate names it
+        return [str(err)]
+    if state.territory not in [t.slug for t in spec.territories]:
+        return [f"territory not chosen (run: logomaker brand set {state.slug} --territory <territory-slug>)"]
+    return []
 
 
 def audit_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | None = None) -> list[str]:
     """Why <folder>/audit.json does not vouch for the concept as it is now, or [] when it does: it is missing or not a
     JSON object, stale (its fingerprint is not audit.concept_fingerprint of the concept now), made with --no-render, or
-    failing. The concept gate and the concept sheet both ask this. Every message calls the file `label`; without one,
-    they name it as the gate always has: from the brand folder when it is missing or malformed, else <concept>/audit.json."""
+    failing. Each message ends with the command that clears it, a `concept audit` of the folder (`final` for final/).
+    The concept and final gates, the concept and refine sheets and package build all ask this. Every message calls the
+    file `label`; without one, they name it as the gate always has: from the brand folder when it is missing or
+    malformed, else <concept>/audit.json."""
     from .audit import concept_fingerprint  # imported here: audit imports registry
 
     brand = paths.brand(slug)
     path = folder / "audit.json"
+    audit = f"logomaker concept audit {slug} {folder.name}"  # final/ is the concept named final
     if not path.is_file():
-        return [f"{label or path.relative_to(brand)} is missing"]
+        return [f"{label or path.relative_to(brand)} is missing (run: {audit})"]
     result, error = _read_json(brand, path, label)
     if error:
-        return [error]
+        return [f"{error} (run: {audit})"]
     label = label or f"{folder.name}/audit.json"
     problems = []
     if result.get("fingerprint") != concept_fingerprint(paths, slug, folder):
         problems.append(f"{label} is stale (concept.py, params.json, tokens.json, the brand's industry or "
-                        "minimum sizes, or cliches.json changed); re-run concept audit")
+                        f"minimum sizes, or cliches.json changed); re-run: {audit}")
     if not result.get("rendered"):
-        problems.append(f"{label} was made with --no-render; re-run concept audit without it")
+        problems.append(f"{label} was made with --no-render; re-run without it: {audit}")
     if not result.get("ok"):
-        problems.append(f"{label} has failures")
+        problems.append(f"{label} has failures; fix them, then re-run: {audit}")
     return problems
+
+
+def require_final_audit(paths: ProjectPaths, slug: str, needs: str) -> None:
+    """A CliError (exit 2) unless final/audit.json vouches for the final mark as it is now (audit_problems), saying what
+    `needs` it ("packaging", "the refine sheet") and listing each problem with the command that clears it."""
+    problems = audit_problems(paths, slug, paths.brand(slug) / "final", "final/audit.json")
+    if problems:
+        raise CliError(f"{needs} needs a passing audit of the final mark: {'; '.join(problems)}")
 
 
 def passing_scorecard(folder: Path, label: str) -> Scorecard:
@@ -311,7 +331,7 @@ def _check_concept(brand: Path, state: BrandState) -> list[str]:
     """The chosen concept needs a passing, rendered audit of what it is now (audit_problems) and a scorecard that passes
     the gate (passing_scorecard)."""
     if not state.concept:
-        return ["concept not chosen (run: logomaker brand set <slug> --concept <NN-slug>)"]
+        return [f"concept not chosen (run: logomaker brand set {state.slug} --concept <NN-slug>)"]
     folder = brand / "concepts" / state.concept
     paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
     missing = _need(brand, folder / "concept.py") + audit_problems(paths, state.slug, folder)
@@ -330,8 +350,8 @@ def _check_final(brand: Path, state: BrandState) -> list[str]:
     final = brand / "final"
     missing: list[str] = []
     for name in ("concept.py", "params.json"):
-        missing += _need(brand, final / name)
-    missing += _need(brand, final / "tokens.json", model=Tokens)
+        missing += _need(brand, final / name, remedy=FINAL_REMEDIES[name])
+    missing += _need(brand, final / "tokens.json", model=Tokens, remedy=FINAL_REMEDIES["tokens.json"])
     paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
     return missing + audit_problems(paths, state.slug, final, "final/audit.json")
 
@@ -341,15 +361,17 @@ def _check_verify(brand: Path, state: BrandState) -> list[str]:
     fingerprint it checked is export_docs.inputs_fingerprint's now."""
     from .export_docs import inputs_fingerprint, out_of_date  # imported here: export_docs imports registry
 
-    verify = brand / "package" / "verify.json"
-    missing = _need(brand, verify)
-    if verify.is_file():
-        result, error = _read_json(brand, verify)
-        if error or not result.get("ok"):
-            missing.append(error or "package/verify.json reports failures")
-        elif result.get("inputs") != inputs_fingerprint(ProjectPaths(brand.parent.parent), state.slug):
-            missing.append(out_of_date(state.slug))
-    return missing
+    verify, command = brand / "package" / "verify.json", f"logomaker package verify {state.slug}"
+    if not verify.is_file():
+        return [f"package/verify.json is missing (run: {command})"]
+    result, error = _read_json(brand, verify)
+    if error:
+        return [f"{error} (run: {command})"]
+    if not result.get("ok"):
+        return [f"package/verify.json reports failures (run: {command} to list them)"]
+    if result.get("inputs") != inputs_fingerprint(ProjectPaths(brand.parent.parent), state.slug):
+        return [out_of_date(state.slug)]
+    return []
 
 
 # The artifacts each phase leaves behind. Advancing to a phase re-runs the checks of every phase before it.
@@ -373,7 +395,7 @@ def prerequisites(paths: ProjectPaths, state: BrandState, target: Phase) -> list
     for phase in PHASE_ORDER[: PHASE_ORDER.index(target)]:
         missing += PHASE_CHECKS[phase](brand, state)
     if target == Phase.strategy and state.needs_name:
-        missing.append("brand still needs a name (run: logomaker brand rename <slug> --name <Name>)")
+        missing.append(f"brand still needs a name (run: logomaker brand rename {state.slug} --name <Name>)")
     return missing
 
 

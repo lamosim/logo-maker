@@ -21,7 +21,7 @@ from .output import EXIT_EXTERNAL, EXIT_VERIFY, CliError
 from .paths import ProjectPaths
 from .raster import blank, encoded, image_size
 from .render import VIEWBOX, Renderer, fit_size
-from .schemas import Manifest, ManifestEntry, now_iso
+from .schemas import Manifest, ManifestEntry, Phase, now_iso
 from .sheets import jinja
 
 VARIANT_NAMES = ("primary", "horizontal", "stacked", "wordmark", "mark", "small", "favicon")
@@ -87,8 +87,9 @@ class PackageBuilder(DocumentGroups):
                          "print_files", "tokens_file", "fonts", "docs", "readme"]
 
     def __init__(self, paths: ProjectPaths, slug: str, paper: str = "letter"):
-        """Check final/ before anything renders: its four files, then an audit.json that vouches for the final mark as it
-        is now (registry.audit_problems). Either refusal is a CliError, exit 2."""
+        """Check final/ before anything renders: its four files (a missing one is named with what to write, and "finish
+        refinement" while the brand is still in refinement), then an audit.json that vouches for the final mark as it is
+        now (registry.require_final_audit). Either refusal is a CliError, exit 2."""
         self.paths, self.slug, self.paper = paths, slug, paper
         self.state = registry.load_state(paths, slug)
         self.brand_dir = paths.brand(slug)
@@ -96,11 +97,11 @@ class PackageBuilder(DocumentGroups):
         self.pkg = self.brand_dir / "package"
         for name in REQUIRED_FINAL:
             if not (self.final / name).is_file():
-                raise CliError(f"final/{name} is missing; finish refinement (and write final/rationale.md) before packaging")
-        problems = registry.audit_problems(paths, slug, self.final, "final/audit.json")
-        if problems:
-            raise CliError(f"packaging needs a passing audit of the final mark: {'; '.join(problems)} "
-                           f"(run: logomaker concept run {slug} final)")
+                remedy = registry.FINAL_REMEDIES[name]
+                if self.state.phase == Phase.refinement:
+                    remedy = f"finish refinement and {remedy}"
+                raise CliError(f"final/{name} is missing; {remedy} before packaging")
+        registry.require_final_audit(paths, slug, "packaging")
         self.inputs = inputs_fingerprint(paths, slug)  # what this build reads, as the manifest records it
         self.outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(self.final)))
         self.tokens = enrich_tokens(load_tokens(self.final / "tokens.json"))

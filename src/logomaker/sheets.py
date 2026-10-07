@@ -73,19 +73,21 @@ def _audit_lines(audit: AuditResult, budget: int = AUDIT_LINES) -> list[dict]:
     return lines
 
 
-def _saved_audit(folder: Path) -> AuditResult | None:
-    """<concept>/audit.json if there is one; a file that is not a valid audit is a CliError naming it."""
+def _saved_audit(folder: Path, slug: str) -> AuditResult | None:
+    """<concept>/audit.json if there is one; a file that is not a valid audit is a CliError naming it, and the command
+    that writes it again."""
     path = folder / "audit.json"
     if not path.is_file():
         return None
+    rerun = f"re-run: logomaker concept audit {slug} {folder.name}"
     try:
         return AuditResult.model_validate_json(path.read_text(encoding="utf-8"))
     except ValidationError as err:  # malformed JSON or the wrong fields
         first = err.errors()[0]
         loc = ".".join(str(p) for p in first["loc"]) or "root"
-        raise CliError(f"{path} is not a valid audit ({loc}: {first['msg']}); re-run concept audit") from err
+        raise CliError(f"{path} is not a valid audit ({loc}: {first['msg']}); {rerun}") from err
     except ValueError as err:  # bytes that are not UTF-8
-        raise CliError(f"{path} is not a valid audit ({err}); re-run concept audit") from err
+        raise CliError(f"{path} is not a valid audit ({err}); {rerun}") from err
 
 
 def _read_tokens(folder: Path, tokens_path: str | Path | None = None) -> Tokens | None:
@@ -149,7 +151,7 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
     panels["one_colour"] = [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)}
                             for s, name in _one_colour_outputs(outputs)]
     if audit is None:
-        audit = _saved_audit(folder)
+        audit = _saved_audit(folder, slug)
     summary = None
     if audit is not None:
         stale = audit.fingerprint != concept_fingerprint(paths, slug, folder, tokens_path)  # made from other inputs than this sheet's
@@ -309,11 +311,9 @@ def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: d
 
 def _vetted(paths: ProjectPaths, slug: str, name: str) -> tuple[Path, Scorecard]:
     """The folder and scorecard of concept `name` if it may reach the owner: a passing, rendered audit of the concept as
-    it is now (registry.audit_problems) and a scorecard.json that passes the gate. Otherwise a CliError that names the
-    concept once and says what to do."""
+    it is now (registry.audit_problems, whose messages name the command that clears each problem) and a scorecard.json
+    that passes the gate. Otherwise a CliError that names the concept once and says what to do."""
     folder = conceptlib.concept_folder(paths, slug, name)
-    if not (folder / "audit.json").is_file():
-        raise CliError(f"concept {name}: audit.json is missing; run logomaker concept run first")
     problems = registry.audit_problems(paths, slug, folder, "audit.json")
     if problems:
         raise CliError(f"concept {name}: {'; '.join(problems)}")
@@ -397,10 +397,7 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
     final = brand / "final"
     if not (final / "concept.py").is_file():
         raise CliError("final/concept.py is missing; copy the chosen concept into final/ first")
-    problems = registry.audit_problems(paths, slug, final, "final/audit.json")
-    if problems:
-        raise CliError(f"the refine sheet needs a passing audit of the final mark: {'; '.join(problems)} "
-                       f"(run: logomaker concept run {slug} final)")
+    registry.require_final_audit(paths, slug, "the refine sheet")
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(final)))
     tokens = _read_tokens(final)
     light, dark = palettes_of(tokens)

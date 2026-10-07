@@ -94,7 +94,7 @@ def test_unnamed_brand_must_be_named_before_strategy(project_root, brief_payload
     assert code == 0
     (project_root / "brands" / "working-title" / "naming.md").write_text("# Naming\n")
     code, payload = run("brand", "advance", "working-title", "--to", "strategy")
-    assert code == 2 and any("needs a name" in m for m in payload["missing"])
+    assert code == 2 and "brand still needs a name (run: logomaker brand rename working-title --name <Name>)" in payload["missing"]
     code, payload = run("brand", "rename", "working-title", "--name", "Keystone")
     assert code == 0 and payload["brand"]["name"] == "Keystone" and payload["brand"]["needs_name"] is False
     code, payload = run("brand", "advance", "working-title", "--to", "strategy")
@@ -177,6 +177,12 @@ def test_list_brands(project_root):
     assert [b["slug"] for b in payload["brands"]] == ["keystone", "quill"]
 
 
+def test_the_concept_gate_names_the_command_that_chooses_a_concept(project_root):
+    state = registry.new_brand(project(), "Keystone")
+    assert registry._check_concept(project_root / "brands" / "keystone", state) == [
+        "concept not chosen (run: logomaker brand set keystone --concept <NN-slug>)"]
+
+
 def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
     from tests.test_color import good_tokens
 
@@ -184,8 +190,9 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
     (folder / "scorecard.json").write_text(json.dumps(scorecard()))
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
+    rerun = "logomaker concept audit keystone 01-good"
     stale = ("01-good/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, "
-             "or cliches.json changed); re-run concept audit")
+             f"or cliches.json changed); re-run: {rerun}")
 
     def audited(rendered: bool) -> None:
         """A fresh audit of the concept as it stands; `rendered` stands in for the raster checks (no Chrome needed)."""
@@ -194,7 +201,7 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
         (folder / "audit.json").write_text(json.dumps({**saved, "rendered": rendered}))
 
     audited(rendered=False)
-    assert registry._check_concept(brand, state) == ["01-good/audit.json was made with --no-render; re-run concept audit without it"]
+    assert registry._check_concept(brand, state) == [f"01-good/audit.json was made with --no-render; re-run without it: {rerun}"]
     audited(rendered=True)
     assert registry._check_concept(brand, state) == []
     edits = (("params.json", '{"stroke": 80}'), ("tokens.json", json.dumps(good_tokens())),
@@ -206,7 +213,7 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
         assert registry._check_concept(brand, state) == [], name
     saved = json.loads((folder / "audit.json").read_text())
     (folder / "audit.json").write_text(json.dumps({**saved, "ok": False}))
-    assert registry._check_concept(brand, state) == ["01-good/audit.json has failures"]
+    assert registry._check_concept(brand, state) == [f"01-good/audit.json has failures; fix them, then re-run: {rerun}"]
 
 
 def test_malformed_audit_or_verify_json_is_reported_not_raised(project_root):
@@ -214,12 +221,18 @@ def test_malformed_audit_or_verify_json_is_reported_not_raised(project_root):
     (folder / "scorecard.json").write_text(json.dumps(scorecard()))
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
+    package_verify = "(run: logomaker package verify keystone)"
+    assert registry._check_verify(brand, state) == [f"package/verify.json is missing {package_verify}"]
     for content, problem in (("{not json", "is not valid JSON: "), ("[1, 2]", "is not a JSON object")):
         (brand / "concepts" / "01-good" / "audit.json").write_text(content)
         (brand / "package" / "verify.json").write_text(content)
         concept, verify = registry._check_concept(brand, state), registry._check_verify(brand, state)
         assert len(concept) == 1 and concept[0].startswith(f"concepts/01-good/audit.json {problem}"), concept
-        assert len(verify) == 1 and verify[0].startswith(f"package/verify.json {problem}"), verify
+        assert concept[0].endswith(" (run: logomaker concept audit keystone 01-good)")
+        assert len(verify) == 1 and verify[0].startswith(f"package/verify.json {problem}") and verify[0].endswith(package_verify)
+    (brand / "package" / "verify.json").write_text('{"ok": false}')
+    assert registry._check_verify(brand, state) == ["package/verify.json reports failures (run: logomaker package verify keystone "
+                                                    "to list them)"]
 
 
 def test_a_malformed_registry_index_is_an_error_naming_it(project_root):
@@ -340,7 +353,7 @@ def test_the_territories_gate_needs_a_valid_spec_holding_the_chosen_territory(pr
     run("brand", "new", "Keystone")
     brand = project_root / "brands" / "keystone"
     spec = brand / "territories" / "territories.json"
-    not_chosen = "territory not chosen (run: logomaker brand set <slug> --territory <territory-slug>)"
+    not_chosen = "territory not chosen (run: logomaker brand set keystone --territory <territory-slug>)"
     state = registry.load_state(project(), "keystone")
     assert registry._check_territories(brand, state) == ["territories/territories.json is missing"]
     spec.write_text(json.dumps(territories_payload))
@@ -392,7 +405,9 @@ def test_final_tokens_must_validate(project_root):
     tokens.write_text(json.dumps(good_tokens()))
     assert check_final() == []
     tokens.unlink()
-    assert check_final() == ["final/tokens.json is missing"]
+    assert check_final() == ["final/tokens.json is missing; write final/tokens.json (the approved colours)"]
+    (brand / "final" / "params.json").unlink()
+    assert check_final()[0] == "final/params.json is missing; write final/params.json ({} if the concept has no parameters)"
 
 
 def test_the_final_gate_needs_a_current_rendered_passing_audit_of_the_final_mark(project_root):
@@ -402,10 +417,11 @@ def test_the_final_gate_needs_a_current_rendered_passing_audit_of_the_final_mark
     assert state.phase == Phase.refinement and registry._check_final(brand, state) == []
     audit_json = final / "audit.json"
     passing = json.loads(audit_json.read_text())
+    rerun = "logomaker concept audit keystone final"
     stale = ("final/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, "
-             "or cliches.json changed); re-run concept audit")
-    for saved, problem in (({**passing, "rendered": False}, "final/audit.json was made with --no-render; re-run concept audit without it"),
-                           ({**passing, "ok": False}, "final/audit.json has failures"),
+             f"or cliches.json changed); re-run: {rerun}")
+    for saved, problem in (({**passing, "rendered": False}, f"final/audit.json was made with --no-render; re-run without it: {rerun}"),
+                           ({**passing, "ok": False}, f"final/audit.json has failures; fix them, then re-run: {rerun}"),
                            ({**passing, "fingerprint": "0" * 64}, stale)):
         audit_json.write_text(json.dumps(saved))
         assert registry._check_final(brand, state) == [problem]
@@ -417,7 +433,7 @@ def test_the_final_gate_needs_a_current_rendered_passing_audit_of_the_final_mark
     assert registry._check_final(brand, state) == [stale]
     audit_json.unlink()
     code, payload = run("brand", "advance", "keystone", "--to", "package")
-    assert code == 2 and payload["missing"] == ["final/audit.json is missing"]
+    assert code == 2 and payload["missing"] == [f"final/audit.json is missing (run: {rerun})"]
     write_passing_audit(project(), "keystone", final)
     code, payload = run("brand", "advance", "keystone", "--to", "package")
     assert code == 0 and payload["brand"]["phase"] == "package"

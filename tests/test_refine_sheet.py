@@ -73,21 +73,22 @@ def test_the_sheet_refuses_a_final_mark_without_a_passing_audit_before_chrome_st
     final = make_final_brand(project_root)
     audit = final / "audit.json"
     passing = json.loads(audit.read_text())
-    refusal = "the refine sheet needs a passing audit of the final mark: {} (run: logomaker concept run keystone final)"
-    stale = ("final/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, or "
-             "cliches.json changed); re-run concept audit")
+    refusal = "the refine sheet needs a passing audit of the final mark: final/audit.json {}"
+    audit_final = "logomaker concept audit keystone final"
+    stale = ("is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, or cliches.json "
+             f"changed); re-run: {audit_final}")
 
     def sheet() -> tuple[int, list[str]]:
         result = CliRunner().invoke(main, ["sheet", "refine", "keystone", "--no-open"])
         return result.exit_code, json.loads(result.stdout)["errors"]
 
     audit.write_text(json.dumps({**passing, "ok": False}))
-    assert sheet() == (2, [refusal.format("final/audit.json has failures")])
+    assert sheet() == (2, [refusal.format(f"has failures; fix them, then re-run: {audit_final}")])
     audit.write_text(json.dumps(passing))
     (final / "params.json").write_text('{"stroke": 80}')  # the final mark changed after its audit
     assert sheet() == (2, [refusal.format(stale)])
     audit.unlink()
-    assert sheet() == (2, [refusal.format("final/audit.json is missing")])
+    assert sheet() == (2, [refusal.format(f"is missing (run: {audit_final})")])
     assert not list((project_root / "brands" / "keystone" / "sheets").iterdir())
 
 

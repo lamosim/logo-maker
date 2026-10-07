@@ -212,7 +212,8 @@ def test_a_broken_audit_json_stops_the_sheet_and_names_it(project_root):
         with pytest.raises(CliError) as err:
             sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer())
         message = str(err.value)
-        assert err.value.code == 2 and message.startswith(f"{path} is not a valid audit (") and message.endswith("; re-run concept audit")
+        assert err.value.code == 2 and message.startswith(f"{path} is not a valid audit (")
+        assert message.endswith("; re-run: logomaker concept audit keystone 01-good")
     assert not (folder / "renders").exists()
 
 
@@ -223,10 +224,11 @@ def test_the_sheet_marks_an_audit_that_no_longer_matches_the_concept(project_roo
     def sheet(**kwargs):
         return sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer(), **kwargs)
 
+    stale = "(stale — re-run: logomaker concept audit keystone 01-good)"
     assert heading(sheet()) == "audit ok"
     (folder / "concept.py").write_text((folder / "concept.py").read_text() + "# edited after the audit\n")
-    assert heading(sheet()) == "audit ok (stale — re-run concept audit)"
-    assert heading(sheet(audit=AuditResult(ok=False, fingerprint="0" * 64))) == "audit FAILED (stale — re-run concept audit)"
+    assert heading(sheet()) == f"audit ok {stale}"
+    assert heading(sheet(audit=AuditResult(ok=False, fingerprint="0" * 64))) == f"audit FAILED {stale}"
     fresh = auditlib.audit_concept(project(), "keystone", "01-good")
     assert heading(sheet(audit=fresh)) == "audit ok"  # concept run hands the sheet its own fresh audit
 

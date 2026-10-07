@@ -15,7 +15,7 @@ from logomaker import export, registry, render
 from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
-from logomaker.schemas import Manifest
+from logomaker.schemas import Manifest, Phase
 from tests.conftest import FIXTURES, StubRenderer, make_final_brand, requires_chrome, write_passing_audit
 
 SQ = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -25 100 50"><path d="M0 0"/></svg>'
@@ -51,11 +51,18 @@ def test_square_viewbox():
     assert 'viewBox="-62.5 -62.5 125 125"' in export.square_viewbox(SQ, 0.8)
 
 
-def test_missing_final_files_exit_2_before_chrome(project_root, no_chrome):
-    final = make_final_brand(project_root)
+def test_missing_final_files_exit_2_before_chrome_naming_what_to_write(project_root, no_chrome):
+    final = make_final_brand(project_root)  # in refinement
     (final / "rationale.md").unlink()
     code, payload = package_build()
-    assert code == 2 and "rationale.md" in payload["errors"][0]
+    assert code == 2 and payload["errors"] == ["final/rationale.md is missing; finish refinement and write final/rationale.md "
+                                               "(one paragraph on why this mark) before packaging"]
+    (final / "rationale.md").write_text("Why.\n")
+    registry.advance(project(), "keystone", Phase.package)  # past refinement: no refinement left to finish
+    (final / "params.json").unlink()
+    code, payload = package_build()
+    assert code == 2 and payload["errors"] == ["final/params.json is missing; write final/params.json "
+                                               "({} if the concept has no parameters) before packaging"]
 
 
 def test_a_final_audit_that_no_longer_vouches_for_the_mark_exits_2_before_chrome(project_root, no_chrome):

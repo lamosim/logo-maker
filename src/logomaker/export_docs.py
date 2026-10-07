@@ -225,7 +225,7 @@ def verify(paths: ProjectPaths, slug: str) -> dict:
     registry.load_state(paths, slug)  # an unknown brand stops here, not at the manifest it lacks
     pkg = paths.brand(slug) / "package"
     if not (pkg / "manifest.json").is_file():
-        raise CliError("package/manifest.json is missing; run logomaker package build first", code=EXIT_VERIFY)
+        raise CliError(f"package/manifest.json is missing (run: logomaker package build {slug})", code=EXIT_VERIFY)
     manifest = registry.load_model(pkg / "manifest.json", Manifest, "package/manifest.json", code=EXIT_VERIFY)
     readme = pkg / "README.md"
     index = readme.read_text(encoding="utf-8") if readme.is_file() else None  # a missing one is reported by its own entry

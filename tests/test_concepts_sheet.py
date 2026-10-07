@@ -19,8 +19,9 @@ from logomaker.schemas import CRITERIA, Scorecard
 from tests.conftest import StubChrome, install_concept, no_open_command, requires_chrome, scorecard, write_passing_audit
 
 GATE = "scorecard.json fails the gate (appropriate, simple and legible must be 4 or more, and not killed)"
-STALE = ("is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, or cliches.json changed); "
-         "re-run concept audit")
+AUDIT = "logomaker concept audit keystone 01-good"
+STALE = (f"is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, or cliches.json changed); "
+         f"re-run: {AUDIT}")
 EMPTY = "at least one concept is needed (--concepts 01-arch,03-keystone)"
 SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
 STRIP = re.compile(r'<div class="strip">(.*?)</div>', re.S)
@@ -141,7 +142,8 @@ def test_sheet_refuses_unvetted_concepts(project_root, no_chrome, monkeypatch):
     # Every named concept is vetted before any is built: 01-good passes, and the refusal comes before its build.
     monkeypatch.setattr(conceptlib, "build_tiers", lambda *args, **kwargs: pytest.fail("a concept was built before all were vetted"))
     assert refusal("01-good", "02-weak") == f"concept 02-weak: {GATE}"
-    assert refusal("01-good", "03-noaudit") == "concept 03-noaudit: audit.json is missing; run logomaker concept run first"
+    assert refusal("01-good", "03-noaudit") == ("concept 03-noaudit: audit.json is missing "
+                                                "(run: logomaker concept audit keystone 03-noaudit)")
     (weak / "scorecard.json").write_text(json.dumps({**scorecard(), "kill": True, "reason": "too generic"}))
     assert refusal("02-weak") == f"concept 02-weak: {GATE}"
     (weak / "scorecard.json").write_text(json.dumps({"scores": {"appropriate": 4}}))
@@ -156,19 +158,19 @@ def test_sheet_refuses_an_audit_that_is_unrendered_stale_or_failing(project_root
     audit = folder / "audit.json"
     passing = json.loads(audit.read_text())
     failure = {"check": "min_feature", "severity": "fail", "message": "favicon: thinnest feature is 0.80 px at 16 px (need 1.0)"}
-    for saved, problem in (({**passing, "rendered": False}, "was made with --no-render; re-run concept audit without it"),
-                           ({**passing, "fingerprint": "0" * 64}, STALE),
-                           ({**passing, "ok": False, "failures": [failure]}, "has failures")):
+    unrendered, failing = f"was made with --no-render; re-run without it: {AUDIT}", f"has failures; fix them, then re-run: {AUDIT}"
+    for saved, problem in (({**passing, "rendered": False}, unrendered), ({**passing, "fingerprint": "0" * 64}, STALE),
+                           ({**passing, "ok": False, "failures": [failure]}, failing)):
         audit.write_text(json.dumps(saved))
         assert refusal("01-good") == f"concept 01-good: audit.json {problem}"
     audit.write_text(json.dumps({**passing, "rendered": False, "ok": False}))  # every problem, the concept named once
-    assert refusal("01-good") == ("concept 01-good: audit.json was made with --no-render; re-run concept audit without it; "
-                                  "audit.json has failures")
+    assert refusal("01-good") == f"concept 01-good: audit.json {unrendered}; audit.json {failing}"
     audit.write_text(json.dumps(passing))
     (folder / "params.json").write_text('{"stroke": 80}')  # the concept changed after its audit
     assert refusal("01-good") == f"concept 01-good: audit.json {STALE}"
     audit.write_text("{not json")
-    assert refusal("01-good").startswith("concept 01-good: audit.json is not valid JSON: ")
+    message = refusal("01-good")
+    assert message.startswith("concept 01-good: audit.json is not valid JSON: ") and message.endswith(f" (run: {AUDIT})")
     assert no_sheet(project_root)
 
 
