@@ -107,6 +107,32 @@ def test_mockup_context_draws_the_icon_in_paper_on_a_primary_tile(project_root):
                      "sign_svg": {"#ffffff"}}
 
 
+def test_the_handle_follows_the_brand_name_or_falls_back_to_the_slug(project_root):
+    registry.new_brand(project(), "Tokyo Works")
+    mark = Mark(wordmark=text("Tokyo", "Fira Code", weight=700, cap_height=180), lockup="wordmark")
+    outputs = conceptlib.build_outputs({"full": mark})
+    state = registry.rename(project(), "tokyo-works", "Kyoto Labs")  # a renamed working title gets its new name
+    assert sheets.mockup_context(state, outputs, None, None)["handle"] == "kyotolabs"
+    state = registry.rename(project(), "tokyo-works", "東京")  # no letters slugify can keep: the slug, without hyphens
+    ctx = sheets.mockup_context(state, outputs, None, None)
+    assert ctx["brand"] == "東京" and ctx["handle"] == "tokyoworks"
+    folder = install_concept(project_root, "good", slug="tokyo-works", name="01-good")  # and the whole sheet builds
+    write_passing_audit(project(), "tokyo-works", folder)
+    (folder / "scorecard.json").write_text(json.dumps(scorecard()))
+    info = sheets.concepts_sheet(project(), "tokyo-works", ["01-good"], renderer=StubChrome(), open_after=False)
+    html = Path(info["sheet_html"]).read_text()
+    assert "東京 &mdash; concept directions" in html and "@tokyoworks" in html
+
+
+def test_the_other_browser_tabs_show_kit_drawn_icons(project_root):
+    folder = install_concept(project_root, "good")
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
+    ctx = sheets.mockup_context(registry.load_state(project(), "keystone"), outputs, None, None)
+    assert ctx["tabs"] == ["Inbox", "Calendar"] and ctx["tab_icons"] == mockups.neighbour_icons(16)[:2]
+    tab = mockups.render_mockup(sheets.jinja(project()), "browser-tab", ctx)
+    assert [icon in tab for icon in ctx["tab_icons"]] == [True, True] and "background:#8a8f98" not in tab
+
+
 def test_sheet_refuses_unvetted_concepts(project_root, no_chrome, monkeypatch):
     prepare(project_root, "01-good")
     weak = prepare(project_root, "02-weak", gate_scores={"simple": 2})
@@ -115,13 +141,13 @@ def test_sheet_refuses_unvetted_concepts(project_root, no_chrome, monkeypatch):
     # Every named concept is vetted before any is built: 01-good passes, and the refusal comes before its build.
     monkeypatch.setattr(conceptlib, "build_tiers", lambda *args, **kwargs: pytest.fail("a concept was built before all were vetted"))
     assert refusal("01-good", "02-weak") == f"concept 02-weak: {GATE}"
-    assert refusal("01-good", "03-noaudit") == "concept 03-noaudit: concepts/03-noaudit/audit.json is missing"
+    assert refusal("01-good", "03-noaudit") == "concept 03-noaudit: audit.json is missing; run logomaker concept run first"
     (weak / "scorecard.json").write_text(json.dumps({**scorecard(), "kill": True, "reason": "too generic"}))
     assert refusal("02-weak") == f"concept 02-weak: {GATE}"
     (weak / "scorecard.json").write_text(json.dumps({"scores": {"appropriate": 4}}))
     assert refusal("02-weak").startswith("concept 02-weak: scorecard.json is invalid: root: Value error, scores missing: distinctive")
     (weak / "scorecard.json").unlink()
-    assert refusal("02-weak") == "concept 02-weak: scorecard.json is missing"
+    assert refusal("02-weak") == "concept 02-weak: scorecard.json is missing; score it before presenting"
     assert no_sheet(project_root)
 
 
@@ -134,12 +160,15 @@ def test_sheet_refuses_an_audit_that_is_unrendered_stale_or_failing(project_root
                            ({**passing, "fingerprint": "0" * 64}, STALE),
                            ({**passing, "ok": False, "failures": [failure]}, "has failures")):
         audit.write_text(json.dumps(saved))
-        assert refusal("01-good") == f"concept 01-good: 01-good/audit.json {problem}"
+        assert refusal("01-good") == f"concept 01-good: audit.json {problem}"
+    audit.write_text(json.dumps({**passing, "rendered": False, "ok": False}))  # every problem, the concept named once
+    assert refusal("01-good") == ("concept 01-good: audit.json was made with --no-render; re-run concept audit without it; "
+                                  "audit.json has failures")
     audit.write_text(json.dumps(passing))
     (folder / "params.json").write_text('{"stroke": 80}')  # the concept changed after its audit
-    assert refusal("01-good") == f"concept 01-good: 01-good/audit.json {STALE}"
+    assert refusal("01-good") == f"concept 01-good: audit.json {STALE}"
     audit.write_text("{not json")
-    assert refusal("01-good").startswith("concept 01-good: concepts/01-good/audit.json is not valid JSON: ")
+    assert refusal("01-good").startswith("concept 01-good: audit.json is not valid JSON: ")
     assert no_sheet(project_root)
 
 
@@ -211,17 +240,22 @@ def test_concepts_sheet_renders_all_mockups(project_root, renderer):
 
     prepare(project_root, "01-good")
     prepare(project_root, "02-good-colour", tokens=good_tokens())
-    info = sheets.concepts_sheet(project(), "keystone", ["01-good", "02-good-colour"], renderer=renderer, open_after=False)
+    prepare(project_root, "03-word", fixture="wordmark_only")
+    names = ["01-good", "02-good-colour", "03-word"]
+    info = sheets.concepts_sheet(project(), "keystone", names, renderer=renderer, open_after=False)
     html = Path(info["sheet_html"]).read_text()
     for kind in mockups.MOCKUPS:
-        assert f'data-mockup="{kind}"' in html
-    assert "01-good" in html and "02-good-colour" in html and "40 / 50" in html
+        assert html.count(f'data-mockup="{kind}"') == 3, kind
+    assert "01-good" in html and "02-good-colour" in html and "03-word" in html and "40 / 50" in html
+    fallback = "no symbol in this concept: icon, favicon and avatar mockups use the wordmark"
+    sections = html.split('<section class="concept">')[1:]
+    assert [f'<div class="warn">{fallback}</div>' in section for section in sections] == [False, False, True]
     assert "background:#e8572a" in html  # the colour concept's app-icon tile is its primary
     png = project_root / "brands" / "keystone" / "sheets" / "concepts.png"
     assert info["sheet_png"] == str(png) and png.stat().st_size > 20_000
     with Image.open(png) as image:
         assert image.width == sheets.CONCEPTS_W  # the whole page, at the sheet's width
-    assert info["concepts"] == ["01-good", "02-good-colour"] and info["warnings"] == []
+    assert info["concepts"] == names and info["warnings"] == [f"03-word: {fallback}"]
 
 
 @requires_chrome

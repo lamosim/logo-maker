@@ -12,7 +12,20 @@ from pydantic import BaseModel, ValidationError
 
 from .output import EXIT_RULE, CliError
 from .paths import CONCEPT_NAME, SLUG, ProjectPaths
-from .schemas import PHASE_ORDER, BrandState, Brief, Decision, FontChoice, Phase, Scorecard, Strategy, TerritoriesSpec, now_iso
+from .schemas import (
+    GATE,
+    GATE_MIN,
+    PHASE_ORDER,
+    BrandState,
+    Brief,
+    Decision,
+    FontChoice,
+    Phase,
+    Scorecard,
+    Strategy,
+    TerritoriesSpec,
+    now_iso,
+)
 
 BRAND_SUBDIRS = ("inspiration", "territories", "concepts", "sheets", "final", "package")
 
@@ -212,9 +225,9 @@ def _need(brand: Path, path: Path, model: type[BaseModel] | None = None) -> list
     return [err] if err else []
 
 
-def _read_json(brand: Path, path: Path) -> tuple[dict[str, Any], str | None]:
-    """`path` parsed as a JSON object, or ({}, a message naming it relative to `brand`)."""
-    label = path.relative_to(brand)
+def _read_json(brand: Path, path: Path, label: str | None = None) -> tuple[dict[str, Any], str | None]:
+    """`path` parsed as a JSON object, or ({}, a message calling it `label`, else naming it relative to `brand`)."""
+    label = label or str(path.relative_to(brand))
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except ValueError as err:  # malformed JSON, or bytes that are not UTF-8
@@ -248,28 +261,29 @@ def _check_territories(brand: Path, state: BrandState) -> list[str]:
     return missing
 
 
-def audit_problems(paths: ProjectPaths, slug: str, folder: Path) -> list[str]:
+def audit_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | None = None) -> list[str]:
     """Why <folder>/audit.json does not vouch for the concept as it is now, or [] when it does: it is missing or not a
     JSON object, stale (its fingerprint is not audit.concept_fingerprint of the concept now), made with --no-render, or
-    failing. The concept gate and the concept sheet both ask this."""
+    failing. The concept gate and the concept sheet both ask this. Every message calls the file `label`; without one,
+    they name it as the gate always has: from the brand folder when it is missing or malformed, else <concept>/audit.json."""
     from .audit import concept_fingerprint  # imported here: audit imports registry
 
     brand = paths.brand(slug)
     path = folder / "audit.json"
-    missing = _need(brand, path)
-    if missing:
-        return missing
-    result, error = _read_json(brand, path)
+    if not path.is_file():
+        return [f"{label or path.relative_to(brand)} is missing"]
+    result, error = _read_json(brand, path, label)
     if error:
         return [error]
+    label = label or f"{folder.name}/audit.json"
     problems = []
     if result.get("fingerprint") != concept_fingerprint(paths, slug, folder):
-        problems.append(f"{folder.name}/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or "
+        problems.append(f"{label} is stale (concept.py, params.json, tokens.json, the brand's industry or "
                         "minimum sizes, or cliches.json changed); re-run concept audit")
     if not result.get("rendered"):
-        problems.append(f"{folder.name}/audit.json was made with --no-render; re-run concept audit without it")
+        problems.append(f"{label} was made with --no-render; re-run concept audit without it")
     if not result.get("ok"):
-        problems.append(f"{folder.name}/audit.json has failures")
+        problems.append(f"{label} has failures")
     return problems
 
 
@@ -277,7 +291,8 @@ def passing_scorecard(folder: Path, label: str) -> Scorecard:
     """<folder>/scorecard.json if it validates and passes the gate (Scorecard.gate_ok); else a CliError calling it `label`."""
     card = load_model(folder / "scorecard.json", Scorecard, label)
     if not card.gate_ok:
-        raise CliError(f"{label} fails the gate (appropriate, simple and legible must be 4 or more, and not killed)")
+        criteria = f"{', '.join(GATE[:-1])} and {GATE[-1]}"
+        raise CliError(f"{label} fails the gate ({criteria} must be {GATE_MIN} or more, and not killed)")
     return card
 
 

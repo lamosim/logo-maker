@@ -274,11 +274,17 @@ def territories_board(paths: ProjectPaths, slug: str, renderer: Renderer | None 
 
 def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: dict | None) -> dict:
     """What the seven mockups (templates/mockups) draw for one concept: its outputs in colour from `light` and `dark`
-    (black and white without tokens), each tier picked by size as exports pick it, the eleven generated neighbour icons,
-    and `warnings`: a concept without a symbol stands its wordmark in for the icon, favicon and avatar."""
+    (black and white without tokens), each tier picked by size as exports pick it, generated neighbour icons for the
+    home screen and the other browser tabs, and `warnings`: a concept without a symbol stands its wordmark in for the
+    icon, favicon and avatar."""
     warnings: list[str] = []
     if "full-symbol" not in outputs:
         warnings.append("no symbol in this concept: icon, favicon and avatar mockups use the wordmark")
+    try:
+        handle = registry.slugify(state.name)  # follows the name, so a renamed working title gets its new handle
+    except CliError:  # a name with no ASCII letters or digits to keep
+        handle = state.slug
+    tabs = ["Inbox", "Calendar"]
     horizontal = outputs[_first_present(outputs, ("full-horizontal",))]
     paper_light = light["paper"] if light else "#ffffff"
     paper_dark = dark["paper"] if dark else "#111111"
@@ -295,7 +301,7 @@ def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: d
 
     return {
         "brand": state.name,
-        "handle": registry.slugify(state.name).replace("-", ""),
+        "handle": handle.replace("-", ""),
         "paper_light": paper_light, "paper_dark": paper_dark, "primary": tile_fill,
         "primary_dark": dark["primary"] if dark else "#eeeeee", "tile_fill": tile_fill,
         "icon_svg": fit_box(outputs[pick_output(outputs, 60)].to_svg("color", palette=on_tile), 36, 36),
@@ -306,18 +312,24 @@ def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: d
         "card_svg": colour(horizontal, 200, 60),
         "sign_svg": fit_box(outputs["full-lockup"].to_svg("white"), 360, 110),
         "neighbours": mockuplib.neighbour_icons(60),
-        "tabs": ["Inbox", "Calendar"],
+        "tabs": tabs,
+        "tab_icons": mockuplib.neighbour_icons(16)[: len(tabs)],  # the other tabs' favicons, kit-drawn like the neighbours
         "warnings": warnings,
     }
 
 
 def _vetted(paths: ProjectPaths, slug: str, name: str) -> tuple[Path, Scorecard]:
     """The folder and scorecard of concept `name` if it may reach the owner: a passing, rendered audit of the concept as
-    it is now (registry.audit_problems) and a scorecard.json that passes the gate. Otherwise a CliError naming it."""
+    it is now (registry.audit_problems) and a scorecard.json that passes the gate. Otherwise a CliError that names the
+    concept once and says what to do."""
     folder = conceptlib.concept_folder(paths, slug, name)
-    problems = registry.audit_problems(paths, slug, folder)
+    if not (folder / "audit.json").is_file():
+        raise CliError(f"concept {name}: audit.json is missing; run logomaker concept run first")
+    problems = registry.audit_problems(paths, slug, folder, "audit.json")
     if problems:
         raise CliError(f"concept {name}: {'; '.join(problems)}")
+    if not (folder / "scorecard.json").is_file():
+        raise CliError(f"concept {name}: scorecard.json is missing; score it before presenting")
     return folder, registry.passing_scorecard(folder, f"concept {name}: scorecard.json")
 
 

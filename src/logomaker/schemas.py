@@ -254,6 +254,7 @@ class TerritoriesSpec(BaseModel):
 
 CRITERIA = ("appropriate", "distinctive", "simple", "legible", "adaptable", "timeless", "universal", "clear", "congruent", "system")
 GATE = ("appropriate", "simple", "legible")
+GATE_MIN = 4  # the score each GATE criterion needs
 
 
 class Scorecard(BaseModel):
@@ -276,7 +277,7 @@ class Scorecard(BaseModel):
 
     @property
     def gate_ok(self) -> bool:
-        return not self.kill and all(self.scores[c] >= 4 for c in GATE)
+        return not self.kill and all(self.scores[c] >= GATE_MIN for c in GATE)
 
     @property
     def total(self) -> int:

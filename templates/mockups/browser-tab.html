@@ -1,6 +1,6 @@
 <div class="mockup" data-mockup="{{ kind }}" style="width:520px;background:#dee1e6;border-radius:8px 8px 0 0;padding:8px 8px 0;font:12px -apple-system,Helvetica,Arial,sans-serif;color:#333">
   <div style="display:flex;gap:4px;align-items:flex-end">
-    {% for t in tabs %}<div style="background:#c9ccd1;border-radius:8px 8px 0 0;padding:8px 14px;width:140px;box-sizing:border-box;display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:3px;background:#8a8f98;display:inline-block"></span>{{ t }}</div>{% endfor %}
+    {% for t in tabs %}<div style="background:#c9ccd1;border-radius:8px 8px 0 0;padding:8px 14px;width:140px;box-sizing:border-box;display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;display:inline-flex">{{ tab_icons[loop.index0]|safe }}</span>{{ t }}</div>{% endfor %}
     <div style="background:#fff;border-radius:8px 8px 0 0;padding:8px 14px;width:180px;box-sizing:border-box;display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;display:inline-flex">{{ favicon_svg|safe }}</span><b>{{ brand }}</b></div>
   </div>
   <div style="background:#fff;height:28px;border-top:1px solid #fff"></div>
