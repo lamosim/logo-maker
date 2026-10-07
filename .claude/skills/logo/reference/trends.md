@@ -2,7 +2,7 @@
 
 Read this when: scoring `timeless` (criterion 6), writing the category audit, choosing territory styles, and whenever the owner asks for something fashionable.
 
-The 2025 failure mode was "mid", not "bad": "the enemy of a good brand is no longer a bad brand, but one that is just okay" (Mother Design, Creative Boom, 7 Jan 2026). Aim for one ownable idea executed with restraint [05 §0, §1.1]. 2026's trend reports describe behaviour, not style: identities that "flex, pulse, reveal layers, adapt" (LogoLounge 2026) [05 §0]. Every item below carries its source and the source's date; dated as of October 2026 [05 §1.2, §1.4].
+The 2025 failure mode was "mid", not "bad": "the enemy of a good brand is no longer a bad brand, but one that is just okay" (Mother Design, Creative Boom, 7 Jan 2026). Aim for one ownable idea executed with restraint [05 §0, §1.1]. 2026's trend reports describe behaviour, not style: identities that "flex, pulse, reveal layers, adapt" (LogoLounge 2026) [05 §0]. Each item below names its source, with the source's date where the research gives one; items that rest on 05 §1.4's use, use carefully and avoid table alone carry no date, because that table is undated. The page is as of October 2026 [05 §1.2, §1.4].
 
 ## Use
 

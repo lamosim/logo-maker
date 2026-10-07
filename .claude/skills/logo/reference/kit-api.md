@@ -9,12 +9,12 @@ Written from the code [code]; where spec §6 differs, the code wins [spec §6]. 
 `brands/<slug>/concepts/NN-slug/concept.py` (two digits, a hyphen, a slug) or `brands/<slug>/final/concept.py`:
 
 - `from logomaker.kit import *` first.
-- `META`, a `Meta(slug, idea, logo_type, motifs=[], territory=None, allow_complex=False, complex_reason="")`: `idea` is one sentence without "represents"; `motifs` is a list of plain nouns, which the cliché check reads.
+- `META`, a `Meta(slug, idea, logo_type, motifs=[], territory=None, allow_complex=False, complex_reason="")`: `idea`, one sentence without "represents"; `motifs`, plain nouns the cliché check reads.
 - `PARAMS`, a `Params(stroke=90, gap=None, ...)`: named values read as `p.stroke`.
-- `TIERS`: keys from `full` (required), `compact`, `small`, `favicon`; each value overrides `PARAMS` for that tier, and `"wordmark": False` drops the wordmark (the concept then needs a symbol).
-- `def build(p): ... return Mark(...)`, called once per tier. It must be deterministic: the audit builds twice and fails on any difference.
-- `params.json` beside the module overrides `PARAMS` (only names `PARAMS` defines); refinement tunes `final/` through it. `tokens.json` beside it colours the `color` and `reverse` variants and feeds the colour checks (color.md).
-- The CLI writes `build/` (`<output>-<variant>.svg`, `geometry.json`, `build.json`), `audit.json` and `renders/round-N/critique.{html,png}`; never edit them. An exception in the module exits 2 with its traceback in the JSON, an uncached font exits 3 with its fetch command, and `print()` goes to stderr.
+- `TIERS`: keys `full` (required), `compact`, `small`, `favicon`; each value overrides `PARAMS` for that tier; `"wordmark": False` drops the wordmark (a symbol is then required).
+- `def build(p): ... return Mark(...)`, called once per tier; deterministic, since the audit builds twice and fails on any difference.
+- `params.json` beside the module overrides `PARAMS` (only names `PARAMS` defines); refinement tunes `final/` through it. `TIERS` apply after it: a value a tier sets beats params.json, which changes only `full` and tiers that leave the name alone. `tokens.json` colours the `color` and `reverse` variants and feeds the colour checks (color.md).
+- The CLI writes `build/` (`<output>-<variant>.svg`, `geometry.json`, `build.json`), `audit.json` and `renders/round-N/critique.{html,png}`; never edit them. An exception exits 2 with its traceback, an uncached font exits 3 with its fetch command, and `print()` goes to stderr.
 
 ## Primitives
 
@@ -34,7 +34,7 @@ Every primitive returns a `Shape` and takes `free=False`.
 | `polyline(points, width, cap="butt", join="miter")` | a stroked open path; joins `miter`, `round`, `bevel` |
 | `bezier(points, width=None, closed=False)` | a cubic chain p0, c1, c2, p1, ... (1 + 3k points): filled when `width` is None, else stroked with round joins |
 
-`snap(value, step=0.25)` and `snap_angle(angle, step=15)` are the snapping functions themselves.
+`snap(value, step=0.25)` and `snap_angle(angle, step=15)` do the snapping.
 
 ## Operations
 
@@ -46,7 +46,7 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 - Placing: `align(shape, to, edge)` to a shape or `Box`, edge `left`, `right`, `top`, `bottom`, `center` (x) or `middle` (y); `center(shape, cx=0, cy=0, optical=False)` by box or, optical, by area centroid; `fit(shape, w, h, cx=0, cy=0)` scales to fit and centres.
 - Optical helpers (craft.md): `overshoot(shape, amount=0.015)`; `compensate_stroke(base_width, horizontal_factor=0.92, curve_factor=1.05)` returns `StrokeWidths(vertical, horizontal, curve)`; `optical_center(shape)` returns the area centroid.
 - Queries on a `Shape`: `bounds` (a `Box` with `x0`, `y0`, `x1`, `y1`, `w`, `h`, `cx`, `cy`; `Box.union(boxes)`), `area`, `centroid`, `is_empty`, `anchor_count()`, `segment_count()`, `subpaths()` (each contour as its own filled shape: a glyph's counter is one), `straight_segments()`, `free_segments`.
-- Plumbing that modules rarely need: `normalize_winding(path)` re-winds a raw `skia.Path` for nonzero fill (every op already does); `fmt(value)` prints numbers for SVG.
+- Plumbing: `normalize_winding(path)` re-winds a raw `skia.Path` (every op already does); `fmt(value)` formats SVG numbers.
 
 ### Limits and audit interactions
 
@@ -65,7 +65,7 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 - `TextShape` adds `advance`, `cap_height`, `x_height`, `glyph_bounds` (one `Box` per drawn glyph, in order; a space has none), `font` (such as "Fira Code 600") and `baseline`; transforms rescale them.
 - `tracking` and `kern` are in 1/1000 em, applied between clusters only; `kern={"AV": -40}` adds to the font's own kerning for that pair.
 - `features` is the exact set applied: HarfBuzz's default kern, liga, calt and clig are off unless listed, and a stylistic set can be listed (Fira Code has `ss01` to `ss10`).
-- A variable font draws any weight in its range and clamps outside it (Fira Code: 300 to 700); a static family uses its nearest weight file. A character the font lacks exits 2; an uncached family exits 3 [code].
+- A variable font draws any weight in its range, clamping outside it (Fira Code: 300 to 700); a static family uses its nearest weight file. A missing character exits 2, an uncached family 3 [code].
 
 ## Mark and lockups
 
@@ -74,14 +74,14 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 - The x unit (`mark.x_unit`, `mark.x_unit_source`) is the cap height of a wordmark set with `text()`, else a fifth of the symbol's height, else the wordmark's height; `gap` defaults to one x, and x is the clear-space unit too.
 - `roles` maps `symbol`, `wordmark` and `tagline` to `primary`, `secondary`, `accent` or `ink`; the defaults are symbol `primary`, wordmark and tagline `ink`.
 - Methods: `with_lockup(lockup)`, `without_wordmark()`, `layout()` (a list of `Placed(name, shape, role)`), `bounds()`, `to_svg(variant="color", palette=None, padding=0, dark_palette=None)` with variants `color`, `reverse`, `black`, `white`, `mono`, and `geometry()` for the audit.
-- The CLI derives outputs: `full-lockup` as built; `full-horizontal` and `full-stacked` when there are both a symbol and a wordmark; `full-symbol`; `full-wordmark`; and `compact`, `small`, `favicon` from `TIERS`. Exports pick `full-symbol` from 96 px, `small` from 33 to 95 px, `favicon` at 32 px and below, falling back to the next larger build.
-- Anchors are on-curve nodes, as a designer counts them (a circle has 4, a ring 8). The symbol's total is noted up to 100, warns above 100 and fails above 150, unless `META` sets `allow_complex=True` with a `complex_reason`, which turns the failure into a warning.
+- The CLI derives outputs: `full-lockup` as built; `full-horizontal` and `full-stacked` given a symbol and a wordmark; `full-symbol`; `full-wordmark`; `compact`, `small`, `favicon` from `TIERS`. Exports pick `full-symbol` from 96 px, `small` from 33 to 95 px and `favicon` below, falling back to the next larger build.
+- Anchors are on-curve nodes (a circle has 4, a ring 8). The symbol's total warns above 100 and fails above 150, unless `META` sets `allow_complex=True` with a `complex_reason`, which makes the failure a warning.
 
 ## Worked examples
 
-Each builds with only Fira Code cached and passes the audit (`tests/test_knowledge.py` runs all four) [code].
+Each builds with only Fira Code cached and passes the audit; `tests/test_knowledge.py` runs all four [code].
 
-1. A monogram cut from a glyph counter: the counter of the O places and sizes a square drive, so the letter reads as a socket.
+1. A monogram cut from a glyph counter: the O's counter places and sizes a square drive; the letter reads as a socket.
 
 ```python
 from logomaker.kit import *
@@ -124,12 +124,12 @@ TIERS = {
 def build(p):
     canopy = wedge(0, 0, 400, 0, 180)  # the upper half of a disc
     if p.scallops:
-        half = 400 / p.scallops  # each scallop spans two rib tips on the hem
+        half = 400 / p.scallops  # a scallop spans two rib tips
         depth = half * 0.6
         r = (half * half + depth * depth) / (2 * depth)  # a circle through both rib tips, `depth` high
         cuts = [circle(-400 + half * (2 * i + 1), depth - r, r) for i in range(p.scallops)]
         canopy = subtract(canopy, union(*cuts))
-    shaft = line(0, 400, 0, -330, p.stroke)  # up through the canopy, so no scallop can cut it loose
+    shaft = line(0, 400, 0, -330, p.stroke)  # through the canopy: no scallop can cut it loose
     hook = arc(-70, -330, 70, 180, 360, p.stroke, cap="round")
     word = text("brolly", "Fira Code", weight=600, cap_height=180)
     return Mark(symbol=union(canopy, shaft, hook), wordmark=word, lockup="horizontal")
@@ -158,7 +158,7 @@ def build(p):
     return Mark(symbol=union(*tiles), wordmark=word, lockup="horizontal")
 ```
 
-4. A wordmark with one ligature quirk: the two t's share one crossbar, and the small tiers draw that pair as the icon. Expect two `near_miss_angles` warnings on those tiers from the cut at the top of Fira Code's t; justify them.
+4. A wordmark with one ligature quirk: the two t's share one crossbar. Its `compact` (avatars), `small` (33 to 95 px) and `favicon` (32 px and below) tiers draw that pair; every icon from 96 px up shows the whole wordmark, so tell the owner, or make the pair the `symbol` to have it at every size. Expect two `near_miss_angles` warnings (small, favicon) from the cut atop Fira Code's t; justify them.
 
 ```python
 from logomaker.kit import *
@@ -168,6 +168,7 @@ META = Meta(slug="settle-wordmark", idea="settle's two t's share one crossbar: t
 PARAMS = Params(weight=600, bar=40, icon=False)
 TIERS = {
     "full": {},
+    "compact": {"icon": True, "weight": 700, "bar": 47},
     "small": {"icon": True, "weight": 700, "bar": 47},
     "favicon": {"icon": True, "weight": 700, "bar": 47},
 }
@@ -176,7 +177,7 @@ TIERS = {
 def build(p):
     word = text("tt" if p.icon else "settle", "Fira Code", weight=p.weight, cap_height=300)
     first, second = word.glyph_bounds[0 if p.icon else 2], word.glyph_bounds[1 if p.icon else 3]
-    # Fira Code's t crossbar hangs from the x-height, `bar` units deep: bridge it from one stem to the other.
+    # the t crossbar hangs `bar` deep from the x-height: bridge it stem to stem
     bridge = rect(first.cx, word.x_height - p.bar, second.cx - first.cx, p.bar)
     joined = union(word, bridge)  # the TextShape first, so the wordmark keeps its metrics
     return Mark(symbol=joined) if p.icon else Mark(wordmark=joined)
@@ -184,4 +185,4 @@ def build(p):
 
 ## Sources
 
-spec §6.1 to §6.5 (the kit as specified), §8.1 (audit rules); 04 §1.2 and §1.3 (grids, real glyph outlines, parametric quirks, anchor ceilings); 03 §1.2 (tiers); code: `logomaker.kit.__all__`, `kit/primitives.py`, `kit/ops.py`, `kit/optical.py`, `kit/text.py`, `kit/mark.py`, `kit/concept.py`, `audit.py`.
+spec §6.1 to §6.5 (the kit as specified), §8.1 (audit rules); 04 §1.2 and §1.3 (grids, real glyph outlines, parametric quirks, anchor ceilings); 03 §1.2 (tiers); code: `logomaker.kit.__all__` and `kit/*.py`, `audit.py`.

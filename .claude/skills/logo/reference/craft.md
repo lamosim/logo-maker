@@ -73,7 +73,7 @@ window = offset(counter, -40)                # the counter, 40 units smaller all
 monogram = center(subtract(outer, window))   # a heavier D whose counter is re-cut as a smaller window
 ```
 
-2. Ring with a gap: `ring()` gives butt ends, `arc()` round ones; angles snap to 15 degrees.
+2. Ring with a gap: `ring()` gives butt ends, `arc(..., cap="round")` round ones (`arc()` defaults to butt); angles snap to 15 degrees.
 
 ```python
 band = ring(0, 0, 400, 90, start=30, end=330)        # butt ends; the 60-degree gap faces east (0 degrees)
@@ -102,7 +102,7 @@ mark = subtract(body, eye)
 tile = rrect_centered(0, 0, 720, 720, 120)
 path = [(-180, 180), (180, 180), (180, 0), (-180, 0), (-180, -180), (180, -180)]
 channel = polyline(path, 80)                # a stroked path, mitred at the corners
-mark = subtract(tile, channel)              # the tile stays one piece; the cut channel reads as an S
+mark = subtract(tile, channel)              # the tile stays one piece; the cut channel draws a squared 2
 ```
 
 5. Badge with inner clear space: keep at least one band width between the emblem and the frame.

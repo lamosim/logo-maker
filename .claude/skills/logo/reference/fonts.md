@@ -2,7 +2,7 @@
 
 Read this when: choosing one to three families for each territory (phase 3), setting the wordmark in refinement, and recording the wordmark font with `brand set --font`.
 
-The "Catalogue by category" section is generated from `assets/fonts/catalog.json` by `scripts/build_reference.py`; the rest of this page is `scripts/templates/fonts.md`. Edit the catalogue builder (`scripts/build_catalog.py`) or the template, then re-run `uv run python scripts/build_reference.py`; never edit this page by hand.
+The "Catalogue by category" section and the Apache families under Licensing are generated from `assets/fonts/catalog.json` by `scripts/build_reference.py`; the rest of this page is `scripts/templates/fonts.md`. Edit the catalogue builder (`scripts/build_catalog.py`) or the template, then re-run `uv run python scripts/build_reference.py`; never edit this page by hand.
 
 ## Using the catalogue
 
@@ -15,7 +15,7 @@ The "Catalogue by category" section is generated from `assets/fonts/catalog.json
 
 ## Catalogue by category
 
-86 families in 10 categories, as `logomaker fonts list` reads them from `assets/fonts/catalog.json` [03 §4.4] [code]. Pass the category exactly as its heading reads, in quotes; any other string exits 2 and lists the ten. Every family is OFL unless marked Apache. Tags a whole category shares are listed once; a family's own tags follow its name.
+86 families in 10 categories, as `logomaker fonts list` reads them from `assets/fonts/catalog.json` [03 §4.4] [code]. Pass the category exactly as its heading reads, in quotes; any other string exits 2 and lists all 10. Every family is OFL unless marked Apache. Tags a whole category shares are listed once; a family's own tags follow its name.
 
 ### geometric sans
 

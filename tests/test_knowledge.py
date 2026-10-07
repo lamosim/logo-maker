@@ -1,26 +1,36 @@
 """Structural checks on the logo skill's knowledge base, .claude/skills/logo/reference/.
 
 The skill reads these files phase by phase. The tests keep each one complete (its title, its "Read this when:" line, its
-headings, its length and its sources), keep the two generated pages equal to their data, and keep the documented code
-honest: kit-api.md's worked examples build and pass the audit, craft.md's recipes run, and the JSON blocks validate.
+headings, its length and its sources), keep the two generated pages equal to their data, keep every CLI command and option
+the skill's documents mention real, and keep the documented code honest: kit-api.md's worked examples build and pass the
+audit, craft.md's recipes make what they say, and the JSON blocks validate.
 """
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import re
+from pathlib import Path
+from types import SimpleNamespace
+
+import click
 
 from logomaker import audit, kit, registry
+from logomaker.cli import main as cli_main
 from logomaker.color import Tokens, check_tokens
 from logomaker.export import ADAPTIVE_RADIUS, MASK_SAFE, PackageBuilder
+from logomaker.export_docs import BRAND_SECTIONS, PREFIX_SECTIONS, DocumentGroups
 from logomaker.kit import Composite, Mark, Shape
 from logomaker.kit import concept as conceptlib
 from logomaker.paths import project
 from logomaker.schemas import Brief, MinSizes, Phase, Scorecard
 from tests.conftest import REPO
 
-REF = REPO / ".claude" / "skills" / "logo" / "reference"
+SKILL = REPO / ".claude" / "skills" / "logo"
+REF = SKILL / "reference"
 BUILDER = REPO / "scripts" / "build_reference.py"
+GENERATED = ("cliches.md", "fonts.md")  # rendered from data by BUILDER, so the data sets their length: the floor applies, not the ceiling
 MIN_WORDS, MAX_WORDS = 600, 2000
 
 REQUIRED = {
@@ -44,10 +54,23 @@ REQUIRED = {
     "kit-api.md": ["Concept module contract", "Primitives", "Operations", "Text", "Mark and lockups", "Worked examples", "Sources"],
 }
 CANONICAL = "(canonical wording; SKILL.md quotes this)"
+# The audit warnings each worked example gives, in order: none, but example 4's two from the cut atop Fira Code's t.
+EXAMPLE_WARNINGS = [[], [], [], ["near_miss_angles", "near_miss_angles"]]
+
+COMMANDS = dict(cli_main.commands)  # group (or command) name -> click object
+# A CLI mention in code: an optional "logomaker", a group name standing as a word, and the word after it (its command).
+MENTION = re.compile(r"(?<![^\s(`\"'])(?:logomaker[ \t]+)?(?P<group>" + "|".join(map(re.escape, COMMANDS)) + r")(?=[\s`\"')]|$)"
+                     r"(?:[ \t]+(?P<command>[a-z][\w-]*))?")
 
 
 def read(name: str) -> str:
     return (REF / name).read_text(encoding="utf-8")
+
+
+def heading_is(found: str, required: str) -> bool:
+    """Whether heading `found` is `required`, alone or followed by punctuation (": ...", " (...)"), never by more words:
+    "Use carefully" is not "Use"."""
+    return re.fullmatch(rf"{re.escape(required)}(?:\s*[^\w\s].*)?", found) is not None
 
 
 def sections(text: str) -> list[tuple[str, str]]:
@@ -69,14 +92,66 @@ def headings(text: str) -> list[str]:
 
 
 def section(text: str, heading: str) -> str:
-    """The body of the first level-two section whose heading starts with `heading`."""
-    bodies = [body for found, body in sections(text) if found.startswith(heading)]
+    """The body of the first level-two section whose heading is `heading` (heading_is)."""
+    bodies = [body for found, body in sections(text) if heading_is(found, heading)]
     assert bodies, f"no section {heading!r}"
     return bodies[0]
 
 
 def code_blocks(text: str, language: str) -> list[str]:
     return re.findall(rf"^```{language}\n(.*?)^```$", text, re.M | re.S)
+
+
+def code_units(text: str) -> list[str]:
+    """The code in Markdown `text`: each line of a fenced block, and each inline code span outside one."""
+    units: list[str] = []
+    fenced = False
+    for line in text.splitlines():
+        if line.startswith("```"):
+            fenced = not fenced
+        elif fenced:
+            units.append(line)
+        else:
+            units += re.findall(r"`([^`]+)`", line)
+    return units
+
+
+def cli_problems(text: str) -> list[str]:
+    """Each CLI mention in `text`'s code that cli.main lacks: a group after "logomaker", a `<group> <command>`, or a
+    `--option` written after a command (up to the next mention) that the command does not take."""
+    problems: list[str] = []
+    for unit in code_units(text):
+        for word in re.findall(r"(?<![\w.])logomaker[ \t]+([a-z][\w-]*)", unit):
+            if word not in COMMANDS:
+                problems.append(f"no group `logomaker {word}` (in `{unit.strip()}`)")
+        mentions = list(MENTION.finditer(unit))
+        for i, mention in enumerate(mentions):
+            name, word = mention["group"], mention["command"]
+            target = COMMANDS[name]
+            if isinstance(target, click.Group):
+                if word is None:
+                    continue
+                if word not in target.commands:
+                    problems.append(f"no command `{name} {word}` (in `{unit.strip()}`)")
+                    continue
+                target = target.commands[word]
+            known = {opt for param in target.params for opt in getattr(param, "opts", ()) if opt.startswith("--")} | {"--help"}
+            rest = unit[mention.end(): mentions[i + 1].start() if i + 1 < len(mentions) else len(unit)]
+            problems += [f"`{target.name}` takes no {opt} (in `{unit.strip()}`)"
+                         for opt in re.findall(r"(?<![\w-])--[a-z][\w-]*", rest) if opt not in known]
+    return problems
+
+
+def skill_documents() -> list[Path]:
+    """Every Markdown file of the logo skill, and the project's CLAUDE.md and README.md when they exist."""
+    return sorted(SKILL.rglob("*.md")) + [path for path in (REPO / "CLAUDE.md", REPO / "README.md") if path.is_file()]
+
+
+def last_binding(code: str) -> str:
+    """The last name a recipe's top level binds: what the recipe makes."""
+    names = [node.id for statement in ast.parse(code).body if isinstance(statement, ast.Assign)
+             for target in statement.targets for node in ast.walk(target) if isinstance(node, ast.Name)]
+    return names[-1]
 
 
 def load_builder():
@@ -95,10 +170,16 @@ def test_the_fifteen_files_have_their_frame_headings_and_length():
         assert re.search(r"^Read this when: .+", text, re.M), name
         found = headings(text)
         for heading in required:
-            assert any(f.startswith(heading) for f in found), f"{name}: missing heading {heading!r}"
+            assert any(heading_is(f, heading) for f in found), f"{name}: missing heading {heading!r}"
         assert found[-1] == "Sources" and section(text, "Sources").strip(), f"{name}: must end with a Sources section"
         words = len(text.split())
-        assert MIN_WORDS <= words <= MAX_WORDS, f"{name}: {words} words"
+        assert words >= MIN_WORDS, f"{name}: only {words} words"
+        assert name in GENERATED or words <= MAX_WORDS, f"{name}: {words} words, over {MAX_WORDS}"
+
+
+def test_heading_match_needs_the_whole_heading():
+    assert heading_is("Use", "Use") and heading_is("Use: durable", "Use") and heading_is("Use (low risk)", "Use")
+    assert not heading_is("Use carefully", "Use") and not heading_is("Users", "Use")
 
 
 def test_every_file_tags_its_sources():
@@ -161,25 +242,27 @@ def test_kit_api_worked_examples_build_and_pass_the_audit(project_root):
         assert {"full-lockup", "small", "favicon"} <= set(outputs), (i, list(outputs))
         result = audit.audit_concept(paths, "examples", folder.name)  # no renderer: the raster checks are skipped
         assert result.ok, (i, [f.message for f in result.failures])
+        assert [f.check for f in result.warnings] == EXAMPLE_WARNINGS[i - 1], (i, [f.message for f in result.warnings])
         types.append(module.meta.logo_type)
     assert types == ["lettermark", "pictorial", "abstract", "wordmark"]
 
 
-def test_craft_recipes_run(project_root):
+def test_craft_recipes_make_what_they_say(project_root):
     blocks = code_blocks(section(read("craft.md"), "Kit recipes"), "python")
     assert len(blocks) >= 5
     for code in blocks:
         namespace: dict = {}
         exec("from logomaker.kit import *\n" + code, namespace)  # noqa: S102 - running the documented recipe is the test
-        made = [v for v in namespace.values() if isinstance(v, (Mark, Composite)) or (isinstance(v, Shape) and not v.is_empty)]
-        assert made, code
+        made = namespace[last_binding(code)]
+        assert isinstance(made, (Mark, Composite)) or (isinstance(made, Shape) and not made.is_empty), code
 
 
 def test_documented_json_validates():
-    cards = [json.loads(block) for block in code_blocks(section(read("scorecard.md"), "scorecard.json format"), "json")]
-    assert cards and any(card.get("kill") for card in cards)  # a killed card still carries all ten scores
+    blocks = code_blocks(section(read("scorecard.md"), "scorecard.json format"), "json")
+    cards = [Scorecard.model_validate_json(block) for block in blocks]
+    assert any(card.kill for card in cards) and any(not card.kill for card in cards)
     for card in cards:
-        Scorecard.model_validate(card)
+        assert card.gate_ok == (not card.kill)  # the passing card passes the gate; the killed one, all ten scores kept, does not
     blocks = code_blocks(section(read("color.md"), "tokens.json format"), "json")
     assert len(blocks) == 1
     assert check_tokens(Tokens.model_validate_json(blocks[0])).ok  # it passes `color check` as documented
@@ -203,15 +286,20 @@ def test_canonical_wording_is_the_research_wording():
     assert "knock-out only, not legal clearance" in caveat and CANONICAL in caveat
 
 
-def test_process_md_mirrors_the_phases_and_their_checks():
+def test_process_md_mirrors_the_phases_and_their_checks(project_root):
     text = read("process.md")
     phases = section(text, "Phases and gates")
     for phase in Phase:
         assert f"`{phase.value}`" in phases, phase.value
+    # The files the gates ask for, from the phase checks' own messages on a brand with nothing yet but a chosen concept, in
+    # the naming phase, whose check runs only then.
+    paths = project()
+    state = registry.new_brand(paths, "Gates", slug="gates").model_copy(update={"phase": Phase.naming, "concept": "01-idea"})
+    messages = " ".join(m for check in registry.PHASE_CHECKS.values() for m in check(paths.brand("gates"), state, True))
+    files = {re.sub(r"^(?:concepts/)?01-idea/", "", name) for name in re.findall(r"([\w./-]+\.(?:md|json|py)) is missing", messages)}
+    assert {"brief.json", "naming.md", "scorecard.json", "final/tokens.json", "package/verify.json"} <= files  # every phase answered
     artifacts = section(text, "Artifacts each phase must contain")
-    for name in ("brief.md", "brief.json", "naming.md", "strategy.md", "strategy.json", "territories/territories.json",
-                 "scorecard.json", "audit.json", "final/concept.py", "final/params.json", "final/tokens.json", "verify.json",
-                 "src/logomaker/schemas.py"):
+    for name in sorted(files | {"src/logomaker/schemas.py"}):
         assert name in artifacts, name
 
 
@@ -220,11 +308,29 @@ def test_deliverables_md_mirrors_the_package_builder():
     manifest = section(text, "Package manifest")
     for group in PackageBuilder.GROUPS:
         assert f"`{group}`" in manifest, group
-    for readme_section in ("SVG masters", "PNG exports", "Flattened", "Favicons and web app icons", "Apple app icon", "Android",
-                           "Social", "Email and commerce", "Print", "Documents and tokens", "Fonts", "Source"):
+    default = DocumentGroups._section(SimpleNamespace(name="brand"), "any-other-file.txt")  # where README.md puts the rest
+    for readme_section in {*BRAND_SECTIONS.values(), *(name for _, name in PREFIX_SECTIONS), default}:
         assert readme_section in manifest, readme_section
     platforms = section(text, "Platform specs")
-    assert str(MASK_SAFE) in platforms and str(ADAPTIVE_RADIUS) in platforms
-    sizes = section(text, "Clear space and minimum sizes")
-    for value in MinSizes().model_dump().values():
-        assert f"{value:g}" in sizes, value
+    assert f"{MASK_SAFE} px" in platforms and f"radius {ADAPTIVE_RADIUS}" in platforms
+    sizes, minimum = section(text, "Clear space and minimum sizes"), MinSizes()
+    for label, px, mm in (("horizontal", minimum.horizontal_px, minimum.horizontal_mm), ("stacked", minimum.stacked_px, minimum.stacked_mm),
+                          ("mark", minimum.mark_px, minimum.mark_mm)):
+        assert f"{label} {px} px or {mm:g} mm" in sizes, label
+    assert f"favicon {minimum.favicon_px} px" in sizes
+
+
+def test_every_cli_command_and_option_the_documents_mention_exists():
+    documents = skill_documents()
+    assert len(documents) >= len(REQUIRED)
+    problems = [f"{path.relative_to(REPO)}: {problem}" for path in documents for problem in cli_problems(path.read_text(encoding="utf-8"))]
+    assert not problems, "\n".join(problems)
+
+
+def test_the_cli_check_catches_what_does_not_exist():
+    injected = ("Run `uv run logomaker brand frob x`, `brand frob`, `brand set <slug> --min-size 3`, `concept run a b --render` and "
+                "`uv run logomaker frob x`; `uv run logomaker brand set <slug> --industry fintech` is real.")
+    problems = cli_problems(injected)
+    assert len(problems) == 5, problems
+    for expected in ("`brand frob`", "--min-size", "--render", "`logomaker frob`"):
+        assert any(expected in problem for problem in problems), expected

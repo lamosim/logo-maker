@@ -16,15 +16,10 @@ build/
 # macOS
 .DS_Store
 
-# The font cache: every family folder under assets/fonts/ (TTFs, licence, manifest.json, instances/) is fetched again by
-# `logomaker fonts fetch`; only assets/fonts/catalog.json is tracked. A package carries its own copies in package/fonts/.
+# The font cache: every folder under assets/fonts/, a family's fetched files (TTFs, licence, manifest.json, instances/) and the
+# <slug>.<random>.tmp staging folder of a fetch in progress or killed. `logomaker fonts fetch` makes them again from
+# assets/fonts/catalog.json, the one tracked file here; a package carries its own copies of its fonts in package/fonts/.
 assets/fonts/*/
-# Fetched font files are reproducible from assets/fonts/catalog.json and manifest.json
-assets/fonts/*/*.ttf
-assets/fonts/*/*.otf
-assets/fonts/*/instances/
-# Staging folders of fetches in progress (or killed): assets/fonts/<slug>.<random>.tmp
-assets/fonts/*.tmp/
 # A package build in progress (or killed): its staging folder, and the previous package set aside during the swap
 brands/*/package.tmp/
 brands/*/package.old.tmp/

@@ -23,7 +23,7 @@ Dynamic identities are out of scope in this version [spec §16]. When the strate
 
 How each type is built in a concept module (see kit-api.md) [code]:
 
-- `wordmark`: `Mark(wordmark=text(...))`, with small and favicon tiers drawn as an initial or a ligature.
+- `wordmark`: `Mark(wordmark=text(...))`. Its `small` and `favicon` tiers (95 px and below) and a `compact` tier (the avatars) can draw an initial or a ligature as their symbol, but every icon from 96 px up shows the full wordmark (App icon behaviour, below). To get a letter or ligature icon at every size, make it the Mark's `symbol`: that is a combination mark.
 - `lettermark`: `glyph(...)` as the symbol, cut or joined parametrically, plus a full-name wordmark.
 - `pictorial`, `abstract`, `mascot`: primitives and booleans as the symbol.
 - `combination`: `Mark(symbol=..., wordmark=..., lockup="horizontal")`; the export derives stacked, symbol-only and wordmark-only lockups.
@@ -63,7 +63,9 @@ The split among the world's top 100 brands, from TastyPlacement's 2013 study as 
 How the CLI picks what an icon shows [code]:
 
 - Exports and mockups choose by size: the full symbol from 96 px, the `small` tier from 33 to 95 px, the `favicon` tier at 32 px and below. A missing tier falls back to the next larger build, with a warning.
-- A concept without a symbol stands its wordmark lockup in for the icon, favicon and avatar; the audit and the concept sheet both warn. Draw an initial or ligature tier instead, as kit-api.md's wordmark example does.
+- A concept without a symbol has no full symbol, so wherever the package draws the mark at 96 px and above it shows the full lockup, the wordmark: the iOS app icon, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-mask-512.png`, the Android adaptive layers and the xhdpi to xxxhdpi launchers, the Play icon, the Stripe and Google Business tiles, and the `mark` masters, PNGs and PDFs. Its `small` tier draws 33 to 95 px and its `favicon` tier 32 px and below; the social avatars draw its `compact` tier when it builds one, and otherwise follow the same size rule.
+- So a concept that wants a letter-derived icon at every size builds that letterform as the Mark's `symbol`: it becomes a combination mark, and its lockups carry the symbol. A wordmark-only concept builds `compact` for the avatars and `small` and `favicon` for the small sizes (kit-api.md's fourth example), and the owner is told that app icons from 96 px up show the wordmark.
+- The concept sheet warns that a concept without a symbol has its icon, favicon and avatar mockups drawn by the wordmark, even when its `small` and `favicon` tiers draw those mockups; look at the mockups themselves.
 - The concept sheet's phone mockup is the shelf test: the icon among eleven generated neighbours, read against generic tiles.
 
 ## Sources

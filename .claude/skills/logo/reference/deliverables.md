@@ -32,6 +32,8 @@ The groups, in `PackageBuilder.GROUPS` order, with counts for a symbol plus a wo
 
 That is 186 manifest entries, plus `manifest.json` and, after verifying, `verify.json`. A concept without a wordmark makes fewer files; a variant the concept cannot draw falls back to the next larger output, with a warning [code].
 
+A wordmark-only concept (no symbol) shows its full lockup, the wordmark, wherever the package draws the mark at 96 px and above: the `mark` masters, PNGs and PDFs, `ios-app-icon-1024.png` and the Icon Composer foreground, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-mask-512.png`, the Android adaptive layers and the xhdpi to xxxhdpi launchers, the Play icon, and the Stripe and Google Business tiles. Its `small` tier draws the mdpi and hdpi launchers and the 48 px favicon frame, its `favicon` tier the 32 and 16 px frames and `icon.svg`, and its `compact` tier, when built, the avatars. Tell the owner, or give the concept a symbol (logo-types.md) [code].
+
 README.md lists the files under these sections, in this order: SVG masters, PNG exports, Flattened, Favicons and web app icons, Apple app icon, Android, Social, Email and commerce, Print, Documents and tokens, Fonts, Source; then a "Package files" table for README.md and manifest.json [code]. The research's naming pattern `{brand}-{variant}-{color}-{size}.{ext}` is followed, with the brand name slugified [03 §7].
 
 ## Platform specs
