@@ -126,6 +126,7 @@ class PackageBuilder(DocumentGroups):
         self.entries: list[ManifestEntry] = []
         self.warnings: list[str] = []
         self.skipped: dict[str, str] = {}
+        self.built = now_iso()  # build() sets it again: the one timestamp of the manifest and README.md
         self._renderer: Renderer | None = None  # set by build(); groups read it through the renderer property
 
     # ---- helpers -------------------------------------------------------
@@ -409,11 +410,11 @@ class PackageBuilder(DocumentGroups):
         except OSError as err:
             raise CliError(f"could not tidy or make {staging} for the build ({err})", code=EXIT_EXTERNAL) from err
         self._renderer, self.pkg = renderer, staging
-        self.entries, self.warnings, self.skipped = [], [], {}
+        self.entries, self.warnings, self.skipped, self.built = [], [], {}, now_iso()
         try:
             for group in self.GROUPS:
                 getattr(self, group)()
-            manifest = Manifest(brand=self.state.name, slug=self.slug, built=now_iso(), inputs=self.inputs, files=self.entries,
+            manifest = Manifest(brand=self.state.name, slug=self.slug, built=self.built, inputs=self.inputs, files=self.entries,
                                 warnings=self.warnings, skipped=self.skipped)
             (staging / "manifest.json").write_text(json.dumps(manifest.model_dump(), indent=2) + "\n", encoding="utf-8")
             _swap_in(staging, package, aside)

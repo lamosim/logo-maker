@@ -115,6 +115,10 @@ def test_document_groups_index_and_verify_without_chrome(project_root):
     assert "| `favicon.ico` | legacy favicon, 16/32/48 | 48x48 |" in readme
     assert "outlines only" in readme.split("\n## Print\n")[1].split("\n## ")[0]  # the print note sits in the print section
     assert "into `brands/keystone/final/`" in readme and "`uv run logomaker package build keystone`" in readme
+    # The fonts go back into the cache before concept run sets the name in them again.
+    assert ("run `uv run logomaker fonts fetch 'Fira Code'`, or copy each folder in this package's `fonts/` into "
+            "`assets/fonts/`. Then run `uv run logomaker concept run keystone final`") in readme
+    assert "\n\n\n" not in readme and readme.endswith(" |\n") and f"Built {manifest.built} by logo-maker." in readme
 
     assert export_docs.verify(project(), "keystone")["ok"]
     code, payload = verify_cli()
@@ -210,13 +214,13 @@ def test_an_uncached_font_and_a_missing_source_file_are_left_out_with_warnings(p
     registry.set_fields(project(), "keystone", fonts=["body=Inter:400"])
     (project_root / "brands" / "keystone" / "strategy.json").unlink()
     _, manifest = build(DOCS)
-    assert manifest.warnings == ['font Inter is not cached and was not copied; run logomaker fonts fetch "Inter"',
+    assert manifest.warnings == ["font Inter is not cached and was not copied; run: logomaker fonts fetch Inter",
                                  "source/strategy.json left out: brands/keystone/strategy.json is missing"]
     paths = [e.path for e in manifest.files]
     assert "source/strategy.json" not in paths and not any(p.startswith("fonts/inter/") for p in paths)
     pkg = project_root / "brands" / "keystone" / "package"
     assert "Inter" not in (pkg / "fonts" / "FONT-NOTICE.md").read_text()
-    assert "- Inter 400 (OFL); not in this package" in (pkg / "BRAND.md").read_text()
+    assert "- Inter 400 (OFL); not in this package (run `logomaker fonts fetch Inter` and rebuild)" in (pkg / "BRAND.md").read_text()
 
 
 @pytest.mark.parametrize(("fixture", "source"), [("good", "cap-height"), ("tall_frame", "symbol-fifth"), ("drawn", "symbol-fifth")])
@@ -242,6 +246,41 @@ def test_the_token_checks_and_each_licence_are_computed_once(project_root, monke
     _, manifest = build(["tokens_file", "fonts", "docs"])
     assert calls == ["check_tokens", "Fira Code"]
     assert manifest.warnings == ["BRAND.md and the brand sheet have no web head snippet: favicon-head.html is not in the package"]
+    brand_md = (project_root / "brands" / "keystone" / "package" / "BRAND.md").read_text()
+    assert "## Web head snippet" not in brand_md and "```html" not in brand_md and "\n\n## Files" in brand_md  # no empty block
+
+
+def test_the_manifest_and_the_readme_share_one_build_time(project_root, monkeypatch):
+    make_final_brand(project_root)
+    ticks = iter(f"2026-10-07T12:00:{second:02d}+00:00" for second in range(60))
+    monkeypatch.setattr(export, "now_iso", lambda: next(ticks))
+    monkeypatch.setattr(export_docs, "now_iso", lambda: next(ticks))
+    _, manifest = build(["masters", "readme"])
+    readme = (project_root / "brands" / "keystone" / "package" / "README.md").read_text()
+    assert readme.startswith(f"# Keystone logo package\n\nBuilt {manifest.built} by logo-maker.")
+
+
+def test_a_cached_font_without_a_licence_file_is_copied_with_a_warning(project_root):
+    make_final_brand(project_root)
+    (project_root / "assets" / "fonts" / "firacode" / "OFL.txt").unlink()
+    _, manifest = build(["fonts"])
+    assert manifest.warnings == ["font Fira Code has no licence file in assets/fonts/firacode/; confirm its licence before "
+                                 "sending the fonts"]
+    assert [e.path for e in manifest.files] == ["fonts/firacode/FiraCode[wght].ttf", "fonts/FONT-NOTICE.md"]
+    notice = (project_root / "brands" / "keystone" / "package" / "fonts" / "FONT-NOTICE.md").read_text()
+    assert "- Fira Code: OFL, but no licence file came with the cached font: confirm the licence" in notice
+    assert "Logo use is permitted" not in notice
+
+
+def test_brand_md_for_a_concept_without_a_wordmark(project_root):
+    use_concept(make_final_brand(project_root), "tall_frame")  # a symbol alone, with a favicon tier
+    _, manifest = build(DOCS)
+    brand_md = (project_root / "brands" / "keystone" / "package" / "BRAND.md").read_text()
+    assert "| Wordmark |" not in brand_md and "-wordmark-" not in brand_md  # no wordmark to point at
+    assert "| Primary (horizontal) | `keystone-primary-color.svg` |" in brand_md and "| Mark | `keystone-mark-color.svg` |" in brand_md
+    assert "where x is one fifth of the symbol height (64.0 units" in brand_md
+    assert "- Fira Code 600 (OFL); files in `fonts/firacode/`" in brand_md  # brand.json's font, though no type is set in it
+    assert "wordmark skipped: the concept has no full-wordmark" in manifest.warnings
 
 
 def brand_sheet_html(builder: export.PackageBuilder) -> str:

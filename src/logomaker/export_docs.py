@@ -57,8 +57,8 @@ def readme_row(path: str, *cells: str) -> str:
 
 class DocumentGroups:
     """PackageBuilder's document groups (tokens_file, fonts, docs, readme) and what they share. A mixin: it reads the
-    builder's paths, slug, state, brand_dir, final, pkg, paper, outputs, tokens, light, dark, name and entries, and
-    works through its write(), warn(), mark(), svg() and renderer."""
+    builder's paths, slug, state, brand_dir, final, pkg, paper, outputs, tokens, light, dark, name, entries and built,
+    and works through its write(), warn(), mark(), svg() and renderer."""
 
     @cached_property
     def checks(self) -> CheckResult:
@@ -90,7 +90,7 @@ class DocumentGroups:
             weights = dict.fromkeys(chosen.get(slug) or drawn[slug])
             faces.append({"family": entry.family if entry else family, "slug": slug, "weight": "/".join(weights),
                           "license": entry.license if entry else "see licence file",
-                          "cached": bool(fontlib.cached_files(self.paths, family))})
+                          "cached": bool(fontlib.cached_files(self.paths, family)), "fetch": fontlib.fetch_command(family)})
         return sorted(faces, key=lambda face: face["family"])
 
     def font_families(self) -> list[str]:
@@ -159,18 +159,27 @@ class DocumentGroups:
 
     def fonts(self) -> None:
         """Each family the brand uses (typefaces): its TTFs and licence file copied from the font cache into fonts/<slug>/,
-        and its line in fonts/FONT-NOTICE.md. A family that is not cached is left out with a `fonts fetch` warning."""
+        and its line in fonts/FONT-NOTICE.md. A family that is not cached is left out with a `fonts fetch` warning; one
+        cached without a licence file is copied with a warning, and its notice line says to confirm the licence."""
         notice = ["# Fonts", "", "Deliverable SVGs and PDFs are outlined, so they need no fonts. These files are for new material.", ""]
         for face in self.typefaces:
             family = face["family"]
             if not face["cached"]:
-                self.warn(f'font {family} is not cached and was not copied; run logomaker fonts fetch "{family}"')
+                self.warn(f"font {family} is not cached and was not copied; run: {fontlib.fetch_command(family)}")
                 continue
+            licensed = False
             for path in sorted(fontlib.family_dir(self.paths, family).iterdir()):
                 if path.suffix == ".ttf" or path.name in fontlib.LICENCE_FILES:
                     kind = "font file" if path.suffix == ".ttf" else "licence"
+                    licensed = licensed or kind == "licence"
                     self.write(f"fonts/{face['slug']}/{path.name}", path.read_bytes(), f"{family} {kind}")
-            notice.append(f"- {family}: {face['license']}. Logo use is permitted; keep the licence file with the font.")
+            if licensed:
+                notice.append(f"- {family}: {face['license']}. Logo use is permitted; keep the licence file with the font.")
+            else:
+                self.warn(f"font {family} has no licence file in assets/fonts/{face['slug']}/; confirm its licence before "
+                          "sending the fonts")
+                notice.append(f"- {family}: {face['license']}, but no licence file came with the cached font: confirm the licence "
+                              "before using or passing on these files.")
         self.write("fonts/FONT-NOTICE.md", "\n".join(notice) + "\n", "font licences and usage note")
 
     def docs(self) -> None:
@@ -195,11 +204,12 @@ class DocumentGroups:
         self.write("brand-sheet.pdf", pdf, "one-page brand sheet")
 
     def readme(self) -> None:
-        """README.md, the package's index by section (_groups), each file in a readme_row. It runs last, so it lists
-        every file but itself and manifest.json, which its template lists."""
-        index = jinja(self.paths).get_template("readme.md.j2").render(brand=self.state.name, slug=self.slug, built=now_iso(),
-                                                                      groups=self._groups(), row=readme_row)
-        self.write("README.md", index, "file index")
+        """README.md, the package's index by section (_groups), each file in a readme_row, built at the build's one
+        timestamp (the manifest's). It runs last, so it lists every file but itself and manifest.json, which its template
+        lists. Its regenerate note names the fonts fetch command of each family the brand uses."""
+        index = jinja(self.paths).get_template("readme.md.j2").render(brand=self.state.name, slug=self.slug, built=self.built,
+                                                                      groups=self._groups(), row=readme_row, fonts=self.typefaces)
+        self.write("README.md", index + "\n", "file index")
 
 
 def inputs_fingerprint(paths: ProjectPaths, slug: str) -> str:

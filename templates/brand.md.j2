@@ -34,7 +34,7 @@ Contrast (WCAG ratio / APCA Lc):
 {% endfor %}
 ## Typography
 
-{% for f in fonts %}- {{ f.family }} {{ f.weight }} ({{ f.license }}); {% if f.cached %}files in `fonts/{{ f.slug }}/`{% else %}not in this package (run `logomaker fonts fetch "{{ f.family }}"` and rebuild){% endif %}
+{% for f in fonts %}- {{ f.family }} {{ f.weight }} ({{ f.license }}); {% if f.cached %}files in `fonts/{{ f.slug }}/`{% else %}not in this package (run `{{ f.fetch }}` and rebuild){% endif %}
 {% endfor %}
 Deliverable SVGs and PDFs have text converted to outlines. The font files are for new material in the same voice.
 
@@ -51,7 +51,7 @@ Deliverable SVGs and PDFs have text converted to outlines. The font files are fo
 
 Light fields use `color`. Dark fields use `reverse`. Photographs use `white` or `black` inside a clear-space zone. Fields in the primary colour use `white`.
 
-## Web head snippet
+{% if head_snippet %}## Web head snippet
 
 ```html
 {{ head_snippet }}
@@ -59,6 +59,6 @@ Light fields use `color`. Dark fields use `reverse`. Photographs use `white` or 
 
 Replace `https://example.com` in the two preview image URLs with your site's origin, since link previews need absolute URLs; the icon links stay relative to the site root.
 
-## Files
+{% endif %}## Files
 
 See `README.md` for the full index with dimensions.

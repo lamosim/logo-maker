@@ -76,6 +76,12 @@ def family_dir(paths: ProjectPaths, family: str) -> Path:
     return paths.fonts / slug
 
 
+def fetch_command(family: str) -> str:
+    """The command that caches `family`, its name quoted for the shell as needed: logomaker fonts fetch 'Fira Code'.
+    Every hint to fetch a family (font_path, the territories board, the package's fonts and BRAND.md) gives it."""
+    return f"logomaker fonts fetch {shlex.quote(family)}"
+
+
 def cached_files(paths: ProjectPaths, family: str) -> list[Path]:
     folder = family_dir(paths, family)
     return sorted(folder.glob("*.ttf")) if folder.is_dir() else []
@@ -98,7 +104,7 @@ def _describe(path: Path) -> tuple[bool, bool, int | None]:
 def font_path(paths: ProjectPaths, family: str, weight: int = 400, italic: bool = False) -> FontFile:
     files = cached_files(paths, family)
     if not files:
-        raise CliError(f"Font family {family!r} is not cached. run: logomaker fonts fetch {shlex.quote(family)}", code=EXIT_EXTERNAL)
+        raise CliError(f"Font family {family!r} is not cached. run: {fetch_command(family)}", code=EXIT_EXTERNAL)
     described = [(p, *_describe(p)) for p in files]
     variables = [d for d in described if d[1] and d[2] == italic]
     if variables:

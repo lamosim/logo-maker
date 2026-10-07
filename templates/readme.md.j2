@@ -1,9 +1,8 @@
 # {{ brand }} logo package
 
-Built {{ built }} by logo-maker. To regenerate it, copy the files in `source/` back: `concept.py`, `params.json`, `tokens.json` and `rationale.md` into `brands/{{ slug }}/final/`, and `brand.json` and `strategy.json` into `brands/{{ slug }}/` beside it. Then run `uv run logomaker concept run {{ slug }} final` (packaging needs a passing audit of the final mark) and `uv run logomaker package build {{ slug }}`; `package build` reads `final/`, never `source/`.
+Built {{ built }} by logo-maker. To regenerate it, copy the files in `source/` back: `concept.py`, `params.json`, `tokens.json` and `rationale.md` into `brands/{{ slug }}/final/`, and `brand.json` and `strategy.json` into `brands/{{ slug }}/` beside it.{% if fonts %} The brand's font families must be in the font cache before the next step: run {% for f in fonts %}`uv run {{ f.fetch }}`{{ ", " if not loop.last }}{% endfor %}, or copy each folder in this package's `fonts/` into `assets/fonts/`.{% endif %} Then run `uv run logomaker concept run {{ slug }} final` (packaging needs a passing audit of the final mark) and `uv run logomaker package build {{ slug }}`; `package build` reads `final/`, never `source/`.
 
 Preview the `reverse` and `white` PNGs on a dark background; they are transparent. CMYK values in the PDFs, EPS files and `tokens.json` are a naive conversion; confirm with your printer before a press run.
-
 {% for group, entries in groups %}
 ## {{ group }}
 {% if group == "Print" %}
@@ -12,8 +11,7 @@ The PDFs and EPS files hold outlines only, no live text, so the default font ent
 | File | Purpose | Size |
 |---|---|---|
 {% for e in entries %}{{ row(e.path, e.purpose, (e.width ~ "x" ~ e.height) if e.width else "") }}
-{% endfor %}
-{% endfor %}
+{% endfor %}{% endfor %}
 ## Package files
 
 | File | Purpose |

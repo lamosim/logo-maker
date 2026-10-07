@@ -151,7 +151,7 @@ def test_uncached_fonts_exit_3_naming_every_family_without_fetching(project_root
     code, payload = board("--no-open")
     assert code == 3 and payload["errors"] == [
         "territories/territories.json names font families that are not cached: Nope Sans, Nada Serif "
-        '(run: logomaker fonts fetch "Nope Sans"; run: logomaker fonts fetch "Nada Serif")']
+        "(run: logomaker fonts fetch 'Nope Sans'; run: logomaker fonts fetch 'Nada Serif')"]  # quoted as the shell needs, as fonts quotes
     assert sorted(p.name for p in folder.iterdir()) == ["territories.json"]
 
 

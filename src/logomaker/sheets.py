@@ -255,7 +255,7 @@ def territories_board(paths: ProjectPaths, slug: str, renderer: Renderer | None 
     families = dict.fromkeys(f.family for t in spec.territories for f in t.fonts)
     uncached = [family for family in families if not fontlib.cached_files(paths, family)]
     if uncached:
-        hints = "; ".join(f'run: logomaker fonts fetch "{family}"' for family in uncached)
+        hints = "; ".join(f"run: {fontlib.fetch_command(family)}" for family in uncached)
         raise CliError(f"{label} names font families that are not cached: {', '.join(uncached)} ({hints})", code=EXIT_EXTERNAL)
     cards = []
     for t in spec.territories:
