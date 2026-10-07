@@ -1,6 +1,8 @@
+import html as htmllib
 import io
 import json
 import re
+import shutil
 from pathlib import Path
 
 import pytest
@@ -233,6 +235,25 @@ def test_the_sheet_marks_an_audit_that_no_longer_matches_the_concept(project_roo
     assert heading(sheet(audit=fresh)) == "audit ok"  # concept run hands the sheet its own fresh audit
 
 
+def test_the_stale_hint_audits_against_the_tokens_file_the_sheet_judged_by(project_root):
+    folder = install_concept(project_root, "good")
+    palette = write_palette(project_root)
+    auditlib.audit_concept(project(), "keystone", "01-good")  # against the concept's own tokens: stale for the palette
+
+    def stale_hint(tokens_path) -> str:
+        info = sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer(), tokens_path=tokens_path)
+        return htmllib.unescape(heading(info))
+
+    assert stale_hint(palette) == f"audit ok (stale — re-run: logomaker concept audit keystone 01-good --tokens {palette})"
+    spaced = shutil.copy(palette, project_root / "my palette.json")  # a path the shell needs quoted
+    assert stale_hint(spaced) == f"audit ok (stale — re-run: logomaker concept audit keystone 01-good --tokens '{spaced}')"
+    auditlib.audit_concept(project(), "keystone", "01-good", tokens_path=palette)  # the audit that hint runs
+    assert stale_hint(palette) == "audit ok"
+    (folder / "audit.json").write_text("{not json")  # an unreadable audit names the same command
+    with pytest.raises(CliError, match=re.escape(f"; re-run: logomaker concept audit keystone 01-good --tokens {palette}")):
+        stale_hint(palette)
+
+
 def test_the_sheet_draws_the_outputs_it_is_given_without_rebuilding(project_root, monkeypatch):
     folder = install_concept(project_root, "good")
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
@@ -274,6 +295,7 @@ def test_a_long_idea_stays_on_one_header_line(project_root):
 
 
 def test_one_colour_test_draws_the_audited_tiers_with_fallbacks():
+    assert sheets.ONE_COLOUR == ((64, "full-symbol"), (32, "small"))  # each at the size the audit measures it (MIN_FEATURE)
     every_tier = {"full-lockup": 1, "full-symbol": 1, "small": 1, "favicon": 1}
     assert sheets._one_colour_outputs(every_tier) == [(64, "full-symbol"), (32, "small")]
     assert sheets._one_colour_outputs({"full-lockup": 1, "full-symbol": 1}) == [(64, "full-symbol"), (32, "full-symbol")]

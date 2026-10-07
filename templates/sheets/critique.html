@@ -38,7 +38,7 @@
   {% endfor %}
   <div class="audit">
     {% if audit %}
-    <div><b>audit {{ 'ok' if audit.ok else 'FAILED' }}{% if audit.stale %} (stale — re-run: logomaker concept audit {{ slug }} {{ concept }}){% endif %}</b>{% if not audit.rendered %} (no raster checks){% endif %}</div>
+    <div><b>audit {{ 'ok' if audit.ok else 'FAILED' }}{% if audit.stale %} (stale — re-run: {{ rerun }}){% endif %}</b>{% if not audit.rendered %} (no raster checks){% endif %}</div>
     <div class="lines">{% for line in audit.lines %}<div class="{{ line.kind }}">{{ line.text }}</div>{% endfor %}</div>
     {% else %}<b>no audit yet</b>{% endif %}
   </div>

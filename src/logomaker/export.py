@@ -41,9 +41,9 @@ CHAINS = {
     "horizontal": ("full-horizontal", "full-lockup"),
     "stacked": ("full-stacked", "full-lockup"),
     "wordmark": ("full-wordmark",),
-    "mark": ("full-symbol", "full-lockup"),
-    "small": ("small", *conceptlib.TIER_FALLBACKS["small"]),
-    "favicon": ("favicon", *conceptlib.TIER_FALLBACKS["favicon"]),
+    "mark": conceptlib.tier_chain("full-symbol"),
+    "small": conceptlib.tier_chain("small"),
+    "favicon": conceptlib.tier_chain("favicon"),
 }
 # The variant whose chain (CHAINS) is the one kit.concept.size_tier gives a size, by that chain's first output.
 TIER_VARIANTS = {"full-symbol": "mark", "small": "small", "favicon": "favicon"}

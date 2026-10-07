@@ -22,6 +22,12 @@ def snapshot(build):
     return {p.name: p.read_bytes() for p in sorted(build.iterdir())}
 
 
+def test_each_tier_falls_back_to_full_lockup():
+    assert conceptlib.tier_chain("full-symbol") == ("full-symbol", "full-lockup")
+    assert conceptlib.tier_chain("small") == ("small", *conceptlib.TIER_FALLBACKS["small"]) == ("small", "full-symbol", "full-lockup")
+    assert conceptlib.tier_chain("favicon") == ("favicon", "small", "full-symbol", "full-lockup")
+
+
 def test_size_tier_is_the_chain_pick_output_follows():
     assert conceptlib.size_tier(1024) == conceptlib.size_tier(96) == ("full-symbol", "full-lockup")
     assert conceptlib.size_tier(95) == conceptlib.size_tier(33) == ("small", "full-symbol", "full-lockup")

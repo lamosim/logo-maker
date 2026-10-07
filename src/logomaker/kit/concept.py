@@ -168,13 +168,16 @@ def first_present(outputs: dict, chain: Iterable[str]) -> str:
     return next((name for name in chain if name in outputs), "full-lockup")
 
 
+def tier_chain(tier: str) -> tuple[str, ...]:
+    """`tier` (full-symbol, small or favicon), then the outputs that stand in for it when it was not built, best first:
+    TIER_FALLBACKS for small and favicon, full-lockup for full-symbol. Every chain ends at full-lockup."""
+    return (tier, *TIER_FALLBACKS.get(tier, ("full-lockup",)))
+
+
 def size_tier(size: int) -> tuple[str, ...]:
     """The outputs that draw the mark `size` px across, best first (spec section 6.4): full-symbol from 96 px, small
-    down to 33 px, favicon at 32 px and below, each falling back as TIER_FALLBACKS says, to end at full-lockup."""
-    if size >= 96:
-        return ("full-symbol", "full-lockup")
-    tier = "small" if size > 32 else "favicon"
-    return (tier, *TIER_FALLBACKS[tier])
+    down to 33 px, favicon at 32 px and below, each with its fallbacks (tier_chain)."""
+    return tier_chain("full-symbol" if size >= 96 else "small" if size > 32 else "favicon")
 
 
 def pick_output(outputs: dict, size: int) -> str:

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from pydantic import ValidationError
 from . import fonts as fontlib
 from . import mockups as mockuplib
 from . import registry
-from .audit import concept_fingerprint, text_roles
+from .audit import MIN_FEATURE, concept_fingerprint, text_roles
 from .color import CVD_KINDS, Tokens, check_tokens, chip_text, load_tokens, palettes_of, simulate_cvd
 from .color import info as color_info
 from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text, union
@@ -25,8 +26,9 @@ from .schemas import AuditResult, BrandState, Scorecard, TerritoriesSpec, Territ
 
 SHEET_W, SHEET_H = 2000, 1400
 LADDER = (256, 128, 64, 48, 32, 24, 16)
-# The one-colour test draws each tier at the size the audit measures it (full-symbol 64 px, small 32 px), falling back as exports do.
-ONE_COLOUR = ((64, ("full-symbol", "full-lockup")), (32, ("small", "full-symbol", "full-lockup")))
+# The one-colour test draws the full-symbol and small tiers at the size the audit measures each (MIN_FEATURE: 64 and 32 px),
+# falling back as exports do (kit.concept.tier_chain).
+ONE_COLOUR = tuple((MIN_FEATURE[tier][0], tier) for tier in ("full-symbol", "small"))
 AUDIT_ROWS = 24  # 16 px text rows per column of the audit box; the template sizes the box to fit them
 AUDIT_LINES = 2 * AUDIT_ROWS  # the box has two columns
 SHOWN_INFO = ("anchors", "min_feature")  # passing measurements listed after the failures and warnings
@@ -84,7 +86,7 @@ def next_round(folder: Path, pattern: str = "renders/round-*") -> int:
 
 
 def _one_colour_outputs(outputs: dict) -> list[tuple[int, str]]:
-    return [(size, conceptlib.first_present(outputs, chain)) for size, chain in ONE_COLOUR]
+    return [(size, conceptlib.first_present(outputs, conceptlib.tier_chain(tier))) for size, tier in ONE_COLOUR]
 
 
 def _audit_lines(audit: AuditResult, budget: int = AUDIT_LINES) -> list[dict]:
@@ -100,21 +102,20 @@ def _audit_lines(audit: AuditResult, budget: int = AUDIT_LINES) -> list[dict]:
     return lines
 
 
-def _saved_audit(folder: Path, slug: str) -> AuditResult | None:
-    """<concept>/audit.json if there is one; a file that is not a valid audit is a CliError naming it, and the command
-    that writes it again."""
+def _saved_audit(folder: Path, rerun: str) -> AuditResult | None:
+    """<concept>/audit.json if there is one; a file that is not a valid audit is a CliError naming it, and `rerun`, the
+    command that writes it again."""
     path = folder / "audit.json"
     if not path.is_file():
         return None
-    rerun = f"re-run: logomaker concept audit {slug} {folder.name}"
     try:
         return AuditResult.model_validate_json(path.read_text(encoding="utf-8"))
     except ValidationError as err:  # malformed JSON or the wrong fields
         first = err.errors()[0]
         loc = ".".join(str(p) for p in first["loc"]) or "root"
-        raise CliError(f"{path} is not a valid audit ({loc}: {first['msg']}); {rerun}") from err
+        raise CliError(f"{path} is not a valid audit ({loc}: {first['msg']}); re-run: {rerun}") from err
     except ValueError as err:  # bytes that are not UTF-8
-        raise CliError(f"{path} is not a valid audit ({err}); {rerun}") from err
+        raise CliError(f"{path} is not a valid audit ({err}); re-run: {rerun}") from err
 
 
 def _read_tokens(folder: Path, tokens_path: str | Path | None = None) -> Tokens | None:
@@ -165,8 +166,9 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
     """Write <concept>/renders/round-N/critique.{html,png}.
 
     `audit` defaults to the concept's audit.json, if there is one, and `tokens_path` (for the colour panels) to its
-    tokens.json. An audit whose fingerprint no longer matches the concept and tokens is marked stale. `outputs` are the
-    concept's built outputs when the caller has them already (concept run); otherwise the sheet builds them.
+    tokens.json. An audit whose fingerprint no longer matches the concept and tokens is marked stale, with the audit
+    that would match: `--tokens` the same file when the sheet was given one. `outputs` are the concept's built outputs
+    when the caller has them already (concept run); otherwise the sheet builds them.
     """
     folder = conceptlib.concept_folder(paths, slug, concept_name)
     module = conceptlib.load_concept(folder)
@@ -177,14 +179,17 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
     panels = _strip_panels(outputs, 512, 256, colour_px=384, light=light, dark=dark)
     panels["one_colour"] = [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)}
                             for s, name in _one_colour_outputs(outputs)]
+    rerun = f"logomaker concept audit {slug} {concept_name}"  # judged against these tokens, so audited against them too
+    if tokens_path:
+        rerun += f" --tokens {shlex.quote(str(tokens_path))}"
     if audit is None:
-        audit = _saved_audit(folder, slug)
+        audit = _saved_audit(folder, rerun)
     summary = None
     if audit is not None:
         stale = audit.fingerprint != concept_fingerprint(paths, slug, folder, tokens_path)  # made from other inputs than this sheet's
         summary = {"ok": audit.ok, "rendered": audit.rendered, "stale": stale, "lines": _audit_lines(audit)}
     html = jinja(paths).get_template("sheets/critique.html").render(
-        slug=slug, concept=concept_name, round_n=round_n, idea=module.meta.idea, panels=panels, audit=summary,
+        slug=slug, concept=concept_name, round_n=round_n, idea=module.meta.idea, panels=panels, audit=summary, rerun=rerun,
         audit_rows=AUDIT_ROWS, width=SHEET_W, height=SHEET_H,
     )
     html_path, png_path = _write_sheet(renderer, html, folder / "renders" / f"round-{round_n}", "critique", SHEET_W, SHEET_H)

@@ -134,6 +134,19 @@ def test_the_other_browser_tabs_show_kit_drawn_icons(project_root):
     assert [icon in tab for icon in ctx["tab_icons"]] == [True, True] and "background:#8a8f98" not in tab
 
 
+def test_each_mockup_fits_its_grid_column(project_root):
+    # The concept sheet places every mockup in a fixed column; a mockup is as wide as its style says only when its padding
+    # and side borders sit inside that width (border-box), else it spills into the gap and touches its neighbour.
+    sheet = (project_root / "templates" / "sheets" / "concepts.html").read_text()
+    columns = [int(w) for w in re.search(r"grid-template-columns:((?:\d+px ?)+)", sheet).group(1).replace("px", "").split()]
+    for kind in mockups.MOCKUPS:
+        column = int(re.search(rf'\[data-mockup="{kind}"\]\{{grid-column:(\d)', sheet).group(1))
+        root = (project_root / "templates" / "mockups" / f"{kind}.html").read_text()
+        style = re.search(r'^<div class="mockup"[^>]* style="([^"]*)"', root).group(1)
+        assert int(re.search(r"(?:^|;)width:(\d+)px", style).group(1)) <= columns[column - 1], kind
+        assert "box-sizing:border-box" in style or not re.search(r"padding|border:", style), kind
+
+
 def test_sheet_refuses_unvetted_concepts(project_root, no_chrome, monkeypatch):
     prepare(project_root, "01-good")
     weak = prepare(project_root, "02-weak", gate_scores={"simple": 2})
