@@ -14,7 +14,7 @@ from . import registry
 from .audit import TIER_FALLBACKS
 from .color import enrich_tokens, load_tokens
 from .kit import concept as conceptlib
-from .kit.mark import Mark
+from .kit.mark import ROLES, Mark
 from .kit.shape import fmt
 from .output import EXIT_EXTERNAL, EXIT_VERIFY, CliError
 from .paths import ProjectPaths
@@ -41,6 +41,8 @@ CHAINS = {
     "small": ("small", *TIER_FALLBACKS["small"]),
     "favicon": ("favicon", *TIER_FALLBACKS["favicon"]),
 }
+# The tier sheets.pick_output prefers at each size, and the variant whose chain (CHAINS) falls back from it as pick_output does.
+SIZE_TIERS = {"full-symbol": "mark", "small": "small", "favicon": "favicon"}
 
 
 def square_viewbox(svg: str, fraction: float) -> str:
@@ -50,6 +52,11 @@ def square_viewbox(svg: str, fraction: float) -> str:
     side = max(w, h) / fraction
     view = (x + w / 2 - side / 2, y + h / 2 - side / 2, side, side)
     return svg.replace(match.group(0), f'viewBox="{" ".join(fmt(v) for v in view)}"', 1)
+
+
+def square_fill(side: int, colour: str) -> str:
+    """A `side`-unit square SVG filled with `colour`, drawn as a path: every SVG in the package is paths only."""
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {side} {side}"><path d="M0 0H{side}V{side}H0Z" fill="{colour}"/></svg>'
 
 
 def _swap_in(staging: Path, package: Path, aside: Path) -> None:
@@ -71,7 +78,7 @@ def _swap_in(staging: Path, package: Path, aside: Path) -> None:
 
 
 class PackageBuilder:
-    GROUPS: list[str] = ["masters", "pngs", "flattened", "favicons"]
+    GROUPS: list[str] = ["masters", "pngs", "flattened", "favicons", "apple", "android", "social", "banners", "previews", "commerce"]
 
     def __init__(self, paths: ProjectPaths, slug: str, paper: str = "letter"):
         """Check final/ before anything renders: its four files, then an audit.json that vouches for the final mark as it
@@ -125,8 +132,8 @@ class PackageBuilder:
 
     def mark_at(self, size: int) -> Mark:
         """The output that draws the mark `size` px across, as sheets.pick_output picks it: full-symbol from 96 px, small
-        down to 33 px, favicon below, each falling back to the next larger build."""
-        return self.outputs[pick_output(self.outputs, size)]
+        down to 33 px, favicon below, each falling back to the next larger build, with mark()'s warning when it does."""
+        return self.mark(SIZE_TIERS[pick_output(SIZE_TIERS, size)])
 
     def svg(self, variant: str, colour: str) -> str | None:
         mark = self.mark(variant)
@@ -167,9 +174,10 @@ class PackageBuilder:
 
     @staticmethod
     def compose(width: int, height: int, background: str | None, art: bytes | None = None,
-                box: tuple[int, int, int, int] | None = None) -> bytes:
+                box: tuple[int, int, int, int] | None = None, alpha: bool = True) -> bytes:
         """A `width` x `height` PNG on `background` (transparent when None) with `art`, a PNG, centred in `box` (x, y, w,
-        h; the whole canvas by default) and shrunk to fit it if it is larger."""
+        h; the whole canvas by default) and shrunk to fit it if it is larger. alpha=False saves it without an alpha
+        channel (RGB), for an opaque background."""
         canvas = Image.new("RGBA", (width, height), background or (0, 0, 0, 0))
         if art is not None:
             with Image.open(io.BytesIO(art)) as opened:
@@ -179,18 +187,35 @@ class PackageBuilder:
             if scale < 1.0:
                 image = image.resize((max(1, round(image.width * scale)), max(1, round(image.height * scale))), Image.Resampling.LANCZOS)
             canvas.alpha_composite(image, (bx + (bw - image.width) // 2, by + (bh - image.height) // 2))
-        return encoded(canvas, "PNG")
+        return encoded(canvas if alpha else canvas.convert("RGB"), "PNG")
 
     @staticmethod
     def _centered(size_w: int, size_h: int, art_w: int, art_h: int) -> tuple[int, int, int, int]:
         """The (x, y, w, h) box of an `art_w` x `art_h` area centred on a `size_w` x `size_h` canvas."""
         return (size_w - art_w) // 2, (size_h - art_h) // 2, art_w, art_h
 
-    def _tile(self, relpath: str, size: int, art_svg: str, fraction: float, purpose: str, background: str | None) -> None:
-        """Write a `size` px square PNG on `background`: `art_svg` rendered to `fraction` of the side, centred."""
-        side = round(size * fraction)
-        art = self.render_fit(art_svg, side, side)
-        self.write(relpath, self.compose(size, size, background, art, self._centered(size, size, side, side)), purpose, size, size)
+    def _tile(self, relpath: str, size: int, art_svg: str, fraction: float, purpose: str, background: str | None,
+              alpha: bool = True) -> None:
+        """Write a `size` px square PNG on `background`: `art_svg` rendered to `fraction` of the side, centred (_place)."""
+        self._place(relpath, size, size, art_svg, fraction, purpose, background, alpha=alpha)
+
+    def _place(self, relpath: str, width: int, height: int, art_svg: str, fraction: float, purpose: str, background: str | None,
+               safe: tuple[int, int, int, int] | None = None, alpha: bool = True) -> None:
+        """Write a `width` x `height` PNG on `background` (transparent when None): `art_svg` rendered as large as fits
+        `fraction` of the `safe` box (x, y, w, h; the whole canvas by default), centred in it. Blank art stops the build
+        (exit 4) before it is composed: on one flat colour the composite would be refused too, on a surface of several
+        colours it would not. alpha=False writes the PNG without an alpha channel (compose)."""
+        bx, by, bw, bh = safe or (0, 0, width, height)
+        art_w, art_h = round(bw * fraction), round(bh * fraction)
+        art = self.render_fit(art_svg, art_w, art_h)
+        self._refuse_blank(f"{relpath} (art)", art)
+        x, y, _, _ = self._centered(bw, bh, art_w, art_h)
+        self.write(relpath, self.compose(width, height, background, art, (bx + x, by + y, art_w, art_h), alpha), purpose, width, height)
+
+    def _on_primary(self) -> dict[str, str]:
+        """The palette of art on a primary-colour tile: every role, paper too, in the light paper colour (as the concept
+        sheet draws its app icon)."""
+        return {role: self.light["paper"] for role in (*ROLES, "paper")}
 
     # ---- groups --------------------------------------------------------
     def masters(self) -> None:
@@ -249,6 +274,72 @@ class PackageBuilder:
         self.write("manifest.webmanifest", env.get_template("manifest.webmanifest.j2").render(**ctx), "web app manifest")
         self.write("favicon-head.html", env.get_template("favicon-head.html.j2").render(**ctx),
                    "HTML head snippet for favicons and link previews")
+
+    def apple(self) -> None:
+        art = self.mark_at(1024).to_svg("color", palette=self._on_primary())
+        primary = self.light["primary"]
+        self._tile("ios-app-icon-1024.png", 1024, art, 0.6, "iOS, iPadOS and macOS app icon: opaque, unmasked square", primary,
+                   alpha=False)  # App Store Connect refuses an icon with an alpha channel
+        self.write("app-icon-layers/background.svg", square_fill(1024, primary), "Icon Composer background layer")
+        self.write("app-icon-layers/foreground.svg", square_viewbox(art, 0.6), "Icon Composer foreground layer, mark at 60% of the canvas")
+
+    def android(self) -> None:
+        on_primary, primary = self._on_primary(), self.light["primary"]
+        layer, inside = self.mark_at(108), 660 / 1080  # the tier for the 108 dp canvas; the art inside its central 660 of 1080 units
+        self.write("android/ic_launcher_foreground.svg", square_viewbox(layer.to_svg("color", palette=on_primary), inside),
+                   "adaptive icon foreground: 1080-unit canvas, art inside the central 660 (the 66 dp safe zone)")
+        self.write("android/ic_launcher_background.svg", square_fill(1080, primary), "adaptive icon background layer, 1080-unit canvas")
+        self.write("android/ic_launcher_monochrome.svg", square_viewbox(layer.to_svg("black"), inside),
+                   "adaptive icon monochrome layer (themed icons): 1080-unit canvas, art inside the central 660")
+        for density, px in (("mdpi", 48), ("hdpi", 72), ("xhdpi", 96), ("xxhdpi", 144), ("xxxhdpi", 192)):
+            art = self.mark_at(px).to_svg("color", palette=on_primary)
+            self._tile(f"android/mipmap-{density}/ic_launcher.png", px, art, 0.6, f"legacy launcher icon, {density}", primary)
+        art = self.mark_at(512).to_svg("color", palette=on_primary)
+        self._tile("play-store-icon-512.png", 512, art, 0.6, "Google Play listing icon: full square, no corners, no shadow", primary)
+
+    def social(self) -> None:
+        compact = self.outputs.get("compact")  # spec section 6.4 draws avatars with it, when the concept built one
+        for size in (320, 400, 512, 720, 800):
+            art = (compact or self.mark_at(size)).to_svg("color", palette=self.light)
+            self._tile(f"avatar-{size}.png", size, art, 0.56, f"profile avatar {size}: art inside the 80% circle crop", self.light["paper"])
+
+    def banners(self) -> None:
+        svg = self.svg("horizontal", "color")
+        if svg is None:
+            self.skip("banners", "the concept has no horizontal lockup")
+            return
+        for relpath, width, height, safe, purpose in (  # safe: the box (x, y, w, h) the logo stays inside; None, the whole banner
+            ("banner-x-1500x500.png", 1500, 500, (0, 60, 1500, 380), "X header; top and bottom 60 px kept clear"),
+            ("banner-linkedin-personal-1584x396.png", 1584, 396, None, "LinkedIn personal banner"),
+            ("banner-linkedin-page-1512x256.png", 1512, 256, None, "LinkedIn page cover"),
+            ("banner-youtube-2560x1440.png", 2560, 1440, (662, 551, 1235, 338), "YouTube channel art; logo inside the 1235x338 safe area"),
+            ("banner-facebook-851x315.png", 851, 315, None, "Facebook page cover"),
+            ("banner-bluesky-1500x500.png", 1500, 500, None, "Bluesky banner"),
+        ):
+            self._place(relpath, width, height, svg, 0.6, purpose, self.light["paper"], safe)
+
+    def previews(self) -> None:
+        svg = self.svg("horizontal", "color")
+        if svg is None:
+            self.skip("previews", "the concept has no horizontal lockup")
+            return
+        for relpath, width, height, purpose in (("og-image-1200x630.png", 1200, 630, "Open Graph link preview"),
+                                                ("x-card-1200x600.png", 1200, 600, "X summary_large_image card")):
+            self._place(relpath, width, height, svg, 0.6, purpose, self.light["paper"])
+
+    def commerce(self) -> None:
+        svg = self.svg("horizontal", "color")
+        if svg is None:
+            self.skip("commerce", "the concept has no horizontal lockup")
+            return
+        for relpath, width, height, purpose in (("email-signature-logo@2x.png", 400, 100, "email signature logo, shown at 200x50"),
+                                                ("shopify-header-logo@2x.png", 800, 200, "Shopify header logo, shown at 400x100")):
+            self._place(relpath, width, height, svg, 1.0, purpose, None)  # transparent, the logo as large as the canvas allows
+        png = self.png_bytes(svg, 1024)
+        self.write("stripe-logo.png", png, "Stripe branding logo, 1024 wide", *image_size(png))
+        for relpath, size, purpose in (("stripe-icon-512.png", 512, "Stripe branding icon"),
+                                       ("gbp-logo-720.png", 720, "Google Business Profile logo")):
+            self._tile(relpath, size, self.mark_at(size).to_svg("color", palette=self.light), 0.62, purpose, self.light["paper"])
 
     # ---- driver --------------------------------------------------------
     def build(self, renderer: Renderer) -> Manifest:
