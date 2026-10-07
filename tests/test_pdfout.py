@@ -1,4 +1,5 @@
 import hashlib
+import re
 import time
 from pathlib import Path
 
@@ -64,6 +65,34 @@ def test_pdf_rgb_cmyk_and_black(tmp_path):
     assert not (tmp_path / "mono.pdf").exists()  # refused before anything is written
 
 
+@pytest.mark.parametrize(("variant", "mode", "message"), [
+    ("colour", "rgb", "unknown variant 'colour'; use color, reverse, black or white"),
+    ("color", "CMYK", "mode must be rgb or cmyk, got 'CMYK'"),  # it wrote RGB without a word
+    ("mono", "cmyk", "the mono variant cannot be printed; use color, reverse, black or white"),
+])
+def test_an_unknown_variant_or_mode_is_refused_before_a_file_is_written(tmp_path, variant, mode, message):
+    for write, suffix in ((pdfout.mark_to_pdf, "pdf"), (pdfout.mark_to_eps, "eps")):
+        with pytest.raises(ValueError) as err:
+            write(sample_mark(), tmp_path / f"out.{suffix}", variant, PALETTE, mode)
+        assert str(err.value) == message and not (tmp_path / f"out.{suffix}").exists()
+
+
+def test_the_art_stands_upright(tmp_path):
+    # A T: the bar, in primary, across the top 40 of its 200 units; the stem, in secondary, below it.
+    tee = Mark(symbol=Composite([(rect(-100, 60, 200, 40), "primary"), (rect(-20, -100, 40, 160), "secondary")]))
+    content = PdfReader(str(pdfout.mark_to_pdf(tee, tmp_path / "t.pdf", "color", PALETTE))).pages[0].get_contents().get_data()
+    matrices = [[float(v) for v in m.split()] for m in re.findall(rb"((?:-?[\d.]+ ){6})cm\b", content)]
+    # Every transform keeps y pointing up, as the kit's does: the page is the art's box scaled by a quarter, its lower-left
+    # corner (-100, -100) moved to the origin, never flipped.
+    assert [.25, 0, 0, .25, 25, 25] in matrices and all(m[3] > 0 for m in matrices), matrices
+    eps = pdfout.mark_to_eps(tee, tmp_path / "t.eps", "color", PALETTE).read_text()
+    assert "%%BoundingBox: 0 0 50 50" in eps.splitlines()
+    blocks = {colour: re.findall(r"^[\d.]+ ([\d.]+) [ml]$", body, flags=re.M)
+              for colour, body in re.findall(r"^gsave\n([^\n]+) setcmykcolor\n(.*?)^grestore", eps, flags=re.M | re.S)}
+    bar, stem = ([float(y) for y in blocks[colour]] for colour in ("0 .62 .82 .09", "0 .13 .23 .88"))
+    assert (min(bar), max(bar)) == (40, 50) and (min(stem), max(stem)) == (0, 40)  # the bar at the top of the box
+
+
 def test_eps(tmp_path):
     eps = pdfout.mark_to_eps(sample_mark(), tmp_path / "mark.eps", "color", PALETTE, "cmyk")
     text = eps.read_text(errors="ignore")
@@ -105,7 +134,17 @@ def test_print_group_writes_files(project_root):
     for entry in manifest.files:
         raw = (pkg / entry.path).read_bytes()
         assert (entry.sha256, entry.bytes) == (hashlib.sha256(raw).hexdigest(), len(raw)), entry.path
-    assert "naive" in manifest.files[1].purpose and manifest.files[-1].purpose == "mark legacy EPS for old print vendors"
+    purposes = {e.path: e.purpose for e in manifest.files}
+    assert purposes["keystone-primary-rgb.pdf"] == "primary vector PDF, RGB, for screens and digital print"
+    assert purposes["keystone-primary-cmyk.pdf"] == "primary vector PDF, CMYK (naive values; confirm with the printer)"
+    assert purposes["keystone-primary-black.pdf"] == "primary vector PDF, black only (100% K)"
+    assert purposes["keystone-mark-cmyk.eps"] == "mark legacy CMYK EPS for old print vendors (naive values; confirm with the printer)"
+    # Each PDF names itself and its brand, and so has an ID of its own; the producer and creator are logomaker.
+    infos = {path: PdfReader(str(pkg / path)) for path in ("keystone-primary-rgb.pdf", "keystone-mark-cmyk.pdf")}
+    assert {path: (r.metadata["/Title"], r.metadata["/Author"], r.metadata["/Creator"]) for path, r in infos.items()} == {
+        "keystone-primary-rgb.pdf": ("Keystone logo, primary, rgb", "Keystone", "logomaker"),
+        "keystone-mark-cmyk.pdf": ("Keystone logo, mark, cmyk", "Keystone", "logomaker")}
+    assert len({r.trailer["/ID"][0] for r in infos.values()}) == 2
     box = builder.mark("primary").bounds()  # the page is the art: 1000 kit units print 250 pt
     page = PdfReader(str(pkg / "keystone-primary-cmyk.pdf")).pages[0]
     assert float(page.mediabox.width) == pytest.approx(box.w * pdfout.UNIT_PT, abs=1e-3)
@@ -116,6 +155,7 @@ def test_print_group_writes_files(project_root):
     assert colour_ops(pkg / "keystone-mark-cmyk.pdf") == [EMBER_CMYK]
     assert {op for variant in export.PNG_VARIANTS for op in colour_ops(pkg / f"keystone-{variant}-black.pdf")} == {b"0 0 0 1 k"}
     assert "0 .62 .82 .09 setcmykcolor" in (pkg / "keystone-mark-cmyk.eps").read_text().splitlines()
+
 
 
 def test_print_files_hash_the_same_every_build(project_root, next_day):

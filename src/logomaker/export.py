@@ -391,19 +391,22 @@ class PackageBuilder(DocumentGroups):
         """Vector print files drawn from the kit's paths (pdfout), never through Chrome: an RGB, a CMYK and a black PDF of
         each named lockup, and a CMYK EPS of the primary lockup and of the mark. A wordmark the concept cannot draw is left
         out (mark() warns); every other lockup's chain ends at full-lockup."""
+        naive = "naive values; confirm with the printer"
         for variant in PNG_VARIANTS:
             mark = self.mark(variant)
             if mark is None:
                 continue
-            for suffix, colour, palette, mode in (("rgb", "color", self.light, "rgb"), ("cmyk", "color", self.light, "cmyk"),
-                                                  ("black", "black", None, "cmyk")):
+            for suffix, colour, palette, mode, about in (("rgb", "color", self.light, "rgb", "RGB, for screens and digital print"),
+                                                         ("cmyk", "color", self.light, "cmyk", f"CMYK ({naive})"),
+                                                         ("black", "black", None, "cmyk", "black only (100% K)")):
                 relpath = f"{self.name}-{variant}-{suffix}.pdf"
-                pdfout.mark_to_pdf(mark, self.pkg / relpath, colour, palette, mode)
-                self.register(relpath, f"{variant} vector PDF, {suffix} (CMYK values are naive; confirm with the printer)")
+                pdfout.mark_to_pdf(mark, self.pkg / relpath, colour, palette, mode, title=f"{self.state.name} logo, {variant}, {suffix}",
+                                   author=self.state.name)
+                self.register(relpath, f"{variant} vector PDF, {about}")
         for variant in ("primary", "mark"):
             relpath = f"{self.name}-{variant}-cmyk.eps"
             pdfout.mark_to_eps(self.mark(variant), self.pkg / relpath, "color", self.light, "cmyk")
-            self.register(relpath, f"{variant} legacy EPS for old print vendors")
+            self.register(relpath, f"{variant} legacy CMYK EPS for old print vendors ({naive})")
 
     # ---- driver --------------------------------------------------------
     def build(self, renderer: Renderer | None = None) -> Manifest:

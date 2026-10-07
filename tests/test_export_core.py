@@ -303,6 +303,7 @@ def test_a_build_given_no_renderer_stops_at_the_first_group_that_renders(project
     with pytest.raises(CliError, match="given no renderer") as err:
         builder.build()
     assert err.value.code == 2
+    assert builder.entries and all(e.path.endswith(".svg") for e in builder.entries)  # the masters ran before the stop
 
 
 def test_package_build_reports_the_package_and_every_warning(project_root, monkeypatch):
