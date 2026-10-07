@@ -10,17 +10,18 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import ValidationError
 
 from . import fonts as fontlib
+from . import mockups as mockuplib
 from . import registry
 from .audit import concept_fingerprint
 from .color import info as color_info
 from .color import load_tokens, luminance
 from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text, union
 from .kit import concept as conceptlib
-from .kit.mark import Mark
+from .kit.mark import ROLES, Mark
 from .output import EXIT_EXTERNAL, CliError
 from .paths import ProjectPaths
 from .render import Renderer, svg_size, with_size
-from .schemas import AuditResult, TerritoriesSpec, TerritoryShapes
+from .schemas import AuditResult, BrandState, Scorecard, TerritoriesSpec, TerritoryShapes
 
 SHEET_W, SHEET_H = 2000, 1400
 LADDER = (256, 128, 64, 48, 32, 24, 16)
@@ -29,6 +30,8 @@ ONE_COLOUR = ((64, ("full-symbol", "full-lockup")), (32, ("small", "full-symbol"
 AUDIT_ROWS = 24  # 16 px text rows per column of the audit box; the template sizes the box to fit them
 AUDIT_LINES = 2 * AUDIT_ROWS  # the box has two columns
 SHOWN_INFO = ("anchors", "min_feature")  # passing measurements listed after the failures and warnings
+CONCEPTS_W = 1800
+CONCEPT_LOCKUP, CONCEPT_MIRROR = 256, 128  # the concept sheet's strip: lockup boxes, mirrored and rotated boxes
 
 
 def jinja(paths: ProjectPaths) -> Environment:
@@ -117,6 +120,28 @@ def _palettes(folder: Path, tokens_path: str | Path | None = None):
     return tokens.palette("light"), tokens.palette("dark")
 
 
+def _strip_panels(outputs: dict, lockup_px: int, mirror_px: int, colour_px: int | None = None, light: dict | None = None,
+                  dark: dict | None = None) -> dict:
+    """Rows 1 and 2 of the critique sheet (spec 7.2), which the concept sheet repeats for each concept: the full lockup
+    black and white in `lockup_px` boxes; with `colour_px`, colour on light paper and reverse on dark paper for each
+    palette given; the ladder at true size, each LADDER step drawn by the tier pick_output picks for it; then the big
+    output (the tier picked for 256 px) mirrored and rotated in `mirror_px` boxes."""
+    lockup = outputs["full-lockup"]
+    big = outputs[pick_output(outputs, 256)].to_svg("black")
+    ladder = [(size, pick_output(outputs, size)) for size in LADDER]
+    return {
+        "black": fit_box(lockup.to_svg("black"), lockup_px, lockup_px),
+        "white": fit_box(lockup.to_svg("white"), lockup_px, lockup_px),
+        "color": fit_box(lockup.to_svg("color", palette=light), colour_px, colour_px) if colour_px and light else None,
+        "reverse": fit_box(lockup.to_svg("reverse", palette=dark), colour_px, colour_px) if colour_px and dark else None,
+        "paper_light": light["paper"] if light else "#ffffff",
+        "paper_dark": dark["paper"] if dark else "#000000",
+        "ladder": [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)} for s, name in ladder],
+        "mirror": fit_box(big, mirror_px, mirror_px),
+        "rotate": fit_box(big, mirror_px, mirror_px),
+    }
+
+
 def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: int | None = None,
                    renderer: Renderer | None = None, audit: AuditResult | None = None, tokens_path: str | Path | None = None,
                    outputs: dict | None = None) -> dict:
@@ -132,22 +157,9 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
         outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
     light, dark = _palettes(folder, tokens_path)
     round_n = round_n or next_round(folder)
-    lockup = outputs["full-lockup"]
-    big = outputs[pick_output(outputs, 256)].to_svg("black")
-    ladder = [(size, pick_output(outputs, size)) for size in LADDER]
-    panels = {
-        "black": fit_box(lockup.to_svg("black"), 512, 512),
-        "white": fit_box(lockup.to_svg("white"), 512, 512),
-        "color": fit_box(lockup.to_svg("color", palette=light), 384, 384) if light else None,
-        "reverse": fit_box(lockup.to_svg("reverse", palette=dark), 384, 384) if dark else None,
-        "paper_light": light["paper"] if light else "#ffffff",
-        "paper_dark": dark["paper"] if dark else "#000000",
-        "ladder": [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)} for s, name in ladder],
-        "mirror": fit_box(big, 256, 256),
-        "rotate": fit_box(big, 256, 256),
-        "one_colour": [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)}
-                       for s, name in _one_colour_outputs(outputs)],
-    }
+    panels = _strip_panels(outputs, 512, 256, colour_px=384, light=light, dark=dark)
+    panels["one_colour"] = [{"size": s, "output": name, "svg": fit_box(outputs[name].to_svg("black"), s, s)}
+                            for s, name in _one_colour_outputs(outputs)]
     if audit is None:
         audit = _saved_audit(folder)
     summary = None
@@ -258,3 +270,90 @@ def territories_board(paths: ProjectPaths, slug: str, renderer: Renderer | None 
     open_file(html_path, open_after, warnings)
     return {"board_html": str(html_path), "board_png": str(png_path), "territories": [t.slug for t in spec.territories],
             "warnings": warnings}
+
+
+def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: dict | None) -> dict:
+    """What the seven mockups (templates/mockups) draw for one concept: its outputs in colour from `light` and `dark`
+    (black and white without tokens), each tier picked by size as exports pick it, the eleven generated neighbour icons,
+    and `warnings`: a concept without a symbol stands its wordmark in for the icon, favicon and avatar."""
+    warnings: list[str] = []
+    if "full-symbol" not in outputs:
+        warnings.append("no symbol in this concept: icon, favicon and avatar mockups use the wordmark")
+    horizontal = outputs[_first_present(outputs, ("full-horizontal",))]
+    paper_light = light["paper"] if light else "#ffffff"
+    paper_dark = dark["paper"] if dark else "#111111"
+    tile_fill = light["primary"] if light else "#111111"
+    on_tile = {role: paper_light for role in (*ROLES, "paper")}  # the app icon: every role in light paper on a primary tile
+
+    def colour(mark: Mark, box_w: int, box_h: int) -> str:
+        svg = mark.to_svg("color", palette=light) if light else mark.to_svg("black")
+        return fit_box(svg, box_w, box_h)
+
+    def reverse(mark: Mark, box_w: int, box_h: int) -> str:
+        svg = mark.to_svg("reverse", palette=dark) if dark else mark.to_svg("white")
+        return fit_box(svg, box_w, box_h)
+
+    return {
+        "brand": state.name,
+        "handle": registry.slugify(state.name).replace("-", ""),
+        "paper_light": paper_light, "paper_dark": paper_dark, "primary": tile_fill,
+        "primary_dark": dark["primary"] if dark else "#eeeeee", "tile_fill": tile_fill,
+        "icon_svg": fit_box(outputs[pick_output(outputs, 60)].to_svg("color", palette=on_tile), 36, 36),
+        "favicon_svg": colour(outputs[pick_output(outputs, 16)], 16, 16),
+        "header_svg": colour(horizontal, 260, 32),
+        "header_dark_svg": reverse(horizontal, 260, 32),
+        "avatar_svg": colour(outputs[pick_output(outputs, 80)], 48, 48),
+        "card_svg": colour(horizontal, 200, 60),
+        "sign_svg": fit_box(outputs["full-lockup"].to_svg("white"), 360, 110),
+        "neighbours": mockuplib.neighbour_icons(60),
+        "tabs": ["Inbox", "Calendar"],
+        "warnings": warnings,
+    }
+
+
+def _vetted(paths: ProjectPaths, slug: str, name: str) -> tuple[Path, Scorecard]:
+    """The folder and scorecard of concept `name` if it may reach the owner: a passing, rendered audit of the concept as
+    it is now (registry.audit_problems) and a scorecard.json that passes the gate. Otherwise a CliError naming it."""
+    folder = conceptlib.concept_folder(paths, slug, name)
+    problems = registry.audit_problems(paths, slug, folder)
+    if problems:
+        raise CliError(f"concept {name}: {'; '.join(problems)}")
+    return folder, registry.passing_scorecard(folder, f"concept {name}: scorecard.json")
+
+
+def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], renderer: Renderer | None = None,
+                   open_after: bool = True) -> dict:
+    """Write sheets/concepts.{html,png} for the owner, then open the HTML unless `open_after` is False. Each concept shows
+    its idea and scores, the critique sheet's strip (lockups in CONCEPT_LOCKUP boxes, the true-size ladder, mirrored and
+    rotated in CONCEPT_MIRROR boxes) and the seven mockups.
+
+    Every named concept is vetted (_vetted) before any is built, and the PNG is rendered before the folder and both files
+    are written, so a refusal or a failed render leaves no sheet. `warnings` holds each concept's mockup warnings,
+    prefixed with its name, then any failure to open the sheet.
+    """
+    if not concept_names:
+        raise CliError("at least one concept is needed (--concepts 01-arch,03-keystone)")
+    state = registry.load_state(paths, slug)
+    vetted = [(name, *_vetted(paths, slug, name)) for name in concept_names]
+    env = jinja(paths)
+    cards: list[dict] = []
+    warnings: list[str] = []
+    for name, folder, card in vetted:
+        module = conceptlib.load_concept(folder)
+        outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
+        light, dark = _palettes(folder)
+        ctx = mockup_context(state, outputs, light, dark)
+        warnings += [f"{name}: {w}" for w in ctx["warnings"]]
+        cards.append({"name": name, "idea": module.meta.idea, "total": card.total, "scores": card.scores,
+                      "strip": _strip_panels(outputs, CONCEPT_LOCKUP, CONCEPT_MIRROR), "warnings": ctx["warnings"],
+                      "mockups": [mockuplib.render_mockup(env, kind, ctx) for kind in mockuplib.MOCKUPS]})
+    html = env.get_template("sheets/concepts.html").render(brand=state.name, concepts=cards, width=CONCEPTS_W,
+                                                           lockup_px=CONCEPT_LOCKUP, mirror_px=CONCEPT_MIRROR)
+    png = _render_html(renderer, html, CONCEPTS_W)
+    sheets_dir = paths.brand(slug) / "sheets"
+    sheets_dir.mkdir(exist_ok=True)
+    html_path, png_path = sheets_dir / "concepts.html", sheets_dir / "concepts.png"
+    html_path.write_text(html, encoding="utf-8")
+    png_path.write_bytes(png)
+    open_file(html_path, open_after, warnings)
+    return {"sheet_html": str(html_path), "sheet_png": str(png_path), "concepts": concept_names, "warnings": warnings}

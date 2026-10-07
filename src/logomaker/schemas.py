@@ -1,11 +1,11 @@
-"""Pydantic models for brand state, brief, strategy, territories and audit results. Token models live in color.py."""
+"""Pydantic models for brand state, brief, strategy, territories, audit results and scorecards. Token models live in color.py."""
 from __future__ import annotations
 
 from datetime import UTC, datetime
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .paths import SLUG
 
@@ -250,3 +250,34 @@ class TerritoriesSpec(BaseModel):
         if repeated:
             raise ValueError(f"territory slugs must be unique; repeated: {', '.join(repeated)}")
         return value
+
+
+CRITERIA = ("appropriate", "distinctive", "simple", "legible", "adaptable", "timeless", "universal", "clear", "congruent", "system")
+GATE = ("appropriate", "simple", "legible")
+
+
+class Scorecard(BaseModel):
+    """<concept>/scorecard.json: Claude's ten scores (spec 8.2), each 1 to 5, with evidence, and whether the concept is killed."""
+
+    scores: dict[str, int]
+    evidence: dict[str, str] = Field(default_factory=dict)
+    kill: bool = False
+    reason: str = ""
+
+    @model_validator(mode="after")
+    def complete_and_in_range(self) -> Scorecard:
+        missing = [c for c in CRITERIA if c not in self.scores]
+        if missing:
+            raise ValueError(f"scores missing: {', '.join(missing)}")
+        bad = {k: v for k, v in self.scores.items() if not 1 <= v <= 5}
+        if bad:
+            raise ValueError(f"scores must be 1..5: {bad}")
+        return self
+
+    @property
+    def gate_ok(self) -> bool:
+        return not self.kill and all(self.scores[c] >= 4 for c in GATE)
+
+    @property
+    def total(self) -> int:
+        return sum(self.scores[c] for c in CRITERIA)

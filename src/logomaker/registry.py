@@ -12,7 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 from .output import EXIT_RULE, CliError
 from .paths import CONCEPT_NAME, SLUG, ProjectPaths
-from .schemas import PHASE_ORDER, BrandState, Brief, Decision, FontChoice, Phase, Strategy, TerritoriesSpec, now_iso
+from .schemas import PHASE_ORDER, BrandState, Brief, Decision, FontChoice, Phase, Scorecard, Strategy, TerritoriesSpec, now_iso
 
 BRAND_SUBDIRS = ("inspiration", "territories", "concepts", "sheets", "final", "package")
 
@@ -248,27 +248,51 @@ def _check_territories(brand: Path, state: BrandState) -> list[str]:
     return missing
 
 
-def _check_concept(brand: Path, state: BrandState) -> list[str]:
-    """The chosen concept needs a passing, rendered audit of what it is now (see audit.concept_fingerprint)."""
+def audit_problems(paths: ProjectPaths, slug: str, folder: Path) -> list[str]:
+    """Why <folder>/audit.json does not vouch for the concept as it is now, or [] when it does: it is missing or not a
+    JSON object, stale (its fingerprint is not audit.concept_fingerprint of the concept now), made with --no-render, or
+    failing. The concept gate and the concept sheet both ask this."""
     from .audit import concept_fingerprint  # imported here: audit imports registry
 
+    brand = paths.brand(slug)
+    path = folder / "audit.json"
+    missing = _need(brand, path)
+    if missing:
+        return missing
+    result, error = _read_json(brand, path)
+    if error:
+        return [error]
+    problems = []
+    if result.get("fingerprint") != concept_fingerprint(paths, slug, folder):
+        problems.append(f"{folder.name}/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or "
+                        "minimum sizes, or cliches.json changed); re-run concept audit")
+    if not result.get("rendered"):
+        problems.append(f"{folder.name}/audit.json was made with --no-render; re-run concept audit without it")
+    if not result.get("ok"):
+        problems.append(f"{folder.name}/audit.json has failures")
+    return problems
+
+
+def passing_scorecard(folder: Path, label: str) -> Scorecard:
+    """<folder>/scorecard.json if it validates and passes the gate (Scorecard.gate_ok); else a CliError calling it `label`."""
+    card = load_model(folder / "scorecard.json", Scorecard, label)
+    if not card.gate_ok:
+        raise CliError(f"{label} fails the gate (appropriate, simple and legible must be 4 or more, and not killed)")
+    return card
+
+
+def _check_concept(brand: Path, state: BrandState) -> list[str]:
+    """The chosen concept needs a passing, rendered audit of what it is now (audit_problems) and a scorecard that passes
+    the gate (passing_scorecard)."""
     if not state.concept:
         return ["concept not chosen (run: logomaker brand set <slug> --concept <NN-slug>)"]
     folder = brand / "concepts" / state.concept
-    audit = folder / "audit.json"
-    missing = _need(brand, folder / "concept.py") + _need(brand, audit)
-    if audit.is_file():
-        result, error = _read_json(brand, audit)
-        if error:
-            return missing + [error]
-        paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
-        if result.get("fingerprint") != concept_fingerprint(paths, state.slug, folder):
-            missing.append(f"{state.concept}/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or "
-                           "minimum sizes, or cliches.json changed); re-run concept audit")
-        if not result.get("rendered"):
-            missing.append(f"{state.concept}/audit.json was made with --no-render; re-run concept audit without it")
-        if not result.get("ok"):
-            missing.append(f"{state.concept}/audit.json has failures")
+    paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
+    missing = _need(brand, folder / "concept.py") + audit_problems(paths, state.slug, folder)
+    try:
+        passing_scorecard(folder, f"{state.concept}/scorecard.json")
+    except CliError as err:
+        missing.append(str(err))
     return missing
 
 

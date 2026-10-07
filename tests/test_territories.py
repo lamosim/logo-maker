@@ -7,46 +7,11 @@ from click.testing import CliRunner
 from PIL import Image
 from pydantic import ValidationError
 
-from logomaker import fonts, registry, render, sheets
+from logomaker import fonts, registry, sheets
 from logomaker.cli import main
 from logomaker.paths import project
 from logomaker.schemas import TerritoriesSpec, TerritoryShapes
-from tests.conftest import requires_chrome
-
-
-class NoChrome:
-    """Stands in for render.Renderer. Entering it fails, so a test that gets its own validation error saw no Chrome start."""
-
-    def __enter__(self):
-        raise AssertionError("Chrome started")
-
-    def __exit__(self, *exc):
-        return False
-
-
-@pytest.fixture
-def no_chrome(monkeypatch):
-    """Chrome cannot start: the Renderer the sheets open, and any opened through render, is NoChrome."""
-    monkeypatch.setattr(sheets, "Renderer", NoChrome)
-    monkeypatch.setattr(render, "Renderer", NoChrome)
-
-
-class StubChrome:
-    """Stands in for render.Renderer without Chrome: every page renders to placeholder bytes."""
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *exc):
-        return False
-
-    def html_to_png(self, *args, **kwargs):
-        return b"png"
-
-
-def no_open_command(argv, **kwargs):
-    """subprocess.Popen on a machine without the `open` command."""
-    raise FileNotFoundError(2, "No such file or directory", "open")
+from tests.conftest import StubChrome, no_open_command, requires_chrome
 
 
 def write_spec(project_root: Path, payload: dict) -> Path:

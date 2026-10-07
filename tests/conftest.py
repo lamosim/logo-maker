@@ -1,9 +1,11 @@
 import copy
+import json
 import shutil
 from pathlib import Path
 
 import pytest
 
+from logomaker.paths import ProjectPaths
 from logomaker.render import CHROME_APP, Renderer
 
 REPO = Path(__file__).resolve().parent.parent
@@ -112,6 +114,32 @@ def install_concept(project_root: Path, fixture: str, slug: str = "keystone", na
     return target
 
 
+def write_passing_audit(paths: ProjectPaths, slug: str, folder: Path, tokens_path: str | Path | None = None) -> Path:
+    """Write <folder>/audit.json as a passing, rendered audit of the concept as it stands, without Chrome: a synthetic
+    AuditResult listing the concept's outputs, with its current audit.concept_fingerprint. The fingerprint covers the
+    tokens file (`tokens_path`, else <folder>/tokens.json), so write that first. Returns the file."""
+    from logomaker import audit
+    from logomaker.kit import concept as conceptlib
+    from logomaker.schemas import AuditResult
+
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
+    fingerprint = audit.concept_fingerprint(paths, slug, folder, tokens_path)
+    result = AuditResult(ok=True, rendered=True, outputs=list(outputs), fingerprint=fingerprint)
+    path = folder / "audit.json"
+    path.write_text(json.dumps(result.model_dump(), indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def scorecard(**overrides: int) -> dict:
+    """A scorecard.json payload scoring 4 on every criterion but `overrides`: it passes the gate unless one of them drops
+    appropriate, simple or legible below 4."""
+    from logomaker.schemas import CRITERIA
+
+    scores = {c: 4 for c in CRITERIA}
+    scores.update(overrides)
+    return {"scores": scores, "evidence": {"appropriate": "arch = holds the invoice together"}}
+
+
 requires_chrome = pytest.mark.skipif(not CHROME_APP.exists(), reason="Google Chrome is not installed")
 
 
@@ -121,6 +149,43 @@ def renderer():
         pytest.skip("Google Chrome is not installed")
     with Renderer() as r:
         yield r
+
+
+class NoChrome:
+    """Stands in for render.Renderer. Entering it fails, so a test that gets its own validation error saw no Chrome start."""
+
+    def __enter__(self):
+        raise AssertionError("Chrome started")
+
+    def __exit__(self, *exc):
+        return False
+
+
+@pytest.fixture
+def no_chrome(monkeypatch):
+    """Chrome cannot start: the Renderer the sheets open, and any opened through render, is NoChrome."""
+    from logomaker import render, sheets
+
+    monkeypatch.setattr(sheets, "Renderer", NoChrome)
+    monkeypatch.setattr(render, "Renderer", NoChrome)
+
+
+class StubChrome:
+    """Stands in for render.Renderer without Chrome: every page renders to placeholder bytes."""
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def html_to_png(self, *args, **kwargs):
+        return b"png"
+
+
+def no_open_command(argv, **kwargs):
+    """subprocess.Popen on a machine without the `open` command."""
+    raise FileNotFoundError(2, "No such file or directory", "open")
 
 
 TERRITORIES = {

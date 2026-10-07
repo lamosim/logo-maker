@@ -412,5 +412,20 @@ def sheet_territories(slug: str, no_open: bool) -> None:
     emit(info, warnings=info.pop("warnings"))
 
 
+@sheet_group.command("concepts")
+@click.argument("slug")
+@click.option("--concepts", "concepts", required=True, help="Comma-separated concept folder names, e.g. 01-arch,03-keystone")
+@click.option("--no-open", is_flag=True, help="Write the sheet without opening it in the browser.")
+@command
+def sheet_concepts(slug: str, concepts: str, no_open: bool) -> None:
+    """Render the concept sheet for vetted concepts. It goes into sheets/concepts.{html,png} and opens in the browser."""
+    from . import sheets as sheetlib
+
+    names = [c.strip() for c in concepts.split(",") if c.strip()]
+    # No renderer passed: the sheet launches Chrome itself, only once every concept is vetted and built.
+    info = sheetlib.concepts_sheet(project(), slug, names, open_after=not no_open)
+    emit(info, warnings=info.pop("warnings"))
+
+
 if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

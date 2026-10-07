@@ -8,7 +8,7 @@ from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import Phase, TerritoriesSpec
-from tests.conftest import install_concept
+from tests.conftest import install_concept, scorecard, write_passing_audit
 
 
 def run(*args):
@@ -169,6 +169,7 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
     from tests.test_color import good_tokens
 
     folder = install_concept(project_root, "good")
+    (folder / "scorecard.json").write_text(json.dumps(scorecard()))
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
     stale = ("01-good/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, "
@@ -197,7 +198,8 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
 
 
 def test_malformed_audit_or_verify_json_is_reported_not_raised(project_root):
-    install_concept(project_root, "good")
+    folder = install_concept(project_root, "good")
+    (folder / "scorecard.json").write_text(json.dumps(scorecard()))
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
     for content, problem in (("{not json", "is not valid JSON: "), ("[1, 2]", "is not a JSON object")):
@@ -232,6 +234,7 @@ def test_brand_list_rebuilds_a_missing_index_from_the_brand_folders(project_root
 
 def test_the_concept_gate_follows_only_the_brand_settings_the_audit_reads(project_root):
     folder = install_concept(project_root, "good")
+    (folder / "scorecard.json").write_text(json.dumps(scorecard()))
     brand = project_root / "brands" / "keystone"
     audit.audit_concept(project(), "keystone", "01-good")
     saved = json.loads((folder / "audit.json").read_text())
@@ -241,6 +244,24 @@ def test_the_concept_gate_follows_only_the_brand_settings_the_audit_reads(projec
     assert run("brand", "set", "keystone", "--industry", "AI tooling")[0] == 0  # the cliché check reads the industry
     stale = registry._check_concept(brand, registry.load_state(project(), "keystone"))
     assert len(stale) == 1 and stale[0].startswith("01-good/audit.json is stale") and "industry" in stale[0]
+
+
+def test_the_concept_gate_needs_a_scorecard_that_passes_the_gate(project_root):
+    folder = install_concept(project_root, "good")
+    write_passing_audit(project(), "keystone", folder)
+    state = registry.set_fields(project(), "keystone", concept="01-good")
+    brand = project_root / "brands" / "keystone"
+    card = folder / "scorecard.json"
+    assert registry._check_concept(brand, state) == ["01-good/scorecard.json is missing"]
+    gate = "01-good/scorecard.json fails the gate (appropriate, simple and legible must be 4 or more, and not killed)"
+    for payload in (scorecard(legible=3), {**scorecard(), "kill": True, "reason": "reads as a padlock"}):
+        card.write_text(json.dumps(payload))
+        assert registry._check_concept(brand, state) == [gate]
+    card.write_text(json.dumps({"scores": {"appropriate": 5}}))
+    [problem] = registry._check_concept(brand, state)
+    assert problem.startswith("01-good/scorecard.json is invalid: root: Value error, scores missing: distinctive, simple")
+    card.write_text(json.dumps(scorecard(distinctive=2)))  # only appropriate, simple and legible gate
+    assert registry._check_concept(brand, state) == []
 
 
 def test_a_registry_rebuild_skips_brand_files_it_cannot_use_and_says_which(project_root):
