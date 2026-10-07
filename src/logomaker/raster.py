@@ -1,4 +1,5 @@
-"""Raster helpers for audits: ink masks, connected components and an erosion-based minimum feature width."""
+"""Raster helpers. For audits: ink masks, connected components and an erosion-based minimum feature width. For exports:
+encoding, sizes and the blank-render check."""
 from __future__ import annotations
 
 import io
@@ -22,6 +23,32 @@ def ink_mask(png: bytes, threshold: int = 128) -> np.ndarray:
         return alpha > threshold
     lum = 0.2126 * arr[..., 0] + 0.7152 * arr[..., 1] + 0.0722 * arr[..., 2]
     return lum < threshold
+
+
+def encoded(image: Image.Image, kind: str, **options) -> bytes:
+    """`image` saved as `kind` (PNG, JPEG, WEBP, ICO) with Pillow's `options`."""
+    out = io.BytesIO()
+    image.save(out, format=kind, **options)
+    return out.getvalue()
+
+
+def image_size(data: bytes) -> tuple[int, int]:
+    """The pixel size of an encoded image, read from its header."""
+    with Image.open(io.BytesIO(data)) as image:
+        return image.size
+
+
+def blank(data: bytes) -> bool:
+    """Whether an encoded image shows nothing: spec section 13's "empty or fully transparent" render. With any
+    transparency it is blank when every pixel is fully transparent. Fully opaque, it is art composed onto a background,
+    and blank in one flat colour. ink_mask's cut-offs measure ink, not this: they would call a faint render blank, and a
+    light mark on light paper."""
+    with Image.open(io.BytesIO(data)) as image:
+        extrema = image.convert("RGBA").getextrema()
+    low_alpha, high_alpha = extrema[3]
+    if low_alpha == 255:
+        return all(low == high for low, high in extrema)
+    return high_alpha == 0
 
 
 def component_count(mask: np.ndarray) -> int:

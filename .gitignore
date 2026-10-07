@@ -22,8 +22,9 @@ assets/fonts/*/*.otf
 assets/fonts/*/instances/
 # Staging folders of fetches in progress (or killed): assets/fonts/<slug>.<random>.tmp
 assets/fonts/*.tmp/
-# Staging folder of a package build in progress (or killed): brands/<slug>/package.tmp
+# A package build in progress (or killed): its staging folder, and the previous package set aside during the swap
 brands/*/package.tmp/
+brands/*/package.old.tmp/
 
 # Local Claude settings
 .claude/settings.local.json

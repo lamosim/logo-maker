@@ -16,10 +16,10 @@ from .color import enrich_tokens, load_tokens
 from .kit import concept as conceptlib
 from .kit.mark import Mark
 from .kit.shape import fmt
-from .output import EXIT_VERIFY, CliError
+from .output import EXIT_EXTERNAL, EXIT_VERIFY, CliError
 from .paths import ProjectPaths
-from .raster import ink_mask
-from .render import _VIEWBOX, Renderer
+from .raster import blank, encoded, image_size
+from .render import VIEWBOX, Renderer
 from .schemas import Manifest, ManifestEntry, now_iso
 from .sheets import _first_present, _palettes_of, fit_size, jinja, pick_output
 
@@ -31,6 +31,7 @@ PNG_SIZES = (256, 512, 1024, 2048)
 MASK_SAFE = 289  # centred in 512, its corners stay inside the maskable safe circle (radius 40% = 204.8 px)
 REQUIRED_FINAL = ("concept.py", "params.json", "tokens.json", "rationale.md")
 RASTERS = (".png", ".jpg", ".webp")  # written files that write() refuses when blank
+STAGING, ASIDE = "package.tmp", "package.old.tmp"  # beside package/: the build in progress; the previous package mid-swap
 # The outputs that draw each named variant, best first. primary is brand.json's primary lockup, then full-lockup.
 CHAINS = {
     "horizontal": ("full-horizontal", "full-lockup"),
@@ -44,36 +45,29 @@ CHAINS = {
 
 def square_viewbox(svg: str, fraction: float) -> str:
     """Rewrite the viewBox to a square in which the artwork's longer side spans `fraction` of the side."""
-    match = _VIEWBOX.search(svg)
+    match = VIEWBOX.search(svg)
     x, y, w, h = (float(v) for v in match.group(1).replace(",", " ").split())
     side = max(w, h) / fraction
     view = (x + w / 2 - side / 2, y + h / 2 - side / 2, side, side)
     return svg.replace(match.group(0), f'viewBox="{" ".join(fmt(v) for v in view)}"', 1)
 
 
-def encoded(image: Image.Image, kind: str, **options) -> bytes:
-    """`image` saved as `kind` (PNG, JPEG, WEBP, ICO) with Pillow's `options`."""
-    out = io.BytesIO()
-    image.save(out, format=kind, **options)
-    return out.getvalue()
-
-
-def image_size(data: bytes) -> tuple[int, int]:
-    """The pixel size of an encoded image, read from its header."""
-    with Image.open(io.BytesIO(data)) as image:
-        return image.size
-
-
-def blank(raster: bytes) -> bool:
-    """Whether an encoded image shows nothing, which spec section 13 fails with exit 4. One with transparency is blank
-    without ink (raster.ink_mask). A fully opaque one is art composed onto a background, and blank in one flat colour:
-    on an opaque image ink_mask reads only the pixels darker than mid-grey as ink, so it would take a light mark on light
-    paper for blank, and the background of a dark tile for ink."""
-    with Image.open(io.BytesIO(raster)) as image:
-        extrema = image.convert("RGBA").getextrema()
-    if extrema[3][0] == 255:  # no transparent pixel anywhere
-        return all(low == high for low, high in extrema)
-    return not ink_mask(raster).any()
+def _swap_in(staging: Path, package: Path, aside: Path) -> None:
+    """Put `staging` in `package`'s place. The previous package moves to `aside` first, and back again if the new one
+    cannot take its place, so neither move can lose it; `aside` is deleted once the new package is in."""
+    moved_aside = False
+    try:
+        if package.exists():
+            os.replace(package, aside)
+            moved_aside = True
+        os.replace(staging, package)
+    except OSError as err:
+        if moved_aside:
+            os.replace(aside, package)
+        raise CliError(f"could not move the new package into {package} ({err}); the previous package is kept",
+                       code=EXIT_EXTERNAL) from err
+    if moved_aside:
+        shutil.rmtree(aside)
 
 
 class PackageBuilder:
@@ -147,6 +141,7 @@ class PackageBuilder:
                              bytes=len(raw))
 
     def _refuse_blank(self, name: str, raster: bytes) -> None:
+        """Stop the build with exit 4, naming `name`, when `raster` shows nothing (raster.blank)."""
         if blank(raster):
             raise CliError(f"{name} came out blank: its render drew nothing", code=EXIT_VERIFY)
 
@@ -257,10 +252,16 @@ class PackageBuilder:
 
     # ---- driver --------------------------------------------------------
     def build(self, renderer: Renderer) -> Manifest:
-        """Run every group in GROUPS into package.tmp/ beside package/, write manifest.json, then swap it in for package/,
-        so a failure anywhere leaves the previous package as it was. self.pkg names package/ again afterwards."""
-        package, staging = self.brand_dir / "package", self.brand_dir / "package.tmp"
-        if staging.exists():  # left by a build that was killed
+        """Run every group in GROUPS into package.tmp/ beside package/, write manifest.json, then swap it in for package/
+        (_swap_in), so a failure anywhere leaves the previous package as it was. First it tidies what a killed build left
+        behind. self.pkg names package/ again afterwards."""
+        package, staging, aside = self.brand_dir / "package", self.brand_dir / STAGING, self.brand_dir / ASIDE
+        if aside.exists():  # a swap that was killed: the previous package comes back unless the new one made it in
+            if package.exists():
+                shutil.rmtree(aside)
+            else:
+                os.replace(aside, package)
+        if staging.exists():  # a build that was killed
             shutil.rmtree(staging)
         staging.mkdir()
         self.renderer, self.pkg = renderer, staging
@@ -271,9 +272,7 @@ class PackageBuilder:
             manifest = Manifest(brand=self.state.name, slug=self.slug, built=now_iso(), files=self.entries, warnings=self.warnings,
                                 skipped=self.skipped)
             (staging / "manifest.json").write_text(json.dumps(manifest.model_dump(), indent=2) + "\n", encoding="utf-8")
-            if package.exists():
-                shutil.rmtree(package)
-            os.replace(staging, package)
+            _swap_in(staging, package, aside)
         finally:
             self.pkg = package
             if staging.exists():

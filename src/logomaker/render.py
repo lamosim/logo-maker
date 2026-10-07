@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 CHROME_APP = Path("/Applications/Google Chrome.app")
 PAPER = {"letter": {"width": "8.5in", "height": "11in"}, "a4": {"format": "A4"}}
-_VIEWBOX = re.compile(r'viewBox="([^"]+)"')
+VIEWBOX = re.compile(r'viewBox="([^"]+)"')
 
 
 def check_chrome(chrome_app: Path = CHROME_APP) -> dict:
@@ -27,7 +27,7 @@ def check_chrome(chrome_app: Path = CHROME_APP) -> dict:
 
 def svg_size(svg: str, width: int) -> tuple[int, int]:
     """`width` and the height that keeps the viewBox's aspect; square without a viewBox or with a degenerate one."""
-    match = _VIEWBOX.search(svg)
+    match = VIEWBOX.search(svg)
     if not match:
         return width, width
     _, _, w, h = (float(v) for v in match.group(1).replace(",", " ").split())

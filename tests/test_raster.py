@@ -3,7 +3,7 @@ import io
 import numpy as np
 from PIL import Image, ImageDraw
 
-from logomaker.raster import component_count, ink_mask, min_feature_px
+from logomaker.raster import blank, component_count, encoded, image_size, ink_mask, min_feature_px
 
 
 def png_bytes(image: Image.Image) -> bytes:
@@ -20,6 +20,18 @@ def test_ink_mask_from_opaque_and_transparent_images():
     transparent = Image.new("RGBA", (50, 50), (0, 0, 0, 0))
     ImageDraw.Draw(transparent).rectangle([0, 0, 9, 9], fill=(20, 20, 20, 255))
     assert ink_mask(png_bytes(transparent)).sum() == 100
+
+
+def test_blank_means_nothing_drawn_at_all():
+    clear = Image.new("RGBA", (40, 20), (0, 0, 0, 0))
+    assert blank(encoded(clear, "PNG")) and image_size(encoded(clear, "PNG")) == (40, 20)
+    faint = clear.copy()
+    ImageDraw.Draw(faint).rectangle([5, 5, 8, 8], fill=(31, 27, 24, 60))  # drawn, though under ink_mask's alpha cut
+    assert not blank(encoded(faint, "PNG")) and not ink_mask(encoded(faint, "PNG")).any()
+    paper = Image.new("RGB", (40, 20), "#ffffff")
+    assert blank(encoded(paper, "JPEG", quality=92))  # opaque in one flat colour: a background with nothing on it
+    ImageDraw.Draw(paper).rectangle([5, 5, 14, 14], fill="#3b9ae1")  # lighter than ink_mask's luma cut, yet drawn
+    assert not blank(encoded(paper, "PNG")) and not ink_mask(encoded(paper, "PNG")).any()
 
 
 def test_component_count_and_min_feature():

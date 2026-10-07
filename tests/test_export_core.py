@@ -1,5 +1,7 @@
 import hashlib
+import io
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -21,6 +23,7 @@ FLATTENED = ["keystone-primary-color-white-bg-2048.jpg", "keystone-primary-color
 FAVICONS = ["favicon.ico", "icon.svg", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "icon-mask-512.png", "manifest.webmanifest",
             "favicon-head.html"]
 LIGHT_BLUE = (59, 154, 225, 255)  # #3b9ae1: passes check_tokens on white paper (WCAG 3.05, Lc 57), yet lighter than ink_mask's cut
+FAINT = (31, 27, 24, 100)  # under half opaque everywhere, as a long name can be in the 16 px favicon frame
 
 
 def opened(path: Path) -> Image.Image:
@@ -66,7 +69,8 @@ def test_a_final_audit_that_no_longer_vouches_for_the_mark_exits_2_before_chrome
 
 def test_core_groups_without_chrome(project_root):
     make_final_brand(project_root)
-    builder, manifest = build(CORE)
+    stub = StubRenderer()
+    builder, manifest = build(CORE, stub)
     pkg = project_root / "brands" / "keystone" / "package"
     assert builder.pkg == pkg and not (pkg.parent / "package.tmp").exists()
     paths = [e.path for e in manifest.files]
@@ -85,6 +89,7 @@ def test_core_groups_without_chrome(project_root):
     assert sizes["favicon.ico"] == (48, 48) and sizes["apple-touch-icon.png"] == (180, 180) and sizes["icon.svg"] == (None, None)
     assert json.loads((pkg / "manifest.json").read_text()) == manifest.model_dump()
     assert manifest.warnings == [] and manifest.skipped == {}
+    assert len(stub.calls) == 80 + 1 + 7  # the PNG matrix, the 2048 px primary flattened, the favicon set's frames and tiles
 
 
 def test_raster_icons_draw_the_tier_for_their_size(project_root):
@@ -96,10 +101,15 @@ def test_raster_icons_draw_the_tier_for_their_size(project_root):
         return builder.outputs[name].to_svg("color", palette=builder.light)
 
     renders = {max(width, height): svg for svg, width, height, _ in stub.calls}
-    assert sorted(renders) == [16, 32, 48, 140, 154, 289, 410]  # the ICO frames, then the tiles' art (apple 140, PWA 154 and 410, mask)
+    assert len(stub.calls) == 7 and sorted(renders) == [16, 32, 48, 140, 154, 289, 410]  # ICO frames, then tile art (apple, PWA, mask)
     assert renders[48] == export.square_viewbox(colour("small"), 0.9)
     assert renders[32] == renders[16] == export.square_viewbox(colour("favicon"), 0.9)
     assert {renders[side] for side in (140, 154, 289, 410)} == {colour("full-symbol")}
+    with Image.open(project_root / "brands" / "keystone" / "package" / "favicon.ico") as ico:
+        for size in (16, 32, 48):  # each frame is the render made for its size, never the 48 px one scaled down
+            call = next(c for c in stub.calls if c[1:3] == (size, size))
+            with Image.open(io.BytesIO(stub.svg_to_png(*call))) as rendered:
+                assert ico.ico.getimage((size, size)).convert("RGBA").tobytes() == rendered.convert("RGBA").tobytes(), size
 
 
 def test_named_masters_follow_the_fallback_chains(project_root):
@@ -149,12 +159,13 @@ def test_a_blank_render_fails_the_build_naming_the_file(project_root, group, nam
     assert err.value.code == 4 and str(err.value).startswith(named)
 
 
-def test_a_light_mark_on_paper_is_not_taken_for_a_blank_render(project_root):
+@pytest.mark.parametrize("ink", [LIGHT_BLUE, FAINT], ids=["light-mark-on-paper", "faint"])
+def test_a_drawn_render_is_never_taken_for_a_blank_one(project_root, ink):
+    # raster.ink_mask would call both blank: on the opaque files (the JPEG, the apple-touch and maskable icons) it counts
+    # only pixels darker than 128, which LIGHT_BLUE is not; on the transparent ones only pixels over half opaque.
     make_final_brand(project_root)
-    # The JPEG and the apple-touch and maskable icons are opaque: the mark composed onto white. On an opaque image
-    # raster.ink_mask counts only pixels darker than 128, which this blue is not.
-    _, manifest = build(["flattened", "favicons"], StubRenderer(ink=LIGHT_BLUE))
-    assert [e.path for e in manifest.files] == FLATTENED + FAVICONS
+    _, manifest = build(CORE, StubRenderer(ink=ink))
+    assert len(manifest.files) == 125
 
 
 def test_a_failed_build_leaves_the_previous_package(project_root):
@@ -172,6 +183,34 @@ def test_a_failed_build_leaves_the_previous_package(project_root):
     builder.GROUPS = ["masters"]
     builder.build(StubRenderer())
     assert not staging.exists() and not (pkg / "marker.txt").exists() and len(list(pkg.glob("keystone-*.svg"))) == 35
+
+
+def test_the_previous_package_survives_a_swap_that_fails_or_was_killed(project_root, monkeypatch):
+    make_final_brand(project_root)
+    brand = project_root / "brands" / "keystone"
+    pkg, aside = brand / "package", brand / "package.old.tmp"
+
+    def folders() -> list[str]:
+        return sorted(p.name for p in brand.iterdir() if p.name.startswith("package"))
+
+    (pkg / "marker.txt").write_text("the previous build")
+    pkg.rename(aside)  # a build killed after moving package/ aside, before the new one took its place
+    real_replace = os.replace
+
+    def replace(src, dst):
+        if Path(src).name == "package.tmp":
+            raise OSError(28, "No space left on device")
+        real_replace(src, dst)
+
+    monkeypatch.setattr(os, "replace", replace)
+    with pytest.raises(CliError) as err:
+        build(["masters"])
+    assert err.value.code == 3 and str(err.value).endswith("the previous package is kept")
+    assert folders() == ["package"] and [p.name for p in pkg.iterdir()] == ["marker.txt"]
+    monkeypatch.setattr(os, "replace", real_replace)
+    shutil.copytree(pkg, aside)  # a build killed after the new package took its place, before the old one was deleted
+    build(["masters"])
+    assert folders() == ["package"] and not (pkg / "marker.txt").exists() and (pkg / "manifest.json").is_file()
 
 
 def test_package_build_reports_the_package_and_every_warning(project_root, monkeypatch):
