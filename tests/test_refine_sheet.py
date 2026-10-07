@@ -139,7 +139,7 @@ def test_the_sheet_draws_every_section_at_its_size(project_root):
     assert 'fill="currentColor"' in part["Colour variants"]
     assert captions(part["Clear space"]) == ["clear space = one x on every side"]
     # The ladder at the brand's minimum sizes, each lockup as wide as its rule; the mark and favicon by the tier rules.
-    assert captions(part["Minimum sizes"]) == ["horizontal 120 px / 25.0 mm", "stacked 160 px / 25.0 mm", "mark 24 px / 6.0 mm",
+    assert captions(part["Minimum sizes"]) == ["horizontal 120 px / 25 mm", "stacked 160 px / 25 mm", "mark 24 px / 6 mm",
                                                "favicon 16 px"]
     assert [int(w) for w, _ in SVG_SIZES.findall(part["Minimum sizes"])] == [120, 160, 24, 16]
     assert captions(part["Colour-vision simulations"]) == ["protan", "deutan", "tritan", "achroma"]

@@ -3,41 +3,50 @@
 <style>
   @page { margin: 12mm; }
   body{margin:0;font:11px/1.4 -apple-system,Helvetica,Arial,sans-serif;color:#222}
-  h1{font-size:22px;margin:0 0 2px} .sub{color:#666;margin-bottom:10px}
-  h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#666;margin:12px 0 6px;border-top:1px solid #ddd;padding-top:6px}
+  h1{font-size:22px;margin:0 0 2px} .sub{color:#666;margin-bottom:8px}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#666;margin:10px 0 6px;border-top:1px solid #ddd;padding-top:6px}
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-  .panel{border:1px solid #ddd;padding:8px;display:flex;align-items:center;justify-content:center;background:#fff}
+  .panel{border:1px solid #ddd;padding:8px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#fff}
   .panel.dark{background:#111}
-  .chip{width:92px;height:56px;border-radius:4px;padding:6px;box-sizing:border-box;font-size:9px;display:flex;flex-direction:column;justify-content:flex-end}
+  .colours{display:flex;flex-wrap:wrap;gap:8px}
+  /* Each colour: a swatch with its name, then every notation in small type; the 1 px border keeps a white swatch visible. */
+  .colour{width:166px;border:1px solid #ccc;border-radius:4px;overflow:hidden;font-size:8px;line-height:1.35}
+  .colour .swatch{height:26px;padding:4px 6px;box-sizing:border-box;font-size:10px;font-weight:bold;display:flex;align-items:flex-end}
+  .colour .values{padding:4px 6px} .colour .values b{display:inline-block;width:32px;font-weight:normal;color:#888}
   .rationale{max-width:640px}
-  ol{margin:4px 0 0 16px;padding:0}
+  pre{margin:0;padding:6px 8px;background:#f6f6f6;border:1px solid #ddd;font:8px/1.3 Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
 </style></head>
 <body>
 <h1>{{ brand }}</h1>
-<div class="sub">Brand sheet. Clear space x = {{ x_rule }}. Minimum sizes: horizontal {{ ms.horizontal_px }} px / {{ ms.horizontal_mm }} mm, stacked {{ ms.stacked_px }} px / {{ ms.stacked_mm }} mm, mark {{ ms.mark_px }} px / {{ ms.mark_mm }} mm, favicon {{ ms.favicon_px }} px.</div>
+<div class="sub">Brand sheet. Clear space x = {{ x_rule }}. Minimum sizes: horizontal {{ ms.horizontal_px }} px / {{ ms.horizontal_mm|num }} mm, stacked {{ ms.stacked_px }} px / {{ ms.stacked_mm|num }} mm, mark {{ ms.mark_px }} px / {{ ms.mark_mm|num }} mm, favicon {{ ms.favicon_px }} px.</div>
 <div class="rationale">{{ rationale }}</div>
 
 <h2>Logo system</h2>
 <div class="row">
-  <div class="panel" style="width:260px;height:120px;background:{{ paper_light }}">{{ sheet.primary|safe }}</div>
-  <div class="panel dark" style="width:260px;height:120px;background:{{ paper_dark }}">{{ sheet.reverse|safe }}</div>
-  <div class="panel" style="width:120px;height:120px">{{ sheet.stacked|safe }}</div>
-  <div class="panel" style="width:90px;height:120px">{{ sheet.mark|safe }}</div>
-  <div class="panel" style="width:60px;height:120px">{{ sheet.small|safe }}</div>
-  <div class="panel" style="width:60px;height:120px">{{ sheet.favicon|safe }}</div>
+  <div class="panel" style="width:190px;height:100px;background:{{ paper_light }}">{{ sheet.primary|safe }}</div>
+  <div class="panel dark" style="width:190px;height:100px;background:{{ paper_dark }}">{{ sheet.reverse|safe }}</div>
+  <div class="panel" style="width:100px;height:100px">{{ sheet.stacked|safe }}</div>
+  <div class="panel" style="width:70px;height:100px">{{ sheet.mark|safe }}</div>
+  <div class="panel" style="width:50px;height:100px">{{ sheet.small|safe }}</div>
+  <div class="panel" style="width:40px;height:100px">{{ sheet.favicon|safe }}</div>
 </div>
 
 <h2>Clear space</h2>
-<div class="row"><div class="panel" style="width:320px;height:130px">{{ sheet.clear_space|safe }}</div>
-<div style="max-width:330px">One x of clear space on every side, where x is {{ x_rule }}. Never crop, outline, rotate, distort, add effects, recolour outside the roles, re-typeset, or place on busy backgrounds without the reversed or contained version.</div></div>
+<div class="row"><div class="panel" style="width:300px;height:120px">{{ sheet.clear_space|safe }}</div>
+<div style="max-width:370px">One x of clear space on every side, where x is {{ x_rule }}. Never crop, outline, rotate, distort, add effects, recolour outside the roles, re-typeset, or place on busy backgrounds without the reversed or contained version.</div></div>
 
 <h2>Colour</h2>
-<div class="row">{% for c in colours %}<div class="chip" style="background:{{ c.hex }};color:{{ c.text }}"><b>{{ c.name }}</b><span>{{ c.hex }}</span><span>CMYK {{ c.cmyk|join(' ') }}</span></div>{% endfor %}</div>
-<div style="margin-top:6px">Light paper roles: {{ roles_light }}. Dark paper roles: {{ roles_dark }}. Contrast: {% for r in contrast %}{{ r.context }} {{ r.role }} {{ r.wcag }}/{{ r.apca }}{{ ', ' if not loop.last }}{% endfor %}.</div>
+<div class="colours">{% for c in colours %}<div class="colour"><div class="swatch" style="background:{{ c.hex }};color:{{ c.text }}">{{ c.name }}</div><div class="values"><b>HEX</b>{{ c.hex }}<br><b>RGB</b>{{ c.rgb|join(' ') }}<br><b>HSL</b>{{ c.hsl|join(' ') }}<br><b>OKLCH</b>{{ c.oklch|join(' ') }}<br><b>CMYK</b>{{ c.cmyk|join(' ') }} (naive)</div></div>{% endfor %}</div>
+<div style="margin-top:6px">Light paper roles: {{ roles_light }}. Dark paper roles: {{ roles_dark }}. Contrast (WCAG / APCA Lc): {% for r in contrast %}{{ r.context }} {{ r.role }} {{ r.wcag }}/{{ r.apca }}{{ ', ' if not loop.last }}{% endfor %}.</div>
 
 <h2>Typography</h2>
-<div>{% for f in fonts %}{{ f.family }} {{ f.weight }} ({{ f.license }}){{ '; ' if not loop.last }}{% endfor %}. Deliverables are outlined; the font files are in <code>fonts/</code>.</div>
+<div>{% for f in fonts %}{{ f.family }} {{ f.weight }} ({{ f.license }}){% if f.cached %}, files in <code>fonts/{{ f.slug }}/</code>{% else %}, not in this package{% endif %}{{ '; ' if not loop.last }}{% endfor %}. Deliverables are outlined, so they need no fonts.</div>
 
 <h2>Backgrounds and files</h2>
-<div>Light fields: color. Dark fields: reverse. Photographs: white or black inside a clear-space zone. Primary-colour fields: white. Full file index in README.md; web head snippet in favicon-head.html.</div>
+<div>Light fields: color. Dark fields: reverse. Photographs: white or black inside a clear-space zone. Primary-colour fields: white. Full file index in README.md.</div>
+{% if head_snippet %}
+<h2>Web head snippet</h2>
+<pre>{{ head_snippet }}</pre>
+<div style="margin-top:4px">Replace https://example.com in the two preview image URLs with your site's origin; the icon links stay relative to the site root.</div>
+{% endif %}
 </body></html>

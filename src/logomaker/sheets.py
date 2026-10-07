@@ -34,8 +34,16 @@ CONCEPTS_W = 1800
 CONCEPT_LOCKUP, CONCEPT_MIRROR = 256, 128  # the concept sheet's strip: lockup boxes, mirrored and rotated boxes
 
 
+def number(value: float) -> str:
+    """`value` as the sheets and documents print a measure: 25.0 as "25", 6.5 as "6.5"."""
+    return f"{value:g}"
+
+
 def jinja(paths: ProjectPaths) -> Environment:
-    return Environment(loader=FileSystemLoader(str(paths.templates)), autoescape=select_autoescape(default=False))
+    """The templates' environment: HTML escaped, Markdown not, and the `num` filter (number)."""
+    env = Environment(loader=FileSystemLoader(str(paths.templates)), autoescape=select_autoescape(default=False))
+    env.filters["num"] = number
+    return env
 
 
 def _render_html(renderer: Renderer | None, html: str, width: int, height: int | None = None) -> bytes:
@@ -429,9 +437,9 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
     x = lockup.x_unit
     ms = state.min_sizes
     ladder_specs = [
-        ("full-horizontal", f"horizontal {ms.horizontal_px} px / {ms.horizontal_mm} mm", ms.horizontal_px),
-        ("full-stacked", f"stacked {ms.stacked_px} px / {ms.stacked_mm} mm", ms.stacked_px),
-        (conceptlib.pick_output(outputs, ms.mark_px), f"mark {ms.mark_px} px / {ms.mark_mm} mm", ms.mark_px),
+        ("full-horizontal", f"horizontal {ms.horizontal_px} px / {number(ms.horizontal_mm)} mm", ms.horizontal_px),
+        ("full-stacked", f"stacked {ms.stacked_px} px / {number(ms.stacked_mm)} mm", ms.stacked_px),
+        (conceptlib.pick_output(outputs, ms.mark_px), f"mark {ms.mark_px} px / {number(ms.mark_mm)} mm", ms.mark_px),
         (conceptlib.pick_output(outputs, ms.favicon_px), f"favicon {ms.favicon_px} px", ms.favicon_px),
     ]
     ladder = [{"label": label, "px": px, "svg": fit_box(outputs[name].to_svg("black"), px, px * 2)}

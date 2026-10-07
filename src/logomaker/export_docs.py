@@ -6,10 +6,13 @@ export imports this module to mix DocumentGroups in, so what this one needs from
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import re
 from functools import cached_property
 from pathlib import Path
+
+from pypdf import PdfReader
 
 from . import fonts as fontlib
 from . import registry
@@ -107,7 +110,7 @@ class DocumentGroups:
         lockup = self.outputs["full-lockup"]
         head = self.pkg / "favicon-head.html"
         if not head.is_file():
-            self.warn("BRAND.md has no web head snippet: favicon-head.html is not in the package")
+            self.warn("BRAND.md and the brand sheet have no web head snippet: favicon-head.html is not in the package")
 
         def fitted(variant: str, colour: str, box_w: int, box_h: int) -> str:
             svg = self.svg(variant, colour)
@@ -121,10 +124,10 @@ class DocumentGroups:
             "contrast": [row.model_dump() for row in self.checks.contrast], "fonts": self.typefaces,
             "head_snippet": head.read_text(encoding="utf-8") if head.is_file() else "",
             "rationale": (self.final / "rationale.md").read_text(encoding="utf-8").strip(),
-            "sheet": {"primary": fitted("primary", "color", 240, 100), "reverse": fitted("primary", "reverse", 240, 100),
-                      "stacked": fitted("stacked", "color", 100, 100), "mark": fitted("mark", "color", 70, 100),
-                      "small": fitted("small", "color", 44, 100), "favicon": fitted("favicon", "color", 32, 100),
-                      "clear_space": fit_box(clear_space_svg(self.mark("primary"), lockup.x_unit), 300, 110)},
+            "sheet": {"primary": fitted("primary", "color", 172, 82), "reverse": fitted("primary", "reverse", 172, 82),
+                      "stacked": fitted("stacked", "color", 82, 82), "mark": fitted("mark", "color", 52, 82),
+                      "small": fitted("small", "color", 32, 82), "favicon": fitted("favicon", "color", 22, 82),
+                      "clear_space": fit_box(clear_space_svg(self.mark("primary"), lockup.x_unit), 282, 102)},
             "paper_light": self.light["paper"], "paper_dark": self.dark["paper"],
         }
 
@@ -173,7 +176,7 @@ class DocumentGroups:
     def docs(self) -> None:
         """BRAND.md, rationale.md, source/ and brand-sheet.pdf, the one-page sheet printed through Chrome. source/ holds what
         rebuilds the package (SOURCE_FILES; README.md says how); a file that is missing is left out with a warning naming
-        it."""
+        it. A brand sheet that runs past one page (a long rationale, many colours) is kept, with a warning."""
         env = jinja(self.paths)
         ctx = self.doc_context()
         self.write("BRAND.md", env.get_template("brand.md.j2").render(**ctx), "brand guidelines")
@@ -185,7 +188,11 @@ class DocumentGroups:
             else:
                 self.warn(f"source/{source.name} left out: brands/{self.slug}/{origin} is missing")
         html = env.get_template("brand-sheet.html").render(**ctx)
-        self.write("brand-sheet.pdf", self.renderer.html_to_pdf(html, self.paper), "one-page brand sheet")
+        pdf = self.renderer.html_to_pdf(html, self.paper)
+        pages = len(PdfReader(io.BytesIO(pdf)).pages)
+        if pages > 1:
+            self.warn(f"brand-sheet.pdf runs to {pages} pages, not one; shorten final/rationale.md or the palette")
+        self.write("brand-sheet.pdf", pdf, "one-page brand sheet")
 
     def readme(self) -> None:
         """README.md, the package's index by section (_groups), each file in a readme_row. It runs last, so it lists

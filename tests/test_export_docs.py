@@ -1,8 +1,11 @@
+import io
 import json
 import re
 
 import pytest
 from click.testing import CliRunner
+from markupsafe import escape
+from PIL import Image
 from pypdf import PdfReader
 
 from logomaker import export, export_docs, registry, sheets
@@ -12,7 +15,7 @@ from logomaker.color import check_tokens, chip_text
 from logomaker.kit import Mark, rect_centered, ring
 from logomaker.paths import project
 from logomaker.schemas import Phase
-from tests.conftest import make_final_brand, requires_chrome, write_passing_audit
+from tests.conftest import StubRenderer, make_final_brand, requires_chrome, write_passing_audit
 from tests.test_export_core import FAVICONS, build
 from tests.test_export_platforms import use_concept
 
@@ -238,4 +241,53 @@ def test_the_token_checks_and_each_licence_are_computed_once(project_root, monke
     monkeypatch.setattr(fontlib, "find_family", lambda paths, family: calls.append(family) or find_family(paths, family))
     _, manifest = build(["tokens_file", "fonts", "docs"])
     assert calls == ["check_tokens", "Fira Code"]
-    assert manifest.warnings == ["BRAND.md has no web head snippet: favicon-head.html is not in the package"]  # no favicons group ran
+    assert manifest.warnings == ["BRAND.md and the brand sheet have no web head snippet: favicon-head.html is not in the package"]
+
+
+def brand_sheet_html(builder: export.PackageBuilder) -> str:
+    """The brand sheet's HTML for `builder`, as the docs group prints it."""
+    return sheets.jinja(project()).get_template("brand-sheet.html").render(**builder.doc_context())
+
+
+def test_the_brand_sheet_carries_every_colour_value_and_the_head_snippet(project_root):
+    make_final_brand(project_root)
+    registry.set_fields(project(), "keystone", fonts=["body=Inter:400"])  # Inter is not cached
+    builder, _ = build(["favicons"])  # the head snippet comes from the package's favicon-head.html
+    html = brand_sheet_html(builder)
+    for colour in builder.tokens.colors.values():  # each colour in all five notations, small type beside its swatch
+        values = (colour.hex, *(" ".join(map(str, v)) for v in (colour.rgb, colour.hsl, colour.oklch, colour.cmyk)))
+        assert all(value in html for value in values), colour.name
+    assert re.search(r"\.colour\{[^}]*border:1px solid", html)  # the white Paper swatch keeps an edge
+    snippet = (project_root / "brands" / "keystone" / "package" / "favicon-head.html").read_text()
+    assert f"<pre>{escape(snippet)}</pre>" in html  # shown as code, not read as tags
+    assert "horizontal 120 px / 25 mm" in html and "25.0 mm" not in html and "mark 24 px / 6 mm" in html
+    assert "Fira Code 600 (OFL), files in <code>fonts/firacode/</code>" in html and "Inter 400 (OFL), not in this package" in html
+    (project_root / "brands" / "keystone" / "package" / "favicon-head.html").unlink()
+    assert "Web head snippet" not in brand_sheet_html(export.PackageBuilder(project(), "keystone"))
+
+
+class TwoPagePdf(StubRenderer):
+    def html_to_pdf(self, html: str, paper: str = "letter") -> bytes:
+        out = io.BytesIO()
+        Image.new("RGB", (8, 8), "#ffffff").save(out, format="PDF", save_all=True, append_images=[Image.new("RGB", (8, 8))])
+        return out.getvalue()
+
+
+def test_a_brand_sheet_past_one_page_is_kept_with_a_warning(project_root):
+    make_final_brand(project_root)
+    _, manifest = build(["favicons", "docs"], TwoPagePdf())
+    assert manifest.warnings == ["brand-sheet.pdf runs to 2 pages, not one; shorten final/rationale.md or the palette"]
+    assert "brand-sheet.pdf" in [e.path for e in manifest.files]
+
+
+@requires_chrome
+@pytest.mark.render
+@pytest.mark.parametrize("paper", ["letter", "a4"])
+def test_the_brand_sheet_prints_on_one_page(project_root, renderer, paper):
+    make_final_brand(project_root)
+    builder = export.PackageBuilder(project(), "keystone", paper)
+    builder.GROUPS = ["masters", "favicons", "docs"]
+    manifest = builder.build(renderer)
+    pdf = PdfReader(str(project_root / "brands" / "keystone" / "package" / "brand-sheet.pdf"))
+    assert len(pdf.pages) == 1 and manifest.warnings == []
+    assert "https://example.com/og-image-1200x630.png" in pdf.pages[0].extract_text()
