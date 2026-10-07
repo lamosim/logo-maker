@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Literal
 
 from .ops import translate
 from .shape import Box, Shape, fmt
@@ -12,6 +13,7 @@ ROLES = ("primary", "secondary", "accent", "ink")  # paper is the background in 
 LOCKUPS = ("horizontal", "stacked", "symbol", "wordmark")
 VARIANTS = ("color", "reverse", "black", "white", "mono")
 DEFAULT_ROLES = {"symbol": "primary", "wordmark": "ink", "tagline": "ink"}
+XUnitSource = Literal["cap-height", "symbol-fifth", "wordmark-height"]
 
 
 def _check_part(part: Shape | Composite, label: str) -> None:
@@ -131,22 +133,24 @@ class Mark:
             return [("symbol" if i == 0 else f"symbol-{i + 1}", s, r) for i, (s, r) in enumerate(self.symbol.parts)]
         return [("symbol", self.symbol, self.roles["symbol"])]  # type: ignore[list-item]
 
-    @property
-    def x_unit(self) -> float:
-        """Clear-space and gap unit: wordmark cap height, else one fifth of the symbol height, else the wordmark's height
-        (a wordmark drawn without text() has no cap height). x_unit_source names which."""
+    def _x_unit(self) -> tuple[XUnitSource, float]:
+        """The clear-space and gap unit and what it measures: the wordmark cap height, else one fifth of the symbol
+        height, else the wordmark's height (a wordmark drawn without text() has no cap height)."""
         if isinstance(self.wordmark, TextShape):
-            return self.wordmark.cap_height
+            return "cap-height", self.wordmark.cap_height
         if self.symbol is not None:
-            return self._symbol_bounds().h / 5
-        return self.wordmark.bounds.h  # type: ignore[union-attr]
+            return "symbol-fifth", self._symbol_bounds().h / 5
+        return "wordmark-height", self.wordmark.bounds.h  # type: ignore[union-attr]
 
     @property
-    def x_unit_source(self) -> str:
-        """What x_unit measures: "cap-height", "symbol-fifth" or "wordmark-height", in x_unit's order."""
-        if isinstance(self.wordmark, TextShape):
-            return "cap-height"
-        return "symbol-fifth" if self.symbol is not None else "wordmark-height"
+    def x_unit(self) -> float:
+        """Clear-space and gap unit (_x_unit); x_unit_source names which."""
+        return self._x_unit()[1]
+
+    @property
+    def x_unit_source(self) -> XUnitSource:
+        """What x_unit measures: "cap-height", "symbol-fifth" or "wordmark-height" (_x_unit)."""
+        return self._x_unit()[0]
 
     def layout(self) -> list[Placed]:
         gap = self.gap if self.gap is not None else self.x_unit

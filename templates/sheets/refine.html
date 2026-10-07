@@ -26,7 +26,8 @@
 
 <h2>Colour variants</h2>
 {% if variants %}
-<div class="row">{% for v in variants %}<figure class="panel{% if v.dark %} dark{% endif %}" style="width:300px;height:200px;background:{{ v.background }};color:{{ v.css_color }}">{{ v.svg|safe }}<figcaption>{{ v.label }}</figcaption></figure>{% endfor %}</div>
+{# Five 292 px panels and four 16 px gaps, 1524 px, fit the 1552 px the body's padding leaves at REFINE_W 1600: one row. #}
+<div class="row">{% for v in variants %}<figure class="panel{% if v.dark %} dark{% endif %}" style="width:292px;height:200px;background:{{ v.background }};color:{{ v.css_color }}">{{ v.svg|safe }}<figcaption>{{ v.label }}</figcaption></figure>{% endfor %}</div>
 {% else %}<div class="note">no tokens.json yet: colour comes after the black mark is approved</div>{% endif %}
 
 <h2>Clear space (x = {{ x_unit }} units = {{ x_rule }})</h2>

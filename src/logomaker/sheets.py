@@ -30,8 +30,14 @@ ONE_COLOUR = ((64, ("full-symbol", "full-lockup")), (32, ("small", "full-symbol"
 AUDIT_ROWS = 24  # 16 px text rows per column of the audit box; the template sizes the box to fit them
 AUDIT_LINES = 2 * AUDIT_ROWS  # the box has two columns
 SHOWN_INFO = ("anchors", "min_feature")  # passing measurements listed after the failures and warnings
+BOARD_W = 1600
 CONCEPTS_W = 1800
 CONCEPT_LOCKUP, CONCEPT_MIRROR = 256, 128  # the concept sheet's strip: lockup boxes, mirrored and rotated boxes
+REFINE_W = 1600
+REFINE_TIERS = (("full-lockup", "full lockup 400", 400), ("compact", "compact 160", 160), ("small", "small 64", 64),
+                ("favicon", "favicon 32", 32))  # output, caption, box
+X_RULES = {"cap-height": "the wordmark cap height", "symbol-fifth": "one fifth of the symbol height",
+           "wordmark-height": "the wordmark height"}  # Mark.x_unit_source -> what x is, in words
 
 
 def number(value: float) -> str:
@@ -53,6 +59,19 @@ def _render_html(renderer: Renderer | None, html: str, width: int, height: int |
         with Renderer() as own:
             return own.html_to_png(html, width, height, full_page=height is None)
     return renderer.html_to_png(html, width, height, full_page=height is None)
+
+
+def _write_sheet(renderer: Renderer | None, html: str, folder: Path, stem: str, width: int,
+                 height: int | None = None) -> tuple[Path, Path]:
+    """The tail every sheet shares, once its inputs have passed their checks: render `html` (_render_html), then make
+    `folder` and write <stem>.html and <stem>.png into it, returning their paths. The render comes first, so a failed
+    one leaves no half-written sheet, nor a folder made for it."""
+    png = _render_html(renderer, html, width, height)
+    folder.mkdir(parents=True, exist_ok=True)
+    html_path, png_path = folder / f"{stem}.html", folder / f"{stem}.png"
+    html_path.write_text(html, encoding="utf-8")
+    png_path.write_bytes(png)
+    return html_path, png_path
 
 
 def next_round(folder: Path, pattern: str = "renders/round-*") -> int:
@@ -168,17 +187,8 @@ def critique_sheet(paths: ProjectPaths, slug: str, concept_name: str, round_n: i
         slug=slug, concept=concept_name, round_n=round_n, idea=module.meta.idea, panels=panels, audit=summary,
         audit_rows=AUDIT_ROWS, width=SHEET_W, height=SHEET_H,
     )
-    png = _render_html(renderer, html, SHEET_W, SHEET_H)
-    # The round folder is made only after the render succeeds, so a failure never leaves a half-written round.
-    out_dir = folder / "renders" / f"round-{round_n}"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    html_path, png_path = out_dir / "critique.html", out_dir / "critique.png"
-    html_path.write_text(html, encoding="utf-8")
-    png_path.write_bytes(png)
+    html_path, png_path = _write_sheet(renderer, html, folder / "renders" / f"round-{round_n}", "critique", SHEET_W, SHEET_H)
     return {"round": round_n, "critique_png": str(png_path), "critique_html": str(html_path)}
-
-
-BOARD_W = 1600
 
 
 def open_file(path: Path, enabled: bool = True, warnings: list[str] | None = None) -> bool:
@@ -261,10 +271,7 @@ def territories_board(paths: ProjectPaths, slug: str, renderer: Renderer | None 
         cards.append({"name": t.name, "embraces": t.embraces, "rejects": t.rejects, "fonts": fonts, "palette": palette,
                       "shapes": shape_specimens(t.shapes, initial_of(state.name), t.fonts[0].family, t.fonts[0].weight)})
     html = jinja(paths).get_template("sheets/territories.html").render(brand=state.name, territories=cards, width=BOARD_W)
-    png = _render_html(renderer, html, BOARD_W)
-    html_path, png_path = folder / "board.html", folder / "board.png"
-    html_path.write_text(html, encoding="utf-8")
-    png_path.write_bytes(png)
+    html_path, png_path = _write_sheet(renderer, html, folder, "board", BOARD_W)
     warnings: list[str] = []
     open_file(html_path, open_after, warnings)
     return {"board_html": str(html_path), "board_png": str(png_path), "territories": [t.slug for t in spec.territories],
@@ -358,28 +365,18 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
                       "mockups": [mockuplib.render_mockup(env, kind, ctx) for kind in mockuplib.MOCKUPS]})
     html = env.get_template("sheets/concepts.html").render(brand=state.name, concepts=cards, width=CONCEPTS_W,
                                                            lockup_px=CONCEPT_LOCKUP, mirror_px=CONCEPT_MIRROR)
-    png = _render_html(renderer, html, CONCEPTS_W)
-    sheets_dir = paths.brand(slug) / "sheets"
-    sheets_dir.mkdir(exist_ok=True)
-    html_path, png_path = sheets_dir / "concepts.html", sheets_dir / "concepts.png"
-    html_path.write_text(html, encoding="utf-8")
-    png_path.write_bytes(png)
+    html_path, png_path = _write_sheet(renderer, html, paths.brand(slug) / "sheets", "concepts", CONCEPTS_W)
     open_file(html_path, open_after, warnings)
     return {"sheet_html": str(html_path), "sheet_png": str(png_path), "concepts": concept_names, "warnings": warnings}
 
 
-REFINE_W = 1600
-REFINE_TIERS = (("full-lockup", "full lockup 400", 400), ("compact", "compact 160", 160), ("small", "small 64", 64),
-                ("favicon", "favicon 32", 32))  # output, caption, box
-X_RULES = {"cap-height": "the wordmark cap height", "symbol-fifth": "one fifth of the symbol height",
-           "wordmark-height": "the wordmark height"}  # Mark.x_unit_source -> what x is, in words
-
-
 def clear_space_svg(mark: Mark, x: float) -> str:
-    """The lockup with its clear-space zone: dashed inner (artwork) and outer (artwork + x) rectangles and an x square."""
-    svg = mark.to_svg("black", padding=x)
+    """The lockup with its clear-space zone: dashed inner (artwork) and outer (artwork + x) rectangles and an x square.
+    The padding is x plus half the dashes' stroke, so the outer rectangle's stroke is drawn whole, not cut by the edge."""
+    stroke = x / 20
+    svg = mark.to_svg("black", padding=x + stroke / 2)
     b = mark.bounds()
-    dashes = f'fill="none" stroke="#e8572a" stroke-width="{fmt(x / 20)}" stroke-dasharray="{fmt(x / 5)} {fmt(x / 5)}"'
+    dashes = f'fill="none" stroke="#e8572a" stroke-width="{fmt(stroke)}" stroke-dasharray="{fmt(x / 5)} {fmt(x / 5)}"'
     guides = (
         f'<rect x="{fmt(b.x0)}" y="{fmt(-b.y1)}" width="{fmt(b.w)}" height="{fmt(b.h)}" {dashes}/>'
         f'<rect x="{fmt(b.x0 - x)}" y="{fmt(-b.y1 - x)}" width="{fmt(b.w + 2 * x)}" height="{fmt(b.h + 2 * x)}" {dashes}/>'
@@ -393,12 +390,14 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
     """Write sheets/refine-N.{html,png} from final/ for the owner, then open the HTML unless `open_after` is False.
 
     The sheet shows the tiers, the lockups, the five colour variants, the clear-space diagram (x as Mark.x_unit_source
-    names it), the minimum-size ladder from brand.json's min_sizes, the colour-vision strip and the contrast table, type
-    held to the text thresholds as the audit holds it. Without final/tokens.json a note stands in for the colour
+    names it), the minimum-size ladder from brand.json's min_sizes (each row drawn by the output exports use there: a
+    brand without a horizontal or stacked lockup shows its full lockup), the colour-vision strip and the contrast table,
+    type held to the text thresholds as the audit holds it. Without final/tokens.json a note stands in for the colour
     sections. N defaults to one past the highest refine round (next_round). Before Chrome starts: final/concept.py, an
-    audit.json that vouches for the final mark as it is now (registry.audit_problems; nothing reaches the owner that
-    failed an audit), the build and tokens.json; the PNG is rendered before sheets/ and both files are written.
-    `warnings` holds the missing small and favicon tiers (also shown on the sheet), then any failure to open it.
+    audit.json that vouches for the final mark as it is now (registry.require_final_audit; nothing reaches the owner
+    that failed an audit), the build and tokens.json; the PNG is rendered before sheets/ and both files are written
+    (_write_sheet). `warnings` holds the missing small and favicon tiers (also shown on the sheet), then any failure to
+    open it.
     """
     state = registry.load_state(paths, slug)
     brand = paths.brand(slug)
@@ -422,11 +421,11 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
                for name in ("full-horizontal", "full-stacked", "full-symbol", "full-wordmark") if name in outputs]
 
     variants, cvd, contrast = [], [], []
-    if tokens:  # light and dark are its palettes
+    if tokens is not None:  # light and dark are its palettes
         backgrounds = {"color": light["paper"], "reverse": dark["paper"], "black": "#ffffff", "white": "#000000", "mono": "#ffffff"}
         for variant in VARIANTS:
             variants.append({"label": variant + (" (currentColor)" if variant == "mono" else ""), "background": backgrounds[variant],
-                             "svg": fit_box(lockup.to_svg(variant, palette=dark if variant == "reverse" else light), 270, 150),
+                             "svg": fit_box(lockup.to_svg(variant, palette=dark if variant == "reverse" else light), 264, 150),
                              "dark": variant in ("reverse", "white"), "css_color": "#1f6feb" if variant == "mono" else "inherit"})
         for kind in CVD_KINDS:
             simulated = {role: simulate_cvd(hex_value, kind) for role, hex_value in light.items()}
@@ -437,13 +436,14 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
     x = lockup.x_unit
     ms = state.min_sizes
     ladder_specs = [
-        ("full-horizontal", f"horizontal {ms.horizontal_px} px / {number(ms.horizontal_mm)} mm", ms.horizontal_px),
-        ("full-stacked", f"stacked {ms.stacked_px} px / {number(ms.stacked_mm)} mm", ms.stacked_px),
+        (conceptlib.first_present(outputs, ("full-horizontal", "full-lockup")),
+         f"horizontal {ms.horizontal_px} px / {number(ms.horizontal_mm)} mm", ms.horizontal_px),
+        (conceptlib.first_present(outputs, ("full-stacked", "full-lockup")),
+         f"stacked {ms.stacked_px} px / {number(ms.stacked_mm)} mm", ms.stacked_px),
         (conceptlib.pick_output(outputs, ms.mark_px), f"mark {ms.mark_px} px / {number(ms.mark_mm)} mm", ms.mark_px),
         (conceptlib.pick_output(outputs, ms.favicon_px), f"favicon {ms.favicon_px} px", ms.favicon_px),
     ]
-    ladder = [{"label": label, "px": px, "svg": fit_box(outputs[name].to_svg("black"), px, px * 2)}
-              for name, label, px in ladder_specs if name in outputs]
+    ladder = [{"label": label, "px": px, "svg": fit_box(outputs[name].to_svg("black"), px, px * 2)} for name, label, px in ladder_specs]
 
     round_n = round_n or next_round(brand, "sheets/refine-*.html")
     html = jinja(paths).get_template("sheets/refine.html").render(
@@ -451,11 +451,6 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
         clear_space=fit_box(clear_space_svg(lockup, x), 530, 270), x_unit=round(x, 1), x_rule=X_RULES[lockup.x_unit_source],
         ladder=ladder, cvd=cvd, contrast=contrast,
     )
-    png = _render_html(renderer, html, REFINE_W)
-    sheets_dir = brand / "sheets"
-    sheets_dir.mkdir(exist_ok=True)
-    html_path, png_path = sheets_dir / f"refine-{round_n}.html", sheets_dir / f"refine-{round_n}.png"
-    html_path.write_text(html, encoding="utf-8")
-    png_path.write_bytes(png)
+    html_path, png_path = _write_sheet(renderer, html, brand / "sheets", f"refine-{round_n}", REFINE_W)
     open_file(html_path, open_after, warnings)
     return {"sheet_html": str(html_path), "sheet_png": str(png_path), "round": round_n, "warnings": warnings}

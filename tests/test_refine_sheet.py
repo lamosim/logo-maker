@@ -43,7 +43,9 @@ def captions(html: str) -> list[str]:
 
 def test_clear_space_svg_draws_the_guides():
     svg = sheets.clear_space_svg(Mark(symbol=rect(0, 0, 100, 50)), 20)
-    assert svg.count("<rect") == 3 and 'stroke-dasharray' in svg and 'viewBox="-70 -45 140 90"' in svg
+    # Padded by x and half the 1-unit stroke, so the outer dashed rectangle (-70 -45 140 90) is drawn whole.
+    assert svg.count("<rect") == 3 and 'stroke-dasharray' in svg and 'viewBox="-70.5 -45.5 141 91"' in svg
+    assert '<rect x="-70" y="-45" width="140" height="90" fill="none" stroke="#e8572a" stroke-width="1"' in svg
 
 
 def test_refine_needs_final(project_root):
@@ -137,6 +139,8 @@ def test_the_sheet_draws_every_section_at_its_size(project_root):
     assert captions(part["Lockups"]) == ["horizontal", "stacked", "symbol", "wordmark"]
     assert captions(part["Colour variants"]) == ["color", "reverse", "black", "white", "mono (currentColor)"]
     assert 'fill="currentColor"' in part["Colour variants"]
+    widths = [int(w) for w in re.findall(r'<figure class="panel[^"]*" style="width:(\d+)px', part["Colour variants"])]
+    assert len(widths) == 5 and sum(widths) + 4 * 16 <= sheets.REFINE_W - 2 * 24  # one row: the body's padding is 24 px a side
     assert captions(part["Clear space"]) == ["clear space = one x on every side"]
     # The ladder at the brand's minimum sizes, each lockup as wide as its rule; the mark and favicon by the tier rules.
     assert captions(part["Minimum sizes"]) == ["horizontal 120 px / 25 mm", "stacked 160 px / 25 mm", "mark 24 px / 6 mm",
@@ -213,6 +217,10 @@ def test_the_cli_emits_the_tier_warnings_and_opens_the_sheet(project_root, monke
     html = (sheets_dir / "refine-1.html").read_text()
     assert [f'<div class="note">{w}</div>' in html for w in tiers] == [True, True]
     assert captions(sections(html)["Lockups"]) == ["wordmark"]
+    # No horizontal or stacked lockup: the full lockup stands at those minimums, as exports draw it there.
+    ladder = sections(html)["Minimum sizes"]
+    assert captions(ladder) == ["horizontal 120 px / 25 mm", "stacked 160 px / 25 mm", "mark 24 px / 6 mm", "favicon 16 px"]
+    assert [int(w) for w, _ in SVG_SIZES.findall(ladder)] == [120, 160, 24, 16]
     code, payload = sheet()
     assert code == 0 and payload["round"] == 2 and payload["warnings"] == tiers
     assert opened == [["open", str(sheets_dir / "refine-2.html")]]

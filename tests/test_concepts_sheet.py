@@ -209,6 +209,8 @@ def test_each_concept_carries_the_critique_strip_at_true_size(project_root):
     captions = re.findall(r"<figcaption>(.*?)</figcaption>", strip)
     assert captions == ["black", "reversed", *map(str, sheets.LADDER), "mirrored", "rotated 90"]
     assert ".mirror svg{transform:scaleX(-1)}" in html and ".rotate svg{transform:rotate(90deg)}" in html
+    # Every mockup has its own place in the grid, so none wraps around the tall phone.
+    assert all(re.search(rf'\[data-mockup="{kind}"\]\{{grid-column:\d;grid-row:', html) for kind in mockups.MOCKUPS)
 
 
 def test_the_cli_writes_the_sheet_opens_it_and_warns_about_wordmark_fallbacks(project_root, monkeypatch):
@@ -225,7 +227,7 @@ def test_the_cli_writes_the_sheet_opens_it_and_warns_about_wordmark_fallbacks(pr
     assert payload["sheet_html"] == str(folder / "concepts.html") and payload["sheet_png"] == str(folder / "concepts.png")
     assert (folder / "concepts.png").read_bytes() == b"png"
     html = (folder / "concepts.html").read_text()
-    assert [html.count(f'data-mockup="{kind}"') for kind in mockups.MOCKUPS] == [2] * len(mockups.MOCKUPS)
+    assert [html.count(f'class="mockup" data-mockup="{kind}"') for kind in mockups.MOCKUPS] == [2] * len(mockups.MOCKUPS)
     assert "40 / 50" in html and "39 / 50" in html and "no symbol in this concept" in html
     code, payload = sheet("--concepts", "01-good,02-word")
     assert code == 0 and payload["warnings"] == [fallback] and opened == [["open", str(folder / "concepts.html")]]
@@ -247,7 +249,7 @@ def test_concepts_sheet_renders_all_mockups(project_root, renderer):
     info = sheets.concepts_sheet(project(), "keystone", names, renderer=renderer, open_after=False)
     html = Path(info["sheet_html"]).read_text()
     for kind in mockups.MOCKUPS:
-        assert html.count(f'data-mockup="{kind}"') == 3, kind
+        assert html.count(f'class="mockup" data-mockup="{kind}"') == 3, kind
     assert "01-good" in html and "02-good-colour" in html and "03-word" in html and "40 / 50" in html
     fallback = "no symbol in this concept: icon, favicon and avatar mockups use the wordmark"
     sections = html.split('<section class="concept">')[1:]
