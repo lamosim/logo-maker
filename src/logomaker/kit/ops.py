@@ -5,6 +5,7 @@ notch, a stroke or a move.
 """
 from __future__ import annotations
 
+import numpy as np
 import skia
 
 from .primitives import stroked_path
@@ -66,49 +67,69 @@ def offset(shape: Shape, distance: float) -> Shape:
 
 
 _SLIVER_AREA = 1.0  # unit²: smaller than any hole a real inset has (one at least `distance` > 1 across)
+_RETRY_STEP = 0.01  # how much shallower a failed band subtraction is retried: a hundredth of a unit, below SVG precision
+_PAIRS = 1 << 18  # point-edge pairs measured at once, bounding the distance test's memory (2 MB per array)
+# Flattening steps per curve for the outline the distance test measures to. Along a convex stretch a chord cuts inside the
+# curve, towards the inset: at the default 16 steps, a bowl 800 units tall drawn as one half-turn cubic comes 2.3 units
+# nearer, more than tol; at 64, 0.17.
+_OUTLINE_STEPS = 64
+
+
+def _band_subtraction(shape: Shape, distance: float) -> Shape:
+    return subtract(shape, stroke(shape, 2 * distance, join="round"))
 
 
 def _inset(shape: Shape, distance: float) -> Shape:
     """Everything in `shape` at least `distance` (> 0) from its outline.
 
-    The base is the shape minus a round-joined stroke band of its outline (normalized like every stroke). Where that is
-    not exact, the result is rebuilt from regions: an outline (even depth) with its direct holes (depth + 1), so the
-    slivers and overlapping duplicates the boolean leaves where the band's edge lands on the outline (an inset of about
-    twice a hole's radius) are never part of one. A region stays only if, grown back by just under `distance`, it still
-    fits inside the shape; that drops the islands skia's stroker leaves behind a convex curve tighter than the distance
-    (a dot of radius r < distance keeps a dot of radius distance - r). The shortfall, max(2% of the distance, 1 unit),
-    stays clear of the stroker's own error (about 0.25 units per stroke on the 1000-unit canvas); an island with a
-    radius under about 0.5 units can survive it. The regions are read with five probes per contour, so a hole touching an
-    outline cannot pass for its parent. If pathops raises on the band subtraction or returns nothing, the inset is
-    retried a hundredth of a unit shallower; if a region test's boolean fails, the plain band subtraction stands.
+    The base is the shape minus a round-joined stroke band of its outline (normalized like every stroke). That is exact
+    except where skia's stroker folds: behind a convex curve tighter than the distance the band misses an island (a dot
+    of radius r < distance keeps a dot of radius min(r, distance - r); an inset deeper than twice a hole's radius keeps
+    a ring around the hole). So the result is read as regions, each an outline (even depth) with its direct holes
+    (depth + 1, at least `_SLIVER_AREA`), with five probes per contour so that a hole touching an outline cannot pass
+    for its parent. The slivers and overlapping duplicates the boolean leaves where the band's edge lands on the outline
+    (an inset of about twice a hole's radius) belong to no region and are dropped. A region is kept only if every vertex
+    and edge midpoint of its flattened contours lies at least distance - tol from the shape's own outline (every
+    contour, holes too, flattened at `_OUTLINE_STEPS` per curve), tol = max(1, 2 % of the distance), clear of the
+    stroker's error of about 0.25 units: a true inset region lies at the distance, an island on the stroker's folded
+    curve nearer (a dot's island lies max(0, 2r - distance) from the dot's outline). The test only measures distances;
+    it runs no boolean and no stroke. Islands can survive only when their points are within tol = max(1, 2 % of the
+    distance) of the inset distance from the boundary.
+
+    If pathops raises on the band subtraction, it is retried a hundredth of a unit shallower. If it returns nothing,
+    the retry is kept only if its area is at least distance²: an inset too deep for the shape is empty, and a hundredth
+    shallower it comes back as a hairline.
     """
-    retry = distance > 0.02  # a hundredth of a unit shallower must still be an inset
+    retry = distance > 2 * _RETRY_STEP  # a hundredth of a unit shallower must still be an inset
     try:
-        result = subtract(shape, stroke(shape, 2 * distance, join="round"))
+        result = _band_subtraction(shape, distance)
     except ValueError:  # where the band's edge lands exactly on the outline pathops can give up, raising ...
         if not retry:
             raise
-        result = None
-    if retry and (result is None or result.is_empty):  # ... or returning nothing: a hundredth shallower it does not
-        distance -= 0.01
-        result = subtract(shape, stroke(shape, 2 * distance, join="round"))
-    grow = distance - max(0.02 * distance, 1.0)
-    if grow <= 0:
+        result = _band_subtraction(shape, distance - _RETRY_STEP)
+    else:
+        if result.is_empty and retry:  # ... or returning nothing, which is also what an inset too deep for the shape gives
+            try:
+                again = _band_subtraction(shape, distance - _RETRY_STEP)
+            except ValueError:
+                return result
+            if again.area < distance**2:
+                return result
+            result = again
+    limit = distance - max(1.0, 0.02 * distance)
+    if limit <= 0 or result.is_empty:
         return result
-    try:
-        nesting = contour_nesting(result.path, probes=5)
-        kept: set[int] = set()
-        for i, (outline, _, depth, _) in enumerate(nesting):
-            if depth is None or depth % 2:
-                continue
-            holes = [j for j, (_, area, d, parent) in enumerate(nesting) if parent == i and d == depth + 1 and abs(area) >= _SLIVER_AREA]
-            region = skia.Path(outline)
-            for j in holes:
-                region.addPath(nesting[j][0])
-            if subtract(offset(Shape(region), grow), shape).is_empty:
-                kept |= {i, *holes}
-    except ValueError:  # a region test's boolean failed: the plain band subtraction stands
-        return result
+    starts, ends = _edges(shape.flatten(steps=_OUTLINE_STEPS))
+    nesting = contour_nesting(result.path, probes=5)
+    kept: set[int] = set()
+    for i, (outline, _, depth, _) in enumerate(nesting):
+        if depth is None or depth % 2:
+            continue
+        holes = [j for j, (_, area, d, parent) in enumerate(nesting) if parent == i and d == depth + 1 and abs(area) >= _SLIVER_AREA]
+        polys = [poly for j in (i, *holes) for poly in Shape(nesting[j][0]).flatten()]
+        region_starts, region_ends = _edges(polys)
+        if _clear_of(np.concatenate([region_starts, (region_starts + region_ends) / 2]), starts, ends, limit):
+            kept |= {i, *holes}
     if len(kept) == len(nesting):
         return result
     path = skia.Path()
@@ -116,6 +137,33 @@ def _inset(shape: Shape, distance: float) -> Shape:
         if i in kept:
             path.addPath(contour)
     return result._with_path(path, result.free_segments)
+
+
+def _edges(polys: list[list[tuple[float, float]]]) -> tuple[np.ndarray, np.ndarray]:
+    """The edges of flattened contours as (start, end) point arrays, each contour closed as a fill closes it."""
+    loops = [np.asarray(poly, dtype=float) for poly in polys if len(poly) > 1]
+    if not loops:
+        return np.zeros((0, 2)), np.zeros((0, 2))
+    return np.concatenate(loops), np.concatenate([np.roll(loop, -1, axis=0) for loop in loops])
+
+
+def _clear_of(points: np.ndarray, starts: np.ndarray, ends: np.ndarray, limit: float) -> bool:
+    """Whether every point lies at least `limit` from every edge (start to end), by exact point-to-segment distance. An
+    edge whose bounding box lies more than `limit` outside the points' cannot be that close to any of them: it is skipped."""
+    lo, hi = points.min(axis=0) - limit, points.max(axis=0) + limit
+    near = np.all(np.minimum(starts, ends) <= hi, axis=1) & np.all(np.maximum(starts, ends) >= lo, axis=1)
+    sx, sy = starts[near, 0], starts[near, 1]
+    ax, ay = ends[near, 0] - sx, ends[near, 1] - sy
+    length2 = ax * ax + ay * ay
+    length2[length2 == 0] = 1.0  # a zero-length edge has no direction, so t = 0 and it measures to its start
+    chunk = max(1, _PAIRS // max(1, len(sx)))
+    for k in range(0, len(points) if len(sx) else 0, chunk):
+        rx, ry = points[k : k + chunk, 0:1] - sx, points[k : k + chunk, 1:2] - sy
+        t = np.clip((rx * ax + ry * ay) / length2, 0.0, 1.0)
+        gx, gy = rx - t * ax, ry - t * ay
+        if (gx * gx + gy * gy).min() < limit * limit:
+            return False
+    return True
 
 
 def translate(shape: Shape, dx: float, dy: float) -> Shape:

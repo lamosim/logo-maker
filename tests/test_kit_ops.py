@@ -20,7 +20,7 @@ from logomaker.kit.ops import (
     xor,
 )
 from logomaker.kit.optical import compensate_stroke, optical_center, overshoot
-from logomaker.kit.primitives import circle, polygon, rect, rect_centered, ring
+from logomaker.kit.primitives import bezier, circle, line, polygon, rect, rect_centered, ring
 from logomaker.kit.shape import Shape, normalize_winding
 from tests.test_kit_shape import signed_area
 
@@ -100,8 +100,8 @@ def test_inward_offsets_shrink_by_the_distance_or_vanish():
     assert math.isclose(target.area, math.pi * (85**2 - 75**2), rel_tol=0.02) and len(target.subpaths()) == 2
 
 
-# Hole centres for the sweep: the hole grown to 3r stays inside the square inset by 2r while |x|, |y| <= 150, and at
-# 150 it touches the inset square's edge.
+# Hole centres for the sweep: the hole grown to 3r stays inside the square inset by 2r while |x|, |y| <= 150 (the gap at
+# 150 is 50 - 5r), so only the r = 10 hole at 150 touches the inset square's edge.
 HOLE_POSITIONS = [(0, 0), (0, 100), (100, 0), (-150, 0), (0, -150), (150, 150), (-150, 150), (75, -40), (-33.25, 120.5), (140, -137.75)]
 
 
@@ -125,6 +125,61 @@ def test_a_square_with_a_hole_insets_by_twice_the_hole_radius(r):
         inset = offset(subtract(rect_centered(0, 0, 400, 400), circle(cx, cy, r)), -2 * r)
         expected = (400 - 4 * r) ** 2 - math.pi * (3 * r) ** 2  # the square shrinks by 2r a side; the hole grows to 3r
         assert not inset.is_empty and math.isclose(inset.area, expected, rel_tol=0.01), (r, cx, cy)
+
+
+def test_insets_beside_a_hole_near_an_edge():
+    # Holes with 4d - 2 units of material between them and the nearest outer edge (d the inset): the round-4 grow-back test
+    # made its own tangency there and emptied the inset. Exact areas: the outline shrinks by d a side, the hole grows by d.
+    cases = [
+        ((400, 400), (-112, 0), 10, 20, 360**2 - math.pi * 30**2),  # exact 126772.6, measured 126764.4
+        ((400, 400), (112, 0), 10, 20, 360**2 - math.pi * 30**2),  # the mirror image always worked; measured 126764.4
+        ((400, 400), (-130, 0), 8, 16, 368**2 - math.pi * 24**2),  # exact 133614.4, measured 133609.2
+        ((400, 400), (-157, 0), 5, 10, 380**2 - math.pi * 15**2),  # exact 143693.1, measured 143691.1
+        ((600, 300), (0, 107), 5, 10, 580 * 280 - math.pi * 15**2),  # exact 161693.1, measured 161691.1
+        ((400, 400), (-150, 0), 4, 12, 376**2 - math.pi * 16**2),  # exact 140571.8, measured 140569.4 (an island ring dropped)
+    ]
+    for (w, h), (cx, cy), r, d, expected in cases:
+        inset = offset(subtract(rect_centered(0, 0, w, h), circle(cx, cy, r)), -d)
+        assert not inset.is_empty and math.isclose(inset.area, expected, rel_tol=0.01), (w, h, cx, cy, r, d, inset.area)
+
+
+# Hole centres either side of the centre on both axes, for the sweep below. The grown hole (3r) stays inside the square
+# inset by 2r at all of them for every r swept, as it does at the per-r position 202 - 9r from the centre, where the
+# material between the hole and the outer edge is 8r - 2 wide (4d - 2 for d = 2r).
+SIDE_HOLE_POSITIONS = [(-150, 0), (-130, 0), (-112, 0), (-100, 0), (100, 0), (112, 0), (130, 0), (150, 0), (0, 100), (0, -100)]
+
+
+@pytest.mark.parametrize("r", [3, 4, 5, 6, 8, 10])
+def test_holes_either_side_of_the_centre_inset_alike(r):
+    tight = 202 - 9 * r
+    for cx, cy in SIDE_HOLE_POSITIONS + [(-tight, 0), (tight, 0), (0, -tight), (0, tight)]:
+        inset = offset(subtract(rect_centered(0, 0, 400, 400), circle(cx, cy, r)), -2 * r)
+        expected = (400 - 4 * r) ** 2 - math.pi * (3 * r) ** 2
+        assert not inset.is_empty and math.isclose(inset.area, expected, rel_tol=0.01), (r, cx, cy, inset.area)
+
+
+def test_insets_that_leave_nothing_are_empty():
+    # Each of these leaves at most a line or a point. The band subtraction returns nothing, and a hundredth of a unit
+    # shallower the inset is only a hairline or a speck (about 0.02 times its length, or less), far under distance².
+    for shape, d in (
+        (line(-100, 0, 100, 0, 40), 20),
+        (ring(0, 0, 100, 30), 15),
+        (rect(0, 0, 20, 100), 10),
+        (rect(0, 0, 40, 40), 20),
+        (circle(0, 0, 50), 50),
+    ):
+        assert offset(shape, -d).is_empty, (shape.bounds, d)
+
+
+def test_an_inset_is_measured_to_the_curve_not_to_coarse_chords():
+    # A bowl drawn as one half-turn cubic. Flattened at the default 16 steps, the outline's chords fall up to 2.3 units
+    # inside the curve, more than the island test's tolerance, and the whole inset would be dropped. Exact areas from a
+    # raster of each pixel's exact distance to the outline (6 px per unit).
+    for R, d, exact in ((200, 10, 54018.3), (200, 40, 28445.9), (400, 20, 215942.7)):  # measured 54036.5, 28479.1, 216031.8
+        k = 4 / 3 * R
+        bowl = bezier([(0, -R), (k, -R), (k, R), (0, R), (0, R / 3), (0, -R / 3), (0, -R)])
+        inset = offset(bowl, -d)
+        assert not inset.is_empty and math.isclose(inset.area, exact, rel_tol=0.01), (R, d, inset.area)
 
 
 def test_transforms():
