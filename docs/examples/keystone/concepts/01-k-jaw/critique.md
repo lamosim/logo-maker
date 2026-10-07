@@ -10,7 +10,7 @@ The critique sheet: the K reads, but the stone reads as an arrowhead pointing in
 
 ## Round 2
 
-A fatter stone (360 wide, 220 narrow, 165 deep) with bigger small and favicon stones. Audit ok, the same warnings, favicon thinnest feature 1.41 px. The sheet: the stone still follows the arm's and the leg's curves into a fishtail and still points like an arrowhead. Appropriate still 3. The fault is the stone's place, not its size: a keystone sits at the crown of an arch, and the K is an arch lying on its side with its crown at the junction.
+A fatter stone (360 wide, 220 narrow, 165 deep) with bigger small and favicon stones. Audit ok; favicon thinnest feature 1.41 px; `near_miss_angles` now on three segments in full-symbol and small (two in the favicon): the third is the stone's own, a short straight edge at 107.9 degrees that it takes from the K's leg where `offset` cuts it back. The sheet: the stone still follows the arm's and the leg's curves into a fishtail and still points like an arrowhead. Appropriate still 3. The fault is the stone's place, not its size: a keystone sits at the crown of an arch, and the K is an arch lying on its side with its crown at the junction.
 
 ## Round 3
 
@@ -18,7 +18,7 @@ The stone moved to the junction: a trapezoid, 190 units against the stem and nar
 
 The sheet: the K reads first and the stone second, as the letter's own keystone. The rotated panel shows the construction plainly: turned 90 degrees the K is an arch with the stone at its crown. The mirrored panel is a reversed K. At 64 to 128 px the trapezoid inside the K can read as a loudspeaker: a faint reading, noted in universal. The favicon is a plain K at 16 px: the idea lives from 48 px up.
 
-Audit warnings, justified: `near_miss_angles` in full-symbol, small and favicon, two segments each, at 104.5 and 107.9 degrees. Both are the straight edges of Bricolage Grotesque's own K leg (from (71.6, -194.1) to (111.9, -350) and from (302.8, -350) to (246.6, -176.1)): the type designer's angles, as kit-api.md says of glyph outlines used as a symbol. Redrawing the leg to 105 degrees would stop the symbol being the wordmark's K. The stone's own sides are set at exactly 15 degrees.
+Audit warnings, justified: `near_miss_angles` in full-symbol, small and favicon, two segments each, at 104.5 and 107.9 degrees. Both are the straight edges of Bricolage Grotesque's own K leg (from (71.6, -194.1) to (111.9, -350) and from (302.8, -350) to (246.6, -176.1)): the type designer's angles, as kit-api.md says of glyph outlines used as a symbol. Redrawing the leg to 105 degrees would stop the symbol being the wordmark's K. The stone's own sides are set at exactly 15 degrees, which removed round 2's third warning.
 
 ## Scores
 

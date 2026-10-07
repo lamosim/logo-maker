@@ -43,7 +43,7 @@ The clock was noted at each `brand advance` (times are EDT, 7 October 2026). The
 | Intake | 16:07:45 | 2 min 5 s | first move, `brand new`, the brief write-back |
 | Strategy | 16:09:50 | 4 min 19 s | the web look at five competitors, strategy.md and strategy.json |
 | Territories | 16:14:09 | 1 min 19 s | four font fetches, the board |
-| Concepts | 16:15:28 | 19 min 39 s | prototyping, five modules in ten rounds, ten critique sheets, scoring, look-alike searches, the concept sheet |
+| Concepts | 16:15:28 | 19 min 39 s | prototyping, five modules in nine rounds, nine critique sheets, scoring, look-alike searches, the concept sheet |
 | Refinement | 16:35:07 | 6 min 33 s | six final rounds, colour, the knock-out, the refine sheet |
 | Package | 16:41:40 | 1 min 15 s | the rationale, `package build` (18 s), `package verify`, reading the brand sheet |
 | Done | 16:42:55 | | |
@@ -136,7 +136,7 @@ Read first: craft.md, kit-api.md, scorecard.md, evidence-rules.md, trends.md, cl
 
 Before each module the shapes were sketched with the kit in a throwaway script in the session's scratch folder, outside the brand, and looked at as PNGs: ways to put a keystone into the K (filling its counters, a stone in its jaw, joints at its junction, a stone in its top counter, a tapered stem), arch and ring proportions, six stacked-block constructions (a bond, a pinned stack, a pyramid, a slab with a raised key, a cairn, a dovetail) and three wordmark quirks. These sketches are exploration, not deliverables: every SVG, PNG, PDF and ICO in this folder was rendered by the CLI, and the files written by hand are the ones the runbook asks the designer to write (the brief, the strategy, the territories, the ideas, the concept modules, scorecards and critiques, the tokens, the knock-out and the rationale).
 
-Five directions, five modules written directly (ruling P34), at least three structurally different (a glyph-built lettermark, a pictorial from primitives, an abstract tile and joint, a wordmark, a ring):
+Five directions, five modules written directly (the runbook's optional subagent recipe was not used), at least three structurally different (a glyph-built lettermark, a pictorial from primitives, an abstract tile and joint, a wordmark, a ring):
 
 | Concept | Construction | Rounds | Gate (appropriate, simple, legible) | Total | Outcome |
 |---|---|---|---|---|---|
@@ -144,7 +144,7 @@ Five directions, five modules written directly (ruling P34), at least three stru
 | 02-arch | a ring sector on straight feet, a keystone wedge rising above the crown, two joints | 1 | 5, 5, 4 | 43 | survivor, chosen |
 | 03-dovetail | a block cut by one dovetail joint whose tail is keystone-shaped | 2 | 3, 4, 4 | 32 | killed |
 | 04-wordmark | "Keystone" with the o's counter cut as an arch; the o alone in the small tiers | 1 | 3, 5, 5 | 36 | killed |
-| 05-ring-gap | a ring with a gap at the top, closed by a keystone sector between two joints | 2 | 4, 5, 4 | 34 | survivor (ruling P33) |
+| 05-ring-gap | a ring with a gap at the top, closed by a keystone sector between two joints | 2 | 4, 5, 4 | 34 | survivor, kept on the sheet for the owner's scripted reaction |
 
 Each concept's `critique.md` gives its round-by-round notes and every audit warning fixed or justified, and for the survivors a rationale draft; each `scorecard.json` holds the ten scores with evidence. The kills keep all ten scores and a reason.
 
@@ -241,7 +241,7 @@ All ten, as brand.json holds them (`--by user` for the owner's decisions, `--by 
 
 ## What the critique sheets caught
 
-Every critique sheet (ten concept rounds, six final rounds) and every owner sheet was read with the Read tool before scoring or deciding. What they caught, by concept and round:
+Every critique sheet (nine concept rounds, six final rounds) and every owner sheet was read with the Read tool before scoring or deciding. What they caught, by concept and round:
 
 1. 01-k-jaw, rounds 1 to 3, an audit warning fixed. Round 1 warned `near_miss_angles` on two segments in each of full-symbol, small and favicon; round 2's bigger stone raised full-symbol and small to three. The two common ones are the straight edges of Bricolage Grotesque's own K leg (104.5 and 107.9 degrees), the type designer's angles, justified in critique.md. The third was the stone's: cut back from the letter by `offset`, it picked up a short straight edge parallel to the leg, at 107.9 degrees. Round 3 draws the stone with its own sides at exactly 15 degrees, and the count fell back to the font's two.
 2. 01-k-jaw, rounds 1 and 2: the stone in the K's jaw read as an arrowhead, a loudspeaker or a rewind sign rather than a keystone, and in round 1 it thinned to 1.09 px at 16 px, just over the audit's 1.0 px floor. Round 3 moved the stone to the junction, where an arch lying on its side keeps its keystone; the rotated panel then showed the construction plainly (turned 90 degrees, the K is an arch with the stone at its crown), and the favicon's thinnest feature rose to 4.47 px.
@@ -254,8 +254,8 @@ Every critique sheet (ten concept rounds, six final rounds) and every owner shee
 ## What was left out of the copy
 
 - The six `build/` folders (`concepts/*/build/` and `final/build/`): the CLI's build output (an SVG per output and variant, `geometry.json`, `build.json`). The repository's `.gitignore` ignores every `build/` folder, so they could not be committed anyway; `concept run` writes them again.
-- Nothing else. The package is copied whole, all 186 manifest files plus `manifest.json` and `verify.json` (rulings P31 and P32), and every critique round is kept. The brief's step 7 suggested dropping the package's 1024 and 2048 px PNGs and the earlier critique rounds to stay under 10 MB; neither was needed (the copy is 5.7 MB), and dropping package files would break `package verify`.
-- Outside this folder: the fetched font caches (`assets/fonts/sora`, `archivo`, `bricolagegrotesque`, `fraunces`) are git-ignored and stay out of the repository; the package carries its own copy of the one family it uses, in `package/fonts/bricolagegrotesque/`. After the copy, `brands/keystone/` and `registry/` were removed from the checkout (ruling P30), so a fresh session lists no brands.
+- Nothing else. The package is copied whole, all 186 manifest files plus `manifest.json` and `verify.json`, and every critique round is kept. The plan suggested dropping the package's 1024 and 2048 px PNGs and the earlier critique rounds to stay under 10 MB; neither was needed (the copy, this walkthrough included, is under 6 MB), and dropping package files would break `package verify`.
+- Outside this folder: the fetched font caches (`assets/fonts/sora`, `archivo`, `bricolagegrotesque`, `fraunces`) are git-ignored and stay out of the repository; the package carries its own copy of the one family it uses, in `package/fonts/bricolagegrotesque/`. After the copy, `brands/keystone/` and `registry/` were removed from the checkout, so a fresh session in this repository lists no brands.
 
 ## Verifying and reusing this example
 
