@@ -424,15 +424,20 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
     The sheet shows the tiers, the lockups, the five colour variants, the clear-space diagram (x as Mark.x_unit_source
     names it), the minimum-size ladder from brand.json's min_sizes, the colour-vision strip and the contrast table, type
     held to the text thresholds as the audit holds it. Without final/tokens.json a note stands in for the colour
-    sections. N defaults to one past the highest refine round (next_round). final/concept.py, its build and tokens.json
-    are checked before Chrome starts, and the PNG is rendered before sheets/ and both files are written. `warnings` holds
-    the missing small and favicon tiers (also shown on the sheet), then any failure to open it.
+    sections. N defaults to one past the highest refine round (next_round). Before Chrome starts: final/concept.py, an
+    audit.json that vouches for the final mark as it is now (registry.audit_problems; nothing reaches the owner that
+    failed an audit), the build and tokens.json; the PNG is rendered before sheets/ and both files are written.
+    `warnings` holds the missing small and favicon tiers (also shown on the sheet), then any failure to open it.
     """
     state = registry.load_state(paths, slug)
     brand = paths.brand(slug)
     final = brand / "final"
     if not (final / "concept.py").is_file():
         raise CliError("final/concept.py is missing; copy the chosen concept into final/ first")
+    problems = registry.audit_problems(paths, slug, final, "final/audit.json")
+    if problems:
+        raise CliError(f"the refine sheet needs a passing audit of the final mark: {'; '.join(problems)} "
+                       f"(run: logomaker concept run {slug} final)")
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(final)))
     tokens = _read_tokens(final)
     light, dark = _palettes_of(tokens)

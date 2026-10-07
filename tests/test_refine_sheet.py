@@ -14,7 +14,7 @@ from logomaker.kit.mark import Mark
 from logomaker.kit.primitives import rect
 from logomaker.output import CliError
 from logomaker.paths import project
-from tests.conftest import FIXTURES, StubChrome, make_final_brand, no_open_command, requires_chrome
+from tests.conftest import FIXTURES, StubChrome, make_final_brand, no_open_command, requires_chrome, write_passing_audit
 
 MISSING = "final/concept.py is missing; copy the chosen concept into final/ first"
 SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
@@ -63,8 +63,31 @@ def test_the_cli_refuses_a_missing_final_concept_or_broken_tokens_before_chrome_
     assert sheet() == (2, [MISSING])
     final = make_final_brand(project_root)
     (final / "tokens.json").write_text("{}")
+    write_passing_audit(project(), "keystone", final)  # an audit of the mark with these tokens: the tokens are what stops it
     code, errors = sheet()
     assert code == 2 and errors[0].startswith(f"{final / 'tokens.json'} is invalid: ")
+    assert not list((project_root / "brands" / "keystone" / "sheets").iterdir())
+
+
+def test_the_sheet_refuses_a_final_mark_without_a_passing_audit_before_chrome_starts(project_root, no_chrome):
+    final = make_final_brand(project_root)
+    audit = final / "audit.json"
+    passing = json.loads(audit.read_text())
+    refusal = "the refine sheet needs a passing audit of the final mark: {} (run: logomaker concept run keystone final)"
+    stale = ("final/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, or "
+             "cliches.json changed); re-run concept audit")
+
+    def sheet() -> tuple[int, list[str]]:
+        result = CliRunner().invoke(main, ["sheet", "refine", "keystone", "--no-open"])
+        return result.exit_code, json.loads(result.stdout)["errors"]
+
+    audit.write_text(json.dumps({**passing, "ok": False}))
+    assert sheet() == (2, [refusal.format("final/audit.json has failures")])
+    audit.write_text(json.dumps(passing))
+    (final / "params.json").write_text('{"stroke": 80}')  # the final mark changed after its audit
+    assert sheet() == (2, [refusal.format(stale)])
+    audit.unlink()
+    assert sheet() == (2, [refusal.format("final/audit.json is missing")])
     assert not list((project_root / "brands" / "keystone" / "sheets").iterdir())
 
 
@@ -141,6 +164,7 @@ def test_the_clear_space_rule_names_what_x_measures(project_root):
     final = make_final_brand(project_root)
 
     def heading() -> str:
+        write_passing_audit(project(), "keystone", final)  # final/ changed: the sheet shows only an audited mark
         return re.search(r"<h2>(Clear space [^<]*)</h2>", refine()[1]).group(1)
 
     assert heading() == "Clear space (x = 180 units = the wordmark cap height)"
@@ -156,6 +180,7 @@ def test_tokens_are_read_once_and_type_meets_the_text_thresholds_the_audit_appli
     final = make_final_brand(project_root)
     source = (final / "concept.py").read_text()
     (final / "concept.py").write_text(source.replace("gap=p.gap)", 'gap=p.gap, roles={"wordmark": "primary"})'))  # the name in ember
+    write_passing_audit(project(), "keystone", final)
     loads = []
     load_tokens = sheets.load_tokens
     monkeypatch.setattr(sheets, "load_tokens", lambda path: loads.append(path) or load_tokens(path))
