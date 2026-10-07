@@ -7,6 +7,7 @@ import pytest
 
 from logomaker.paths import ProjectPaths
 from logomaker.render import CHROME_APP, Renderer
+from logomaker.schemas import PHASE_ORDER, Phase
 
 REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
@@ -40,66 +41,72 @@ def project_root(tmp_path: Path, monkeypatch) -> Path:
     return root
 
 
+BRIEF = {
+    "business": "Keystone sends invoices that get paid faster",
+    "audience": "solo consultants",
+    "problem": "late payments",
+    "one_idea": "the thing that holds everything together",
+    "onliness": "the only invoicing tool that nags clients so you don't have to",
+    "adjectives": [
+        {"adjective": "steady", "not": "boring"},
+        {"adjective": "direct", "not": "rude"},
+        {"adjective": "warm", "not": "cute"},
+    ],
+    "persona": "a calm site foreman who is good at follow-up",
+    "admired": ["Stripe", "Patagonia"],
+    "disliked": ["generic fintech blue"],
+    "surfaces": ["app icon", "website header", "social avatar"],
+    "harshest": "16 px favicon and one-colour embroidery",
+    "colours_wanted": ["ember orange"],
+    "colours_forbidden": ["fintech blue"],
+    "colours_category": ["blue", "green"],
+    "off_limits": ["upward arrows", "shields"],
+    "cultural": "",
+    "needs_name": False,
+    "name": "Keystone",
+    "name_written": "Keystone",
+    "name_story": "the stone that locks an arch",
+    "tagline": None,
+    "archetype": {"primary": "Everyman", "secondary": "Caregiver"},
+    "personality": {"sincerity": 0.8, "excitement": 0.3, "competence": 0.8, "sophistication": 0.3, "ruggedness": 0.5},
+    "industry": "fintech",
+}
+
+
 @pytest.fixture
 def brief_payload() -> dict:
-    return {
-        "business": "Keystone sends invoices that get paid faster",
-        "audience": "solo consultants",
-        "problem": "late payments",
-        "one_idea": "the thing that holds everything together",
-        "onliness": "the only invoicing tool that nags clients so you don't have to",
-        "adjectives": [
-            {"adjective": "steady", "not": "boring"},
-            {"adjective": "direct", "not": "rude"},
-            {"adjective": "warm", "not": "cute"},
-        ],
-        "persona": "a calm site foreman who is good at follow-up",
-        "admired": ["Stripe", "Patagonia"],
-        "disliked": ["generic fintech blue"],
-        "surfaces": ["app icon", "website header", "social avatar"],
-        "harshest": "16 px favicon and one-colour embroidery",
-        "colours_wanted": ["ember orange"],
-        "colours_forbidden": ["fintech blue"],
-        "colours_category": ["blue", "green"],
-        "off_limits": ["upward arrows", "shields"],
-        "cultural": "",
-        "needs_name": False,
-        "name": "Keystone",
-        "name_written": "Keystone",
-        "name_story": "the stone that locks an arch",
-        "tagline": None,
-        "archetype": {"primary": "Everyman", "secondary": "Caregiver"},
-        "personality": {"sincerity": 0.8, "excitement": 0.3, "competence": 0.8, "sophistication": 0.3, "ruggedness": 0.5},
-        "industry": "fintech",
-    }
+    return copy.deepcopy(BRIEF)
+
+
+STRATEGY = {
+    "onliness": "the only invoicing tool that nags clients so you don't have to",
+    "positioning": "For solo consultants who hate chasing money, Keystone is invoicing that follows up by itself.",
+    "archetype": {"primary": "Everyman", "secondary": "Caregiver"},
+    "personality": {"sincerity": 0.8, "excitement": 0.3, "competence": 0.8, "sophistication": 0.3, "ruggedness": 0.5},
+    "one_idea": "the piece that holds the arch",
+    "ladder": [
+        {"adjective": "steady", "principle": "level baselines, grounded forms", "test": "no element tilts; bottom edge is flat"},
+        {"adjective": "direct", "principle": "one dominant silhouette", "test": "drawable from memory in 5 strokes"},
+        {"adjective": "warm", "principle": "rounded outer corners, warm hue", "test": "corner radius >= 4% of symbol height"},
+    ],
+    "category_uniform": {
+        "type_classes": ["geometric sans"], "colours": ["blue"], "motifs": ["upward arrow", "shield", "coin"],
+        "competitors": ["FreshBooks", "Wave", "Bonsai", "HoneyBook", "Invoice Ninja"],
+    },
+    "targets": {
+        "shape": 0.4, "symmetry": 0.8, "complexity": "low", "weight": "heavy", "hue_family": "orange", "saturation": "medium",
+        "lightness": "mid", "typeface_class": "grotesk", "frame": "open", "dynamism": 0.2, "descriptive_cue": True,
+        "name_sound": "back vowel 'o', hard stops: heavy, round-ish",
+    },
+    "logo_type": "combination",
+    "logo_type_reason": "new brand with a short distinctive name",
+    "constraints": {"min_lockup_px": 120, "one_colour": True},
+}
 
 
 @pytest.fixture
 def strategy_payload() -> dict:
-    return {
-        "onliness": "the only invoicing tool that nags clients so you don't have to",
-        "positioning": "For solo consultants who hate chasing money, Keystone is invoicing that follows up by itself.",
-        "archetype": {"primary": "Everyman", "secondary": "Caregiver"},
-        "personality": {"sincerity": 0.8, "excitement": 0.3, "competence": 0.8, "sophistication": 0.3, "ruggedness": 0.5},
-        "one_idea": "the piece that holds the arch",
-        "ladder": [
-            {"adjective": "steady", "principle": "level baselines, grounded forms", "test": "no element tilts; bottom edge is flat"},
-            {"adjective": "direct", "principle": "one dominant silhouette", "test": "drawable from memory in 5 strokes"},
-            {"adjective": "warm", "principle": "rounded outer corners, warm hue", "test": "corner radius >= 4% of symbol height"},
-        ],
-        "category_uniform": {
-            "type_classes": ["geometric sans"], "colours": ["blue"], "motifs": ["upward arrow", "shield", "coin"],
-            "competitors": ["FreshBooks", "Wave", "Bonsai", "HoneyBook", "Invoice Ninja"],
-        },
-        "targets": {
-            "shape": 0.4, "symmetry": 0.8, "complexity": "low", "weight": "heavy", "hue_family": "orange", "saturation": "medium",
-            "lightness": "mid", "typeface_class": "grotesk", "frame": "open", "dynamism": 0.2, "descriptive_cue": True,
-            "name_sound": "back vowel 'o', hard stops: heavy, round-ish",
-        },
-        "logo_type": "combination",
-        "logo_type_reason": "new brand with a short distinctive name",
-        "constraints": {"min_lockup_px": 120, "one_colour": True},
-    }
+    return copy.deepcopy(STRATEGY)
 
 
 def install_concept(project_root: Path, fixture: str, slug: str = "keystone", name: str = "01-good") -> Path:
@@ -211,3 +218,50 @@ TERRITORIES = {
 @pytest.fixture
 def territories_payload() -> dict:
     return copy.deepcopy(TERRITORIES)
+
+
+RATIONALE = "Keystone's mark is the piece that holds the arch: a ring that closes only when the name is beside it.\n"
+
+
+def make_final_brand(project_root: Path, wordmark_only: bool = False, with_tokens: bool = True,
+                     phase: Phase | None = Phase.refinement) -> Path:
+    """Brand keystone with every earlier phase's artifacts and a final/ ready to refine and package; returns final/.
+
+    The brand gets brief.md and brief.json (BRIEF), strategy.md and strategy.json (STRATEGY), territories.json
+    (TERRITORIES), the forge territory, concept 01-good (the good fixture, with a passing scorecard and audit), the
+    fintech industry and a wordmark font. final/ gets a copy of the good concept (the wordmark-only one with
+    `wordmark_only`), params.json, tokens.json (good_tokens(), unless `with_tokens` is False), rationale.md and a passing
+    audit. The brand then advances one phase at a time to `phase` through registry.advance, so the registry's own gates
+    vouch for the artifacts; None leaves it where it is (intake for a new brand).
+    """
+    from logomaker import registry
+    from logomaker.paths import project
+    from tests.test_color import good_tokens
+
+    paths = project()
+    brand = project_root / "brands" / "keystone"
+    if not brand.exists():
+        registry.new_brand(paths, "Keystone")
+    (brand / "brief.md").write_text("# Brief\n")
+    (brand / "brief.json").write_text(json.dumps(BRIEF))
+    (brand / "strategy.md").write_text("# Strategy\n")
+    (brand / "strategy.json").write_text(json.dumps(STRATEGY))
+    (brand / "territories" / "territories.json").write_text(json.dumps(TERRITORIES))
+    # Before either audit: their fingerprints cover the industry (brand.json's and the brief's).
+    registry.set_fields(paths, "keystone", territory="forge", concept="01-good", industry="fintech", fonts=["wordmark=Fira Code:600"])
+    concept = install_concept(project_root, "good")
+    (concept / "scorecard.json").write_text(json.dumps(scorecard()))
+    write_passing_audit(paths, "keystone", concept)
+    final = brand / "final"
+    shutil.copy(FIXTURES / "concepts" / ("wordmark_only" if wordmark_only else "good") / "concept.py", final / "concept.py")
+    (final / "params.json").write_text("{}\n")
+    if with_tokens:
+        (final / "tokens.json").write_text(json.dumps(good_tokens()))
+    (final / "rationale.md").write_text(RATIONALE)
+    write_passing_audit(paths, "keystone", final)  # after tokens.json, which its fingerprint covers
+    if phase is not None:
+        state = registry.load_state(paths, "keystone")
+        while PHASE_ORDER.index(state.phase) < PHASE_ORDER.index(phase):
+            state = registry.advance(paths, "keystone", registry.allowed_next(state))
+        assert state.phase == phase, f"brand keystone is already past {phase.value} (in {state.phase.value})"
+    return final

@@ -312,12 +312,17 @@ def _check_concept(brand: Path, state: BrandState) -> list[str]:
 
 
 def _check_final(brand: Path, state: BrandState) -> list[str]:
+    """final/ needs concept.py, params.json, a valid tokens.json, and an audit.json that vouches for the final mark as it
+    is now (audit_problems: present, fresh, rendered and passing)."""
     from .color import Tokens  # imported here to keep registry import-light
 
+    final = brand / "final"
     missing: list[str] = []
     for name in ("concept.py", "params.json"):
-        missing += _need(brand, brand / "final" / name)
-    return missing + _need(brand, brand / "final" / "tokens.json", model=Tokens)
+        missing += _need(brand, final / name)
+    missing += _need(brand, final / "tokens.json", model=Tokens)
+    paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
+    return missing + audit_problems(paths, state.slug, final, "final/audit.json")
 
 
 def _check_verify(brand: Path, state: BrandState) -> list[str]:

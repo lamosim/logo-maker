@@ -12,12 +12,13 @@ from pydantic import ValidationError
 from . import fonts as fontlib
 from . import mockups as mockuplib
 from . import registry
-from .audit import concept_fingerprint
+from .audit import concept_fingerprint, text_roles
+from .color import CVD_KINDS, Tokens, check_tokens, load_tokens, luminance, simulate_cvd
 from .color import info as color_info
-from .color import load_tokens, luminance
 from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text, union
 from .kit import concept as conceptlib
-from .kit.mark import ROLES, Mark
+from .kit.mark import ROLES, VARIANTS, Mark
+from .kit.shape import fmt
 from .output import EXIT_EXTERNAL, CliError
 from .paths import ProjectPaths
 from .render import Renderer, svg_size, with_size
@@ -69,9 +70,12 @@ def fit_box(svg: str, box_w: int, box_h: int) -> str:
     return with_size(svg, max(1, round(box_w * box_h / h_at_w)), box_h)
 
 
-def next_round(folder: Path) -> int:
-    """One past the highest renders/round-N, so a default round never lands on one made earlier with --round."""
-    numbers = [p.name.removeprefix("round-") for p in (folder / "renders").glob("round-*") if p.is_dir()]
+def next_round(folder: Path, pattern: str = "renders/round-*") -> int:
+    """One past the highest N among the paths under `folder` that match `pattern`, with `*` standing for N: a concept's
+    renders/round-N folders by default, a brand's sheets/refine-*.html for the refine sheet. Never a count, so a default
+    round never lands on one made earlier with --round."""
+    prefix, _, suffix = Path(pattern).name.partition("*")
+    numbers = [p.name.removeprefix(prefix).removesuffix(suffix) for p in folder.glob(pattern)]
     return max((int(n) for n in numbers if n.isdecimal()), default=0) + 1
 
 
@@ -107,17 +111,29 @@ def _saved_audit(folder: Path) -> AuditResult | None:
         raise CliError(f"{path} is not a valid audit ({err}); re-run concept audit") from err
 
 
-def _palettes(folder: Path, tokens_path: str | Path | None = None):
-    """Light and dark palettes from `tokens_path`, else from <concept>/tokens.json if present, else (None, None).
+def _read_tokens(folder: Path, tokens_path: str | Path | None = None) -> Tokens | None:
+    """The tokens in `tokens_path`, else in <concept>/tokens.json if present, else None.
 
     A broken tokens file raises load_tokens' CliError, which names the file.
     """
     if not tokens_path:
         tokens_path = folder / "tokens.json"
         if not tokens_path.is_file():
-            return None, None
-    tokens = load_tokens(Path(tokens_path))
-    return tokens.palette("light"), tokens.palette("dark")
+            return None
+    return load_tokens(Path(tokens_path))
+
+
+def _palettes_of(tokens: Tokens | None) -> tuple[dict[str, str] | None, dict[str, str] | None]:
+    """The light and dark palettes of `tokens`, or (None, None) without tokens."""
+    return (tokens.palette("light"), tokens.palette("dark")) if tokens else (None, None)
+
+
+def _palettes(folder: Path, tokens_path: str | Path | None = None):
+    """Light and dark palettes from `tokens_path`, else from <concept>/tokens.json if present, else (None, None).
+
+    A broken tokens file raises load_tokens' CliError, which names the file.
+    """
+    return _palettes_of(_read_tokens(folder, tokens_path))
 
 
 def _strip_panels(outputs: dict, lockup_px: int, mirror_px: int, colour_px: int | None = None, light: dict | None = None,
@@ -369,3 +385,94 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
     png_path.write_bytes(png)
     open_file(html_path, open_after, warnings)
     return {"sheet_html": str(html_path), "sheet_png": str(png_path), "concepts": concept_names, "warnings": warnings}
+
+
+REFINE_W = 1600
+REFINE_TIERS = (("full-lockup", "full lockup 400", 400), ("compact", "compact 160", 160), ("small", "small 64", 64),
+                ("favicon", "favicon 32", 32))  # output, caption, box
+X_RULES = {"cap-height": "the wordmark cap height", "symbol-fifth": "one fifth of the symbol height",
+           "wordmark-height": "the wordmark height"}  # Mark.x_unit_source -> what x is, in words
+
+
+def clear_space_svg(mark: Mark, x: float) -> str:
+    """The lockup with its clear-space zone: dashed inner (artwork) and outer (artwork + x) rectangles and an x square."""
+    svg = mark.to_svg("black", padding=x)
+    b = mark.bounds()
+    dashes = f'fill="none" stroke="#e8572a" stroke-width="{fmt(x / 20)}" stroke-dasharray="{fmt(x / 5)} {fmt(x / 5)}"'
+    guides = (
+        f'<rect x="{fmt(b.x0)}" y="{fmt(-b.y1)}" width="{fmt(b.w)}" height="{fmt(b.h)}" {dashes}/>'
+        f'<rect x="{fmt(b.x0 - x)}" y="{fmt(-b.y1 - x)}" width="{fmt(b.w + 2 * x)}" height="{fmt(b.h + 2 * x)}" {dashes}/>'
+        f'<rect x="{fmt(b.x0 - x)}" y="{fmt(-b.y1 - x)}" width="{fmt(x)}" height="{fmt(x)}" fill="#e8572a" fill-opacity="0.35"/>'
+    )
+    return svg.replace("</svg>", guides + "</svg>")
+
+
+def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = None, open_after: bool = True,
+                 round_n: int | None = None) -> dict:
+    """Write sheets/refine-N.{html,png} from final/ for the owner, then open the HTML unless `open_after` is False.
+
+    The sheet shows the tiers, the lockups, the five colour variants, the clear-space diagram (x as Mark.x_unit_source
+    names it), the minimum-size ladder from brand.json's min_sizes, the colour-vision strip and the contrast table, type
+    held to the text thresholds as the audit holds it. Without final/tokens.json a note stands in for the colour
+    sections. N defaults to one past the highest refine round (next_round). final/concept.py, its build and tokens.json
+    are checked before Chrome starts, and the PNG is rendered before sheets/ and both files are written. `warnings` holds
+    the missing small and favicon tiers (also shown on the sheet), then any failure to open it.
+    """
+    state = registry.load_state(paths, slug)
+    brand = paths.brand(slug)
+    final = brand / "final"
+    if not (final / "concept.py").is_file():
+        raise CliError("final/concept.py is missing; copy the chosen concept into final/ first")
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(final)))
+    tokens = _read_tokens(final)
+    light, dark = _palettes_of(tokens)
+    lockup = outputs["full-lockup"]
+    warnings: list[str] = []
+
+    tiers = []
+    for name, label, box in REFINE_TIERS:
+        if name in outputs:
+            tiers.append({"label": label, "svg": fit_box(outputs[name].to_svg("black"), box, box)})
+        elif name in ("small", "favicon"):
+            warnings.append(f"tier {name} is not drawn yet; exports will fall back to the next larger build")
+    lockups = [{"label": name.replace("full-", ""), "svg": fit_box(outputs[name].to_svg("black"), 290, 170)}
+               for name in ("full-horizontal", "full-stacked", "full-symbol", "full-wordmark") if name in outputs]
+
+    variants, cvd, contrast = [], [], []
+    if tokens:  # light and dark are its palettes
+        backgrounds = {"color": light["paper"], "reverse": dark["paper"], "black": "#ffffff", "white": "#000000", "mono": "#ffffff"}
+        for variant in VARIANTS:
+            variants.append({"label": variant + (" (currentColor)" if variant == "mono" else ""), "background": backgrounds[variant],
+                             "svg": fit_box(lockup.to_svg(variant, palette=dark if variant == "reverse" else light), 270, 150),
+                             "dark": variant in ("reverse", "white"), "css_color": "#1f6feb" if variant == "mono" else "inherit"})
+        for kind in CVD_KINDS:
+            simulated = {role: simulate_cvd(hex_value, kind) for role, hex_value in light.items()}
+            cvd.append({"kind": kind, "background": simulated["paper"],
+                        "svg": fit_box(lockup.to_svg("color", palette=simulated), 270, 130)})
+        contrast = [r.model_dump() for r in check_tokens(tokens, text_roles=text_roles(outputs)).contrast]
+
+    x = lockup.x_unit
+    ms = state.min_sizes
+    ladder_specs = [
+        ("full-horizontal", f"horizontal {ms.horizontal_px} px / {ms.horizontal_mm} mm", ms.horizontal_px),
+        ("full-stacked", f"stacked {ms.stacked_px} px / {ms.stacked_mm} mm", ms.stacked_px),
+        (pick_output(outputs, ms.mark_px), f"mark {ms.mark_px} px / {ms.mark_mm} mm", ms.mark_px),
+        (pick_output(outputs, ms.favicon_px), f"favicon {ms.favicon_px} px", ms.favicon_px),
+    ]
+    ladder = [{"label": label, "px": px, "svg": fit_box(outputs[name].to_svg("black"), px, px * 2)}
+              for name, label, px in ladder_specs if name in outputs]
+
+    round_n = round_n or next_round(brand, "sheets/refine-*.html")
+    html = jinja(paths).get_template("sheets/refine.html").render(
+        brand=state.name, round_n=round_n, width=REFINE_W, tiers=tiers, lockups=lockups, variants=variants, warnings=warnings,
+        clear_space=fit_box(clear_space_svg(lockup, x), 530, 270), x_unit=round(x, 1), x_rule=X_RULES[lockup.x_unit_source],
+        ladder=ladder, cvd=cvd, contrast=contrast,
+    )
+    png = _render_html(renderer, html, REFINE_W)
+    sheets_dir = brand / "sheets"
+    sheets_dir.mkdir(exist_ok=True)
+    html_path, png_path = sheets_dir / f"refine-{round_n}.html", sheets_dir / f"refine-{round_n}.png"
+    html_path.write_text(html, encoding="utf-8")
+    png_path.write_bytes(png)
+    open_file(html_path, open_after, warnings)
+    return {"sheet_html": str(html_path), "sheet_png": str(png_path), "round": round_n, "warnings": warnings}

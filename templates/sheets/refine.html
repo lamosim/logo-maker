@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  body{margin:0;width:{{ width }}px;font:14px/1.4 -apple-system,Helvetica,Arial,sans-serif;background:#f3f3f3;color:#222;padding:24px;box-sizing:border-box}
+  h1{font-size:22px;margin:0 0 16px} h2{font-size:16px;margin:24px 0 8px;color:#444}
+  .row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+  /* The art centred above its caption, which flows below it on one line: a caption never covers the art, and a panel
+     without a set width (tiers, ladder) widens to its caption. A set height holds its art box, the padding and the caption. */
+  .panel{background:#fff;border:1px solid #ddd;display:flex;flex-direction:column;align-items:center;margin:0;padding:12px;box-sizing:border-box}
+  .panel svg{margin:auto 0}
+  .panel figcaption{align-self:flex-start;margin-top:6px;font-size:11px;color:#888;white-space:nowrap}
+  .panel.dark figcaption{color:#aaa}
+  table{border-collapse:collapse;font-size:12px;background:#fff} td,th{border:1px solid #ddd;padding:4px 8px;text-align:left}
+  .ok{color:#1a7f37} .bad{color:#b00020}
+  .note{color:#777;font-size:12px}
+</style></head>
+<body>
+<h1>{{ brand }} &mdash; refinement round {{ round_n }}</h1>
+
+<h2>Tiers</h2>
+<div class="row">{% for t in tiers %}<figure class="panel">{{ t.svg|safe }}<figcaption>{{ t.label }}</figcaption></figure>{% endfor %}</div>
+{% for w in warnings %}<div class="note">{{ w }}</div>{% endfor %}
+
+<h2>Lockups</h2>
+<div class="row">{% for l in lockups %}<figure class="panel" style="width:320px;height:220px">{{ l.svg|safe }}<figcaption>{{ l.label }}</figcaption></figure>{% endfor %}</div>
+
+<h2>Colour variants</h2>
+{% if variants %}
+<div class="row">{% for v in variants %}<figure class="panel{% if v.dark %} dark{% endif %}" style="width:300px;height:200px;background:{{ v.background }};color:{{ v.css_color }}">{{ v.svg|safe }}<figcaption>{{ v.label }}</figcaption></figure>{% endfor %}</div>
+{% else %}<div class="note">no tokens.json yet: colour comes after the black mark is approved</div>{% endif %}
+
+<h2>Clear space (x = {{ x_unit }} units = {{ x_rule }})</h2>
+<div class="row"><figure class="panel" style="width:560px;height:320px">{{ clear_space|safe }}<figcaption>clear space = one x on every side</figcaption></figure></div>
+
+<h2>Minimum sizes</h2>
+<div class="row">{% for s in ladder %}<figure class="panel" style="min-width:{{ s.px + 40 }}px;min-height:{{ s.px + 60 }}px">{{ s.svg|safe }}<figcaption>{{ s.label }}</figcaption></figure>{% endfor %}</div>
+
+{% if cvd %}
+<h2>Colour-vision simulations</h2>
+<div class="row">{% for c in cvd %}<figure class="panel" style="width:300px;height:180px;background:{{ c.background }}">{{ c.svg|safe }}<figcaption>{{ c.kind }}</figcaption></figure>{% endfor %}</div>
+<h2>Contrast</h2>
+<table><tr><th>context</th><th>role</th><th>colour</th><th>on</th><th>WCAG</th><th>APCA</th><th>needs</th><th></th></tr>
+{% for r in contrast %}<tr><td>{{ r.context }}</td><td>{{ r.role }}</td><td>{{ r.color }}</td><td>{{ r.against }}</td><td>{{ r.wcag }}</td><td>{{ r.apca }}</td><td>{{ r.required_wcag }} / Lc {{ r.required_apca }}</td><td class="{{ 'ok' if r.ok else 'bad' }}">{{ 'ok' if r.ok else 'fail' }}</td></tr>{% endfor %}
+</table>
+{% endif %}
+</body></html>

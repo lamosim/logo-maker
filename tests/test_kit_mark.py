@@ -52,6 +52,21 @@ def test_x_unit_without_wordmark_is_fifth_of_symbol_height():
     assert Mark(symbol=circle(0, 0, 100)).x_unit == 40
 
 
+def test_x_unit_source_names_the_measure_x_unit_takes(project_root):
+    word, drawn = text("Good", "Fira Code", weight=600, cap_height=180), rect(0, 0, 300, 60)  # drawn: a wordmark made without text()
+    cases = (
+        (Mark(symbol=circle(0, 0, 100), wordmark=word), "cap-height", 180),
+        (Mark(wordmark=word), "cap-height", 180),
+        (Mark(symbol=circle(0, 0, 100)), "symbol-fifth", 40),
+        (Mark(symbol=circle(0, 0, 100), wordmark=drawn), "symbol-fifth", 40),
+        (Mark(wordmark=drawn), "wordmark-height", 60),
+    )
+    for mark, source, x in cases:
+        geo = mark.geometry()
+        assert list(geo) == ["lockup", "x_unit", "x_unit_source", "bounds", "parts", "wordmark", "roles"]
+        assert (mark.x_unit_source, mark.x_unit, geo["x_unit_source"], geo["x_unit"]) == (source, x, source, x), source
+
+
 def test_baseline_alignment(project_root):
     m = good_mark(project_root, align="baseline")
     placed = {p.name: p for p in m.layout()}

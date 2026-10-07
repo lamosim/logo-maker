@@ -133,12 +133,20 @@ class Mark:
 
     @property
     def x_unit(self) -> float:
-        """Clear-space and gap unit: wordmark cap height, else one fifth of the symbol height."""
+        """Clear-space and gap unit: wordmark cap height, else one fifth of the symbol height, else the wordmark's height
+        (a wordmark drawn without text() has no cap height). x_unit_source names which."""
         if isinstance(self.wordmark, TextShape):
             return self.wordmark.cap_height
         if self.symbol is not None:
             return self._symbol_bounds().h / 5
         return self.wordmark.bounds.h  # type: ignore[union-attr]
+
+    @property
+    def x_unit_source(self) -> str:
+        """What x_unit measures: "cap-height", "symbol-fifth" or "wordmark-height", in x_unit's order."""
+        if isinstance(self.wordmark, TextShape):
+            return "cap-height"
+        return "symbol-fifth" if self.symbol is not None else "wordmark-height"
 
     def layout(self) -> list[Placed]:
         gap = self.gap if self.gap is not None else self.x_unit
@@ -214,5 +222,5 @@ class Mark:
             # Two decimals: enough for the audit, and free of the float32 noise a rotated wordmark's metrics carry.
             wordmark = {"cap_height": round(self.wordmark.cap_height, 2), "x_height": round(self.wordmark.x_height, 2),
                         "advance": round(self.wordmark.advance, 2), "font": self.wordmark.font}
-        return {"lockup": self.lockup, "x_unit": round(self.x_unit, 3), "bounds": _box_dict(self.bounds()),
-                "parts": parts, "wordmark": wordmark, "roles": sorted({p.role for p in placed})}
+        return {"lockup": self.lockup, "x_unit": round(self.x_unit, 3), "x_unit_source": self.x_unit_source,
+                "bounds": _box_dict(self.bounds()), "parts": parts, "wordmark": wordmark, "roles": sorted({p.role for p in placed})}

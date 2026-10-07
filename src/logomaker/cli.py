@@ -60,7 +60,7 @@ TOKENS_OPTION = click.option("--tokens", "tokens_path", default=None, type=click
                              help="tokens.json to use instead of <concept>/tokens.json (for the colour variants, panels and checks)")
 VARIANTS_OPTION = click.option("--variants", default="black,white", help="Comma-separated subset of black,white,mono,color,reverse")
 ROUND_OPTION = click.option("--round", "round_n", type=click.IntRange(min=1), default=None,
-                            help="Write renders/round-N (default: one past the highest existing round)")
+                            help="Write round N (default: one past the highest existing round)")
 
 
 @click.group(cls=JsonGroup)
@@ -424,6 +424,20 @@ def sheet_concepts(slug: str, concepts: str, no_open: bool) -> None:
     names = [c.strip() for c in concepts.split(",") if c.strip()]
     # No renderer passed: the sheet launches Chrome itself, only once every concept is vetted and built.
     info = sheetlib.concepts_sheet(project(), slug, names, open_after=not no_open)
+    emit(info, warnings=info.pop("warnings"))
+
+
+@sheet_group.command("refine")
+@click.argument("slug")
+@ROUND_OPTION
+@click.option("--no-open", is_flag=True, help="Write the sheet without opening it in the browser.")
+@command
+def sheet_refine(slug: str, round_n: int | None, no_open: bool) -> None:
+    """Render the refine sheet from final/. It goes into sheets/refine-N.{html,png} and opens in the browser."""
+    from . import sheets as sheetlib
+
+    # No renderer passed: the sheet launches Chrome itself, only once final/ has loaded and built.
+    info = sheetlib.refine_sheet(project(), slug, open_after=not no_open, round_n=round_n)
     emit(info, warnings=info.pop("warnings"))
 
 

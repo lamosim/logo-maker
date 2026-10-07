@@ -1,4 +1,5 @@
 import json
+import shutil
 
 import pytest
 from click.testing import CliRunner
@@ -8,7 +9,7 @@ from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import Phase, TerritoriesSpec
-from tests.conftest import install_concept, scorecard, write_passing_audit
+from tests.conftest import FIXTURES, install_concept, make_final_brand, scorecard, write_passing_audit
 
 
 def run(*args):
@@ -364,14 +365,48 @@ def test_final_tokens_must_validate(project_root):
 
     run("brand", "new", "Keystone")
     brand = project_root / "brands" / "keystone"
-    (brand / "final" / "concept.py").write_text("# concept\n")
+    shutil.copy(FIXTURES / "concepts" / "good" / "concept.py", brand / "final" / "concept.py")
     (brand / "final" / "params.json").write_text("{}\n")
     tokens = brand / "final" / "tokens.json"
     tokens.write_text("{}")
     state = registry.load_state(project(), "keystone")
-    missing = registry._check_final(brand, state)
+
+    def check_final() -> list[str]:
+        """The final gate with a fresh passing audit of final/ as it stands (the audit's fingerprint covers tokens.json)."""
+        write_passing_audit(project(), "keystone", brand / "final")
+        return registry._check_final(brand, state)
+
+    missing = check_final()
     assert len(missing) == 1 and missing[0].startswith("final/tokens.json is invalid: colors: ")
     tokens.write_text(json.dumps(good_tokens()))
-    assert registry._check_final(brand, state) == []
+    assert check_final() == []
     tokens.unlink()
-    assert registry._check_final(brand, state) == ["final/tokens.json is missing"]
+    assert check_final() == ["final/tokens.json is missing"]
+
+
+def test_the_final_gate_needs_a_current_rendered_passing_audit_of_the_final_mark(project_root):
+    final = make_final_brand(project_root)  # in refinement: the final gate has not run yet
+    brand = final.parent
+    state = registry.load_state(project(), "keystone")
+    assert state.phase == Phase.refinement and registry._check_final(brand, state) == []
+    audit_json = final / "audit.json"
+    passing = json.loads(audit_json.read_text())
+    stale = ("final/audit.json is stale (concept.py, params.json, tokens.json, the brand's industry or minimum sizes, "
+             "or cliches.json changed); re-run concept audit")
+    for saved, problem in (({**passing, "rendered": False}, "final/audit.json was made with --no-render; re-run concept audit without it"),
+                           ({**passing, "ok": False}, "final/audit.json has failures"),
+                           ({**passing, "fingerprint": "0" * 64}, stale)):
+        audit_json.write_text(json.dumps(saved))
+        assert registry._check_final(brand, state) == [problem]
+    audit_json.write_text("{not json")
+    [problem] = registry._check_final(brand, state)
+    assert problem.startswith("final/audit.json is not valid JSON: ")
+    audit_json.write_text(json.dumps(passing))
+    (final / "params.json").write_text('{"stroke": 80}')  # the final mark changed after its audit
+    assert registry._check_final(brand, state) == [stale]
+    audit_json.unlink()
+    code, payload = run("brand", "advance", "keystone", "--to", "package")
+    assert code == 2 and payload["missing"] == ["final/audit.json is missing"]
+    write_passing_audit(project(), "keystone", final)
+    code, payload = run("brand", "advance", "keystone", "--to", "package")
+    assert code == 0 and payload["brand"]["phase"] == "package"

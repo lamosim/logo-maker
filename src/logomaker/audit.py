@@ -9,6 +9,7 @@ from pathlib import Path
 from . import registry
 from .color import check_tokens, load_tokens
 from .kit import concept as conceptlib
+from .kit.mark import Mark
 from .output import CliError
 from .paths import ProjectPaths
 from .raster import component_count, ink_mask, min_feature_px
@@ -42,6 +43,12 @@ def concept_fingerprint(paths: ProjectPaths, slug: str, folder: Path, tokens_pat
     for name, data in entries:
         digest.update(f"{name} {len(data)}\n".encode() + data)
     return digest.hexdigest()
+
+
+def text_roles(outputs: dict[str, Mark]) -> list[str]:
+    """The roles type is drawn in across `outputs` (the wordmark's and the tagline's), else ink when there is no type:
+    the roles check_tokens holds to the text thresholds, in the audit and on the refine sheet."""
+    return sorted({p.role for mark in outputs.values() for p in mark.layout() if p.name in ("wordmark", "tagline")}) or ["ink"]
 
 
 def _save(folder: Path, result: AuditResult) -> None:
@@ -322,11 +329,8 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
 
     tokens_file = Path(tokens_path) if tokens_path else folder / "tokens.json"
     if tokens_file.is_file():
-        # Type gets the text thresholds: whichever roles the wordmark and tagline are drawn in (ink when there is no type).
-        type_parts = [p for geo in geometries.values() for p in geo["parts"] if p["name"] in ("wordmark", "tagline")]
-        text_roles = sorted({p["role"] for p in type_parts}) or ["ink"]
         try:
-            check = check_tokens(load_tokens(tokens_file), text_roles=text_roles)
+            check = check_tokens(load_tokens(tokens_file), text_roles=text_roles(outputs))  # type gets the text thresholds
         except CliError as err:  # a broken tokens file is a finding to fix, not a reason to skip the rest of the audit
             findings.append(Finding(check="tokens", severity="fail", message=str(err), data={}))
         else:
