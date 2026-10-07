@@ -25,7 +25,6 @@ MIN_FEATURE = {"favicon": (16, 1.0), "small": (32, 1.5), "full-symbol": (64, 1.5
 X_HEIGHT_MIN_PX = 7.0
 MAX_ROLES = 3
 GENERIC_ASPECT = (0.72, 0.82)
-TIER_FALLBACKS = {"small": ("full-symbol", "full-lockup"), "favicon": ("small", "full-symbol", "full-lockup")}  # as exports fall back
 
 
 def concept_fingerprint(paths: ProjectPaths, slug: str, folder: Path, tokens_path: str | Path | None = None) -> str:
@@ -268,7 +267,7 @@ def _checked_outputs(outputs: dict) -> tuple[dict[str, str], list[Finding]]:
     """Map each checked size to the output it uses: a missing small or favicon tier is checked on its export fallback."""
     sources = {"full-symbol": "full-symbol"} if "full-symbol" in outputs else {}
     out: list[Finding] = []
-    for tier, chain in TIER_FALLBACKS.items():
+    for tier, chain in conceptlib.TIER_FALLBACKS.items():
         if tier in outputs:
             sources[tier] = tier
             continue

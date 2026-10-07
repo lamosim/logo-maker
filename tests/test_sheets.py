@@ -17,29 +17,8 @@ from logomaker.raster import ink_mask
 from logomaker.schemas import AuditResult, Finding
 from tests.conftest import install_concept, requires_chrome
 
-SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><rect width="200" height="100"/></svg>'
 SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
 AUDIT_LINE_DIV = re.compile(r'<div class="(fail|warn|info|more)">(.*?)</div>')
-
-
-def test_size_tier_is_the_chain_pick_output_follows():
-    assert sheets.size_tier(1024) == sheets.size_tier(96) == ("full-symbol", "full-lockup")
-    assert sheets.size_tier(95) == sheets.size_tier(33) == ("small", "full-symbol", "full-lockup")
-    assert sheets.size_tier(32) == sheets.size_tier(16) == ("favicon", "small", "full-symbol", "full-lockup")
-
-
-def test_pick_output_tier_rule():
-    full = {"full-lockup": 1, "full-symbol": 1, "small": 1, "favicon": 1}
-    assert sheets.pick_output(full, 256) == "full-symbol"
-    assert sheets.pick_output(full, 64) == "small"
-    assert sheets.pick_output(full, 16) == "favicon"
-    assert sheets.pick_output({"full-lockup": 1, "full-symbol": 1}, 16) == "full-symbol"
-    assert sheets.pick_output({"full-lockup": 1}, 16) == "full-lockup"
-
-
-def test_fit_box_limits_width_or_height():
-    assert sheets.fit_box(SVG, 400, 400).startswith('<svg width="400" height="200" ')
-    assert sheets.fit_box(SVG, 400, 100).startswith('<svg width="200" height="100" ')
 
 
 def test_next_round_counts_existing(project_root):
@@ -279,12 +258,10 @@ def test_concept_run_builds_the_concept_three_times_not_four(project_root, monke
 def test_the_ladder_picks_each_steps_output_once(project_root, monkeypatch):
     install_concept(project_root, "good")
     sizes = []
-    pick_output = sheets.pick_output
-    monkeypatch.setattr(sheets, "pick_output", lambda outputs, size: sizes.append(size) or pick_output(outputs, size))
+    pick_output = conceptlib.pick_output
+    monkeypatch.setattr(conceptlib, "pick_output", lambda outputs, size: sizes.append(size) or pick_output(outputs, size))
     sheets.critique_sheet(project(), "keystone", "01-good", renderer=StubRenderer())
     assert sorted(sizes) == sorted([256, *sheets.LADDER])  # the mirrored and rotated source, then each step once
-    assert sheets._first_present({"full-lockup": 1, "small": 1}, ("favicon", "small")) == "small"
-    assert sheets._first_present({"full-lockup": 1}, ("favicon", "small")) == "full-lockup"
 
 
 def test_a_long_idea_stays_on_one_header_line(project_root):

@@ -22,6 +22,23 @@ def snapshot(build):
     return {p.name: p.read_bytes() for p in sorted(build.iterdir())}
 
 
+def test_size_tier_is_the_chain_pick_output_follows():
+    assert conceptlib.size_tier(1024) == conceptlib.size_tier(96) == ("full-symbol", "full-lockup")
+    assert conceptlib.size_tier(95) == conceptlib.size_tier(33) == ("small", "full-symbol", "full-lockup")
+    assert conceptlib.size_tier(32) == conceptlib.size_tier(16) == ("favicon", "small", "full-symbol", "full-lockup")
+
+
+def test_pick_output_tier_rule():
+    full = {"full-lockup": 1, "full-symbol": 1, "small": 1, "favicon": 1}
+    assert conceptlib.pick_output(full, 256) == "full-symbol"
+    assert conceptlib.pick_output(full, 64) == "small"
+    assert conceptlib.pick_output(full, 16) == "favicon"
+    assert conceptlib.pick_output({"full-lockup": 1, "full-symbol": 1}, 16) == "full-symbol"
+    assert conceptlib.pick_output({"full-lockup": 1}, 16) == "full-lockup"
+    assert conceptlib.first_present({"full-lockup": 1, "small": 1}, ("favicon", "small")) == "small"
+    assert conceptlib.first_present({"full-lockup": 1}, ("favicon", "small")) == "full-lockup"
+
+
 def test_load_and_build_tiers(project_root):
     folder = install_concept(project_root, "good")
     module = conceptlib.load_concept(folder)

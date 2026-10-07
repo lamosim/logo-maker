@@ -7,7 +7,7 @@ from playwright.sync_api import Error as PlaywrightError
 
 from logomaker.output import CliError
 from logomaker.raster import ink_mask
-from logomaker.render import Renderer, svg_size, with_size
+from logomaker.render import Renderer, fit_box, svg_size, with_size
 from tests.conftest import requires_chrome
 
 CIRCLE = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#000"/></svg>'
@@ -19,6 +19,12 @@ def test_svg_size_and_with_size():
     assert svg_size("<svg>", 64) == (64, 64)
     sized = with_size(CIRCLE, 64, 64)
     assert sized.startswith('<svg width="64" height="64" ')
+
+
+def test_fit_box_limits_width_or_height():
+    svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><rect width="200" height="100"/></svg>'
+    assert fit_box(svg, 400, 400).startswith('<svg width="400" height="200" ')
+    assert fit_box(svg, 400, 100).startswith('<svg width="200" height="100" ')
 
 
 def test_missing_chrome_exits_3(tmp_path):

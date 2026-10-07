@@ -8,7 +8,7 @@ from pypdf import PdfReader
 from logomaker import export, registry, sheets
 from logomaker import fonts as fontlib
 from logomaker.cli import main
-from logomaker.color import check_tokens
+from logomaker.color import check_tokens, chip_text
 from logomaker.kit import Mark, rect_centered, ring
 from logomaker.paths import project
 from logomaker.schemas import Phase
@@ -222,7 +222,7 @@ def test_documents_take_the_x_rule_and_chip_colours_from_the_sheets(project_root
     ctx = builder.doc_context()
     assert ctx["x_rule"] == sheets.X_RULES[source] and ctx["has_wordmark"] == (fixture == "good")
     hexes = ("#e8572a", "#1f1b18", "#ffffff", "#ff9a6e")
-    assert [(c["hex"], c["text"]) for c in ctx["colours"]] == [(h, sheets._chip_text(h)) for h in hexes]
+    assert [(c["hex"], c["text"]) for c in ctx["colours"]] == [(h, chip_text(h)) for h in hexes]
 
 
 def test_the_token_checks_and_each_licence_are_computed_once(project_root, monkeypatch):

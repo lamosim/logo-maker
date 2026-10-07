@@ -8,11 +8,11 @@ import pytest
 from PIL import Image
 
 from logomaker import export
+from logomaker.kit.concept import pick_output, size_tier
 from logomaker.kit.mark import ROLES
 from logomaker.output import CliError
 from logomaker.paths import project
-from logomaker.render import svg_size
-from logomaker.sheets import fit_size, pick_output, size_tier
+from logomaker.render import fit_size, svg_size
 from tests.conftest import FIXTURES, StubRenderer, make_final_brand, requires_chrome, write_passing_audit
 from tests.test_export_core import build, opened
 

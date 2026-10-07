@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 import subprocess
-from collections.abc import Iterable
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -13,7 +12,7 @@ from . import fonts as fontlib
 from . import mockups as mockuplib
 from . import registry
 from .audit import concept_fingerprint, text_roles
-from .color import CVD_KINDS, Tokens, check_tokens, load_tokens, luminance, simulate_cvd
+from .color import CVD_KINDS, Tokens, check_tokens, chip_text, load_tokens, palettes_of, simulate_cvd
 from .color import info as color_info
 from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text, union
 from .kit import concept as conceptlib
@@ -21,7 +20,7 @@ from .kit.mark import ROLES, VARIANTS, Mark
 from .kit.shape import fmt
 from .output import EXIT_EXTERNAL, CliError
 from .paths import ProjectPaths
-from .render import Renderer, svg_size, with_size
+from .render import Renderer, fit_box
 from .schemas import AuditResult, BrandState, Scorecard, TerritoriesSpec, TerritoryShapes
 
 SHEET_W, SHEET_H = 2000, 1400
@@ -48,38 +47,6 @@ def _render_html(renderer: Renderer | None, html: str, width: int, height: int |
     return renderer.html_to_png(html, width, height, full_page=height is None)
 
 
-def _first_present(outputs: dict, chain: Iterable[str]) -> str:
-    """The first output in `chain` that was built, else full-lockup (every build has one): how exports fall back."""
-    return next((name for name in chain if name in outputs), "full-lockup")
-
-
-def size_tier(size: int) -> tuple[str, ...]:
-    """The outputs that draw the mark `size` px across, best first (spec section 6.4): full-symbol from 96 px, small
-    down to 33 px, favicon at 32 px and below, each falling back to the next larger build and ending at full-lockup."""
-    if size >= 96:
-        return ("full-symbol", "full-lockup")
-    if size > 32:
-        return ("small", "full-symbol", "full-lockup")
-    return ("favicon", "small", "full-symbol", "full-lockup")
-
-
-def pick_output(outputs: dict, size: int) -> str:
-    """The output that draws the mark `size` px across: the first in size_tier(size) that was built."""
-    return _first_present(outputs, size_tier(size))
-
-
-def fit_size(svg: str, box_w: int, box_h: int) -> tuple[int, int]:
-    """The largest pixel size with the SVG's aspect that fits a `box_w` x `box_h` box."""
-    _, h_at_w = svg_size(svg, box_w)
-    if h_at_w <= box_h:
-        return box_w, h_at_w
-    return max(1, round(box_w * box_h / h_at_w)), box_h
-
-
-def fit_box(svg: str, box_w: int, box_h: int) -> str:
-    return with_size(svg, *fit_size(svg, box_w, box_h))
-
-
 def next_round(folder: Path, pattern: str = "renders/round-*") -> int:
     """One past the highest N among the paths under `folder` that match `pattern`, with `*` standing for N: a concept's
     renders/round-N folders by default, a brand's sheets/refine-*.html for the refine sheet. Never a count, so a default
@@ -90,7 +57,7 @@ def next_round(folder: Path, pattern: str = "renders/round-*") -> int:
 
 
 def _one_colour_outputs(outputs: dict) -> list[tuple[int, str]]:
-    return [(size, _first_present(outputs, chain)) for size, chain in ONE_COLOUR]
+    return [(size, conceptlib.first_present(outputs, chain)) for size, chain in ONE_COLOUR]
 
 
 def _audit_lines(audit: AuditResult, budget: int = AUDIT_LINES) -> list[dict]:
@@ -133,28 +100,23 @@ def _read_tokens(folder: Path, tokens_path: str | Path | None = None) -> Tokens 
     return load_tokens(Path(tokens_path))
 
 
-def _palettes_of(tokens: Tokens | None) -> tuple[dict[str, str] | None, dict[str, str] | None]:
-    """The light and dark palettes of `tokens`, or (None, None) without tokens."""
-    return (tokens.palette("light"), tokens.palette("dark")) if tokens else (None, None)
-
-
 def _palettes(folder: Path, tokens_path: str | Path | None = None):
     """Light and dark palettes from `tokens_path`, else from <concept>/tokens.json if present, else (None, None).
 
     A broken tokens file raises load_tokens' CliError, which names the file.
     """
-    return _palettes_of(_read_tokens(folder, tokens_path))
+    return palettes_of(_read_tokens(folder, tokens_path))
 
 
 def _strip_panels(outputs: dict, lockup_px: int, mirror_px: int, colour_px: int | None = None, light: dict | None = None,
                   dark: dict | None = None) -> dict:
     """Rows 1 and 2 of the critique sheet (spec 7.2), which the concept sheet repeats for each concept: the full lockup
     black and white in `lockup_px` boxes; with `colour_px`, colour on light paper and reverse on dark paper for each
-    palette given; the ladder at true size, each LADDER step drawn by the tier pick_output picks for it; then the big
-    output (the tier picked for 256 px) mirrored and rotated in `mirror_px` boxes."""
+    palette given; the ladder at true size, each LADDER step drawn by the tier kit.concept.pick_output picks for it; then
+    the big output (the tier picked for 256 px) mirrored and rotated in `mirror_px` boxes."""
     lockup = outputs["full-lockup"]
-    big = outputs[pick_output(outputs, 256)].to_svg("black")
-    ladder = [(size, pick_output(outputs, size)) for size in LADDER]
+    big = outputs[conceptlib.pick_output(outputs, 256)].to_svg("black")
+    ladder = [(size, conceptlib.pick_output(outputs, size)) for size in LADDER]
     return {
         "black": fit_box(lockup.to_svg("black"), lockup_px, lockup_px),
         "white": fit_box(lockup.to_svg("white"), lockup_px, lockup_px),
@@ -226,10 +188,6 @@ def open_file(path: Path, enabled: bool = True, warnings: list[str] | None = Non
     return True
 
 
-def _chip_text(hex_value: str) -> str:
-    """The colour of a label on a `hex_value` swatch: white on a dark colour (luminance under 0.35), else near-black."""
-    return "#ffffff" if luminance(hex_value) < 0.35 else "#111111"
-
 
 def shape_specimens(shapes: TerritoryShapes, initial: str, family: str, weight: int) -> list[dict]:
     """Six black specimens of a territory's shape parameters, as {"label", "svg"}: ring, chevron, tile, loop, bars and
@@ -284,7 +242,7 @@ def territories_board(paths: ProjectPaths, slug: str, renderer: Renderer | None 
         for c in t.palette:
             i = color_info(c.hex)
             palette.append({"name": c.name, "hex": i["hex"], "oklch": f"oklch({i['oklch'][0]:.2f} {i['oklch'][1]:.3f} {i['oklch'][2]:.0f})",
-                            "text": _chip_text(c.hex)})
+                            "text": chip_text(c.hex)})
         cards.append({"name": t.name, "embraces": t.embraces, "rejects": t.rejects, "fonts": fonts, "palette": palette,
                       "shapes": shape_specimens(t.shapes, state.name[:1].upper() or "A", t.fonts[0].family, t.fonts[0].weight)})
     html = jinja(paths).get_template("sheets/territories.html").render(brand=state.name, territories=cards, width=BOARD_W)
@@ -311,7 +269,7 @@ def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: d
     except CliError:  # a name with no ASCII letters or digits to keep
         handle = state.slug
     tabs = ["Inbox", "Calendar"]
-    horizontal = outputs[_first_present(outputs, ("full-horizontal",))]
+    horizontal = outputs[conceptlib.first_present(outputs, ("full-horizontal",))]
     paper_light = light["paper"] if light else "#ffffff"
     paper_dark = dark["paper"] if dark else "#111111"
     tile_fill = light["primary"] if light else "#111111"
@@ -330,11 +288,11 @@ def mockup_context(state: BrandState, outputs: dict, light: dict | None, dark: d
         "handle": handle.replace("-", ""),
         "paper_light": paper_light, "paper_dark": paper_dark, "primary": tile_fill,
         "primary_dark": dark["primary"] if dark else "#eeeeee", "tile_fill": tile_fill,
-        "icon_svg": fit_box(outputs[pick_output(outputs, 60)].to_svg("color", palette=on_tile), 36, 36),
-        "favicon_svg": colour(outputs[pick_output(outputs, 16)], 16, 16),
+        "icon_svg": fit_box(outputs[conceptlib.pick_output(outputs, 60)].to_svg("color", palette=on_tile), 36, 36),
+        "favicon_svg": colour(outputs[conceptlib.pick_output(outputs, 16)], 16, 16),
         "header_svg": colour(horizontal, 260, 32),
         "header_dark_svg": reverse(horizontal, 260, 32),
-        "avatar_svg": colour(outputs[pick_output(outputs, 80)], 48, 48),
+        "avatar_svg": colour(outputs[conceptlib.pick_output(outputs, 80)], 48, 48),
         "card_svg": colour(horizontal, 200, 60),
         "sign_svg": fit_box(outputs["full-lockup"].to_svg("white"), 360, 110),
         "neighbours": mockuplib.neighbour_icons(60),
@@ -440,7 +398,7 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
                        f"(run: logomaker concept run {slug} final)")
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(final)))
     tokens = _read_tokens(final)
-    light, dark = _palettes_of(tokens)
+    light, dark = palettes_of(tokens)
     lockup = outputs["full-lockup"]
     warnings: list[str] = []
 
@@ -471,8 +429,8 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
     ladder_specs = [
         ("full-horizontal", f"horizontal {ms.horizontal_px} px / {ms.horizontal_mm} mm", ms.horizontal_px),
         ("full-stacked", f"stacked {ms.stacked_px} px / {ms.stacked_mm} mm", ms.stacked_px),
-        (pick_output(outputs, ms.mark_px), f"mark {ms.mark_px} px / {ms.mark_mm} mm", ms.mark_px),
-        (pick_output(outputs, ms.favicon_px), f"favicon {ms.favicon_px} px", ms.favicon_px),
+        (conceptlib.pick_output(outputs, ms.mark_px), f"mark {ms.mark_px} px / {ms.mark_mm} mm", ms.mark_px),
+        (conceptlib.pick_output(outputs, ms.favicon_px), f"favicon {ms.favicon_px} px", ms.favicon_px),
     ]
     ladder = [{"label": label, "px": px, "svg": fit_box(outputs[name].to_svg("black"), px, px * 2)}
               for name, label, px in ladder_specs if name in outputs]

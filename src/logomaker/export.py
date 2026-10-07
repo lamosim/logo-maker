@@ -15,8 +15,8 @@ from PIL import Image
 
 from . import fonts as fontlib
 from . import pdfout, registry
-from .audit import TIER_FALLBACKS, digest, text_roles
-from .color import CheckResult, check_tokens, enrich_tokens, load_tokens
+from .audit import digest, text_roles
+from .color import CheckResult, check_tokens, chip_text, enrich_tokens, load_tokens, palettes_of
 from .kit import concept as conceptlib
 from .kit.mark import ROLES, Mark
 from .kit.shape import fmt
@@ -24,9 +24,9 @@ from .kit.text import TextShape
 from .output import EXIT_EXTERNAL, EXIT_VERIFY, CliError
 from .paths import ProjectPaths
 from .raster import blank, encoded, image_size
-from .render import VIEWBOX, Renderer
+from .render import VIEWBOX, Renderer, fit_box, fit_size
 from .schemas import Manifest, ManifestEntry, now_iso
-from .sheets import X_RULES, _chip_text, _first_present, _palettes_of, clear_space_svg, fit_box, fit_size, jinja, size_tier
+from .sheets import X_RULES, clear_space_svg, jinja
 
 VARIANT_NAMES = ("primary", "horizontal", "stacked", "wordmark", "mark", "small", "favicon")
 COLOURS = ("color", "reverse", "black", "white", "mono")
@@ -44,10 +44,10 @@ CHAINS = {
     "stacked": ("full-stacked", "full-lockup"),
     "wordmark": ("full-wordmark",),
     "mark": ("full-symbol", "full-lockup"),
-    "small": ("small", *TIER_FALLBACKS["small"]),
-    "favicon": ("favicon", *TIER_FALLBACKS["favicon"]),
+    "small": ("small", *conceptlib.TIER_FALLBACKS["small"]),
+    "favicon": ("favicon", *conceptlib.TIER_FALLBACKS["favicon"]),
 }
-# The variant whose chain (CHAINS) is the one sheets.size_tier gives a size, by that chain's first output.
+# The variant whose chain (CHAINS) is the one kit.concept.size_tier gives a size, by that chain's first output.
 TIER_VARIANTS = {"full-symbol": "mark", "small": "small", "favicon": "favicon"}
 FONT = re.compile(r"(.+) (\d+(?:\.\d+)?(?: italic)?)")  # a kit.text.TextShape.font: family, the weight drawn, " italic" for an italic file
 # README.md's sections. The brand's own files (<prefix>-<variant>-...) go by suffix; then every other file by its name's start.
@@ -124,7 +124,7 @@ class PackageBuilder:
         self.inputs = inputs_fingerprint(paths, slug)  # what this build reads, as the manifest records it
         self.outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(self.final)))
         self.tokens = enrich_tokens(load_tokens(self.final / "tokens.json"))
-        self.light, self.dark = _palettes_of(self.tokens)
+        self.light, self.dark = palettes_of(self.tokens)
         try:
             self.name = registry.slugify(self.state.name)  # the file prefix follows the brand's name
         except CliError:  # a name with no ASCII letters or digits to keep
@@ -153,24 +153,25 @@ class PackageBuilder:
 
     def mark(self, variant: str) -> Mark | None:
         """The output that draws `variant` (one of VARIANT_NAMES): the first in its chain that was built
-        (sheets._first_present), with a warning when that is a fallback. None, with a warning, when the chain has nothing
-        built; only the wordmark's can, since every other chain ends at full-lockup."""
+        (kit.concept.first_present), with a warning when that is a fallback. None, with a warning, when the chain has
+        nothing built; only the wordmark's can, since every other chain ends at full-lockup."""
         chain = (f"full-{self.state.primary_lockup}", "full-lockup") if variant == "primary" else CHAINS[variant]
-        name = _first_present(self.outputs, chain)
-        if name not in chain:  # _first_present's own fallback, full-lockup, which the wordmark's chain leaves out
+        name = conceptlib.first_present(self.outputs, chain)
+        if name not in chain:  # first_present's own fallback, full-lockup, which the wordmark's chain leaves out
             self.warn(f"{variant} skipped: the concept has no {chain[0]}")
             return None
         if name != chain[0]:
-            advice = "draw a dedicated tier for better small sizes" if variant in TIER_FALLBACKS else f"the concept has no {chain[0]}"
+            tiered = variant in conceptlib.TIER_FALLBACKS
+            advice = "draw a dedicated tier for better small sizes" if tiered else f"the concept has no {chain[0]}"
             self.warn(f"{variant} falls back to {name} ({advice})")
         return self.outputs[name]
 
     def mark_at(self, size: int) -> Mark:
-        """The output that draws the mark `size` px across: the first built in sheets.size_tier(size), the chain
-        sheets.pick_output follows (full-symbol from 96 px, small down to 33 px, favicon below). It resolves through
+        """The output that draws the mark `size` px across: the first built in kit.concept.size_tier(size), the chain
+        kit.concept.pick_output follows (full-symbol from 96 px, small down to 33 px, favicon below). It resolves through
         mark(), so a fallback warns. Never None: mark() returns None only for a chain with nothing built, and each of
         these ends at full-lockup, which every build has."""
-        mark = self.mark(TIER_VARIANTS[size_tier(size)[0]])
+        mark = self.mark(TIER_VARIANTS[conceptlib.size_tier(size)[0]])
         assert mark is not None  # every size_tier chain ends at full-lockup
         return mark
 
@@ -211,7 +212,7 @@ class PackageBuilder:
         self.entries.append(self._entry(relpath, (self.pkg / relpath).read_bytes(), purpose, width, height))
 
     def render_fit(self, svg: str, box_w: int, box_h: int, background: str | None = None) -> bytes:
-        """`svg` rendered as large as fits a `box_w` x `box_h` box, keeping its aspect (sheets.fit_size)."""
+        """`svg` rendered as large as fits a `box_w` x `box_h` box, keeping its aspect (render.fit_size)."""
         return self.renderer.svg_to_png(svg, *fit_size(svg, box_w, box_h), background=background)
 
     def png_bytes(self, svg: str, long_edge: int) -> bytes:
@@ -324,7 +325,7 @@ class PackageBuilder:
             "brand": self.state.name, "slug": self.slug, "prefix": self.name, "primary_lockup": self.state.primary_lockup,
             "has_wordmark": "full-wordmark" in self.outputs, "x_unit": round(lockup.x_unit, 1), "x_rule": X_RULES[lockup.x_unit_source],
             "ms": self.state.min_sizes, "roles_light": self._roles("light"), "roles_dark": self._roles("dark"),
-            "colours": [{"key": key, **c.model_dump(), "text": _chip_text(c.hex)} for key, c in self.tokens.colors.items()],
+            "colours": [{"key": key, **c.model_dump(), "text": chip_text(c.hex)} for key, c in self.tokens.colors.items()],
             "contrast": [row.model_dump() for row in self.checks.contrast], "fonts": self.typefaces,
             "head_snippet": head.read_text(encoding="utf-8") if head.is_file() else "",
             "rationale": (self.final / "rationale.md").read_text(encoding="utf-8").strip(),

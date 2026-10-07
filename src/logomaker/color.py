@@ -40,6 +40,11 @@ def luminance(value: str) -> float:
     return float(Color(value).convert("srgb").luminance())
 
 
+def chip_text(hex_value: str) -> str:
+    """The colour of a label on a `hex_value` swatch: white on a dark colour (luminance under 0.35), else near-black."""
+    return "#ffffff" if luminance(hex_value) < 0.35 else "#111111"
+
+
 def info(value: str) -> dict:
     c = Color(value).convert("srgb").fit("srgb")  # fit once, so every channel below describes the same in-gamut colour
     r, g, b = (round(x * 255) for x in c.coords())
@@ -162,6 +167,11 @@ def enrich_tokens(tokens: Tokens) -> Tokens:
         i = info(entry.hex)
         entry.rgb, entry.hsl, entry.oklch, entry.cmyk = i["rgb"], i["hsl"], i["oklch"], i["cmyk"]
     return tokens
+
+
+def palettes_of(tokens: Tokens | None) -> tuple[dict[str, str] | None, dict[str, str] | None]:
+    """The light and dark palettes of `tokens`, or (None, None) without tokens."""
+    return (tokens.palette("light"), tokens.palette("dark")) if tokens is not None else (None, None)
 
 
 def load_tokens(path: Path) -> Tokens:

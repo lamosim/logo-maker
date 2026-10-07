@@ -40,6 +40,19 @@ def with_size(svg: str, width: int, height: int) -> str:
     return svg.replace("<svg ", f'<svg width="{width}" height="{height}" ', 1)
 
 
+def fit_size(svg: str, box_w: int, box_h: int) -> tuple[int, int]:
+    """The largest pixel size with the SVG's aspect that fits a `box_w` x `box_h` box."""
+    _, h_at_w = svg_size(svg, box_w)
+    if h_at_w <= box_h:
+        return box_w, h_at_w
+    return max(1, round(box_w * box_h / h_at_w)), box_h
+
+
+def fit_box(svg: str, box_w: int, box_h: int) -> str:
+    """`svg` sized as large as fits a `box_w` x `box_h` box, keeping its aspect (fit_size)."""
+    return with_size(svg, *fit_size(svg, box_w, box_h))
+
+
 class Renderer:
     """`chrome_app` only gates the existence check; Playwright's `channel="chrome"` launches the standard install."""
 

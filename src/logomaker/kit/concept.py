@@ -16,6 +16,8 @@ from ..paths import CONCEPT_NAME, ProjectPaths
 from .mark import VARIANTS, Mark
 
 TIER_NAMES = ("full", "compact", "small", "favicon")
+# The outputs that stand in for a missing small or favicon tier, best first: how exports, the sheets and the audit fall back.
+TIER_FALLBACKS = {"small": ("full-symbol", "full-lockup"), "favicon": ("small", "full-symbol", "full-lockup")}
 
 
 @dataclass
@@ -159,6 +161,25 @@ def build_outputs(marks: dict[str, Mark]) -> dict[str, Mark]:
         if tier in marks:
             outputs[tier] = marks[tier]
     return outputs
+
+
+def first_present(outputs: dict, chain: Iterable[str]) -> str:
+    """The first output in `chain` that was built, else full-lockup (every build has one): how exports fall back."""
+    return next((name for name in chain if name in outputs), "full-lockup")
+
+
+def size_tier(size: int) -> tuple[str, ...]:
+    """The outputs that draw the mark `size` px across, best first (spec section 6.4): full-symbol from 96 px, small
+    down to 33 px, favicon at 32 px and below, each falling back as TIER_FALLBACKS says, to end at full-lockup."""
+    if size >= 96:
+        return ("full-symbol", "full-lockup")
+    tier = "small" if size > 32 else "favicon"
+    return (tier, *TIER_FALLBACKS[tier])
+
+
+def pick_output(outputs: dict, size: int) -> str:
+    """The output that draws the mark `size` px across: the first in size_tier(size) that was built."""
+    return first_present(outputs, size_tier(size))
 
 
 def validate_variants(variants: Iterable[str]) -> tuple[str, ...]:
