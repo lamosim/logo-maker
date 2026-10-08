@@ -141,12 +141,14 @@ def _emit_brand(paths, state) -> None:
 @click.argument("name")
 @click.option("--slug", default=None, help="Override the generated slug.")
 @click.option("--unnamed", is_flag=True, help="NAME is a working title; a naming phase will run.")
+@click.option("--express", is_flag=True,
+              help="The express track: five intake questions, one territory, three directions, one refinement round; every gate kept.")
 @command
-def brand_new(name: str, slug: str | None, unnamed: bool) -> None:
+def brand_new(name: str, slug: str | None, unnamed: bool, express: bool) -> None:
     """Create a brand folder and its brand.json. The registry index gets an entry."""
     paths = project()
     registry.list_brands(paths)  # rebuild a missing index, or stop on a malformed one, before the brand folder exists
-    _emit_brand(paths, registry.new_brand(paths, name, slug, unnamed))
+    _emit_brand(paths, registry.new_brand(paths, name, slug, unnamed, track="express" if express else "full"))
 
 
 @brand.command("list")
@@ -211,12 +213,13 @@ def brand_rename(slug: str, name: str) -> None:
 @click.option("--industry", default=None)
 @click.option("--surface", "surfaces", multiple=True, help="Ranked surfaces; repeat the flag.")
 @click.option("--font", "fonts", multiple=True, help="ROLE=FAMILY[:WEIGHT], e.g. wordmark=Sora:650")
+@click.option("--track", default=None, type=click.Choice(["full", "express"]))
 @command
-def brand_set(slug: str, territory, concept, primary_lockup, industry, surfaces, fonts) -> None:
-    """Record choices in brand.json. Territory, concept, primary lockup, industry, surfaces, fonts."""
+def brand_set(slug: str, territory, concept, primary_lockup, industry, surfaces, fonts, track) -> None:
+    """Record choices in brand.json. Territory, concept, primary lockup, industry, surfaces, fonts, track."""
     paths = project()
     _emit_brand(paths, registry.set_fields(paths, slug, territory=territory, concept=concept, primary_lockup=primary_lockup,
-                                           industry=industry, surfaces=surfaces, fonts=fonts))
+                                           industry=industry, surfaces=surfaces, fonts=fonts, track=track))
 
 
 @main.group("fonts")

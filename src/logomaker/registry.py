@@ -81,7 +81,9 @@ def brand_name(name: str) -> str:
     return stripped
 
 
-def new_brand(paths: ProjectPaths, name: str, slug: str | None = None, unnamed: bool = False) -> BrandState:
+def new_brand(paths: ProjectPaths, name: str, slug: str | None = None, unnamed: bool = False, track: str = "full") -> BrandState:
+    if track == "express" and unnamed:
+        raise CliError("an express brand is named; drop --unnamed or --express")
     name = brand_name(name)
     slug = slug or slugify(name)
     folder = paths.brand(slug)  # refuses anything but a slug
@@ -89,7 +91,7 @@ def new_brand(paths: ProjectPaths, name: str, slug: str | None = None, unnamed: 
         raise CliError(f"Brand {slug!r} already exists at {folder}")
     for sub in BRAND_SUBDIRS:
         (folder / sub).mkdir(parents=True)
-    state = BrandState(slug=slug, name=name, needs_name=unnamed)
+    state = BrandState(slug=slug, name=name, needs_name=unnamed, track=track)  # type: ignore[arg-type]
     save_state(paths, state)
     return state
 
@@ -193,6 +195,10 @@ def set_fields(paths: ProjectPaths, slug: str, **fields: Any) -> BrandState:
                 state.fonts[role] = FontChoice(family=family, weight=int(weight) if weight else 400)
         elif key == "surfaces":
             state.surfaces = list(value)
+        elif key == "track":
+            if value == "express" and PHASE_ORDER.index(state.phase) >= PHASE_ORDER.index(Phase.concepts):
+                raise CliError("cannot move to the express track from concepts on; the earlier phases' counts are spent")
+            state.track = value
         else:
             # Both name folders the gates read (concepts/<concept>, the territories.json slug), so neither may be a path.
             if key == "concept" and not CONCEPT_NAME.fullmatch(value):

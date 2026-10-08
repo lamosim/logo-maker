@@ -520,3 +520,37 @@ def test_the_final_scorecard_needs_route_and_probe(project_root):
         assert code == 2 and "final/scorecard.json needs route and probe (scorecard.md)" in payload["missing"]
     card_json.write_text(json.dumps(card))
     assert run("brand", "advance", "keystone", "--to", "package")[0] == 0
+
+
+def test_express_brands_are_named_and_carry_their_track(project_root):
+    code, payload = run("brand", "new", "Pip", "--express")
+    assert code == 0 and payload["brand"]["track"] == "express"
+    code, payload = run("brand", "new", "Working Title", "--express", "--unnamed")
+    assert code == 2 and payload["errors"] == ["an express brand is named; drop --unnamed or --express"]
+    assert not (project_root / "brands" / "working-title").exists()
+    code, payload = run("brand", "new", "Keystone")
+    assert payload["brand"]["track"] == "full"
+
+
+def test_a_brand_json_without_a_track_is_full(project_root):
+    run("brand", "new", "Keystone")
+    path = project_root / "brands" / "keystone" / "brand.json"
+    data = json.loads(path.read_text())
+    del data["track"]
+    path.write_text(json.dumps(data))
+    assert registry.load_state(project(), "keystone").track == "full"
+
+
+def test_track_can_go_to_full_any_time_but_to_express_only_before_concepts(project_root, brief_payload, strategy_payload):
+    run("brand", "new", "Keystone", "--express")
+    code, payload = run("brand", "set", "keystone", "--track", "full")
+    assert code == 0 and payload["brand"]["track"] == "full"
+    code, payload = run("brand", "set", "keystone", "--track", "express")
+    assert code == 0 and payload["brand"]["track"] == "express"
+    code, payload = run("brand", "set", "keystone", "--track", "fast")
+    assert code == 2 and "--track" in payload["errors"][0]
+    assert run("brand", "set", "keystone", "--track", "full")[0] == 0
+    make_final_brand(project_root, phase=Phase.concepts)  # reuses the brand and advances it to concepts
+    code, payload = run("brand", "set", "keystone", "--track", "express")
+    assert code == 2 and payload["errors"] == ["cannot move to the express track from concepts on; the earlier phases' counts are spent"]
+    assert registry.load_state(project(), "keystone").track == "full"

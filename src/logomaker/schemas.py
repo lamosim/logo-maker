@@ -55,6 +55,7 @@ class BrandState(BaseModel):
     slug: str
     name: str
     needs_name: bool = False
+    track: Literal["full", "express"] = "full"
     created: str = Field(default_factory=now_iso)
     updated: str = Field(default_factory=now_iso)
     phase: Phase = Phase.intake
