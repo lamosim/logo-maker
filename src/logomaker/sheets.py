@@ -406,12 +406,12 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
                  renderer: Renderer | None = None) -> dict:
     """Write sheets/critic-N.{html,png} for the blind critic and sheets/critic-N.key.json for the merge (spec 2026-10-08
     §3.1). Each survivor (or final/, with `final`) shows the critique strip, the one-colour panels and the mockups under
-    a letter, in the order a Random seeded with `seed` (default N) shuffles them; when that letters two or more concepts
-    exactly as the latest critic sheet of the same concepts did, the seed steps up by one until it does not, and the key
-    and the result record the seed used. No slug, idea or score is written. Every
-    survivor must be vetted (_vetted: a fresh, rendered, passing audit and a gate-passing scorecard), and final/ must
-    pass registry.require_final_audit, before Chrome starts. The key maps letters to folder names and records each
-    concept's fingerprint now."""
+    a letter, in the order a Random seeded with `seed` (default N) shuffles them. With the default seed, when that letters
+    two or more concepts exactly as the latest critic sheet of the same concepts did, the seed steps up by one until it
+    does not; an explicit `seed` is used as given, to reproduce a sheet. The key and the result record the seed used.
+    No slug, idea or score is written. Every survivor must be vetted (_vetted: a fresh, rendered, passing audit and a
+    gate-passing scorecard), and final/ must pass registry.require_final_audit, before Chrome starts. The key maps
+    letters to folder names and records each concept's fingerprint now."""
     import random
 
     if final and concept_names:
@@ -428,8 +428,9 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
     else:
         folders = [(name, _vetted(paths, slug, name)[0]) for name in concept_names]
     round_n = next_round(brand, "sheets/critic-*.key.json")
+    explicit = seed is not None  # an explicit --seed reproduces a sheet, so only the default seed moves
     seed = round_n if seed is None else seed
-    previous = _previous_letters(brand, round_n, {name for name, _ in folders})
+    previous = None if explicit else _previous_letters(brand, round_n, {name for name, _ in folders})
     while True:
         order = list(folders)
         random.Random(seed).shuffle(order)

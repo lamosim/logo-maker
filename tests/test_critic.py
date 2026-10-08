@@ -162,12 +162,24 @@ def test_critic_sheet_letters_the_survivors_in_a_seeded_shuffle_and_writes_the_k
 def test_a_second_critic_sheet_of_the_same_concepts_gets_another_lettering(project_root):
     prepare(project_root, "01-good")
     prepare(project_root, "02-dots", "two_dots")
-    first = sheets.critic_sheet(project(), "keystone", ["02-dots", "01-good"], renderer=StubChrome())
-    second = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], renderer=StubChrome())
+    names = ["01-good", "02-dots"]
+    first = sheets.critic_sheet(project(), "keystone", names, renderer=StubChrome())
+    # Seed 2 shuffles two concepts as seed 1 does, so the second sheet must step its seed past the round number.
+    second = sheets.critic_sheet(project(), "keystone", names, renderer=StubChrome())
     assert first["letters"] != second["letters"]
     key = json.loads(Path(second["key"]).read_text())
-    assert key["seed"] == second["seed"] and key["letters"] == second["letters"]
+    assert key["seed"] == second["seed"] != second["round"] and key["letters"] == second["letters"]
     assert json.loads(Path(first["key"]).read_text())["seed"] == first["seed"] == 1  # the first sheet keeps its default seed
+
+
+def test_an_explicit_seed_reproduces_a_critic_sheet(project_root):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    names = ["01-good", "02-dots"]
+    first = sheets.critic_sheet(project(), "keystone", names, seed=1, renderer=StubChrome())
+    again = sheets.critic_sheet(project(), "keystone", names, seed=1, renderer=StubChrome())
+    assert again["letters"] == first["letters"] and again["seed"] == first["seed"] == 1
+    assert json.loads(Path(again["key"]).read_text())["seed"] == 1
 
 
 def test_critic_sheet_refuses_an_unvetted_concept_before_chrome(project_root, no_chrome):
