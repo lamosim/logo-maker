@@ -213,7 +213,8 @@ def brand_rename(slug: str, name: str) -> None:
 @click.option("--industry", default=None)
 @click.option("--surface", "surfaces", multiple=True, help="Ranked surfaces; repeat the flag.")
 @click.option("--font", "fonts", multiple=True, help="ROLE=FAMILY[:WEIGHT], e.g. wordmark=Sora:650")
-@click.option("--track", default=None, type=click.Choice(["full", "express"]))
+@click.option("--track", default=None, type=click.Choice(["full", "express"]),
+              help="full or express; express only before concepts, full any time")
 @command
 def brand_set(slug: str, territory, concept, primary_lockup, industry, surfaces, fonts, track) -> None:
     """Record choices in brand.json. Territory, concept, primary lockup, industry, surfaces, fonts, track."""

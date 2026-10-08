@@ -392,7 +392,10 @@ def test_the_territories_gate_needs_a_valid_spec_holding_the_chosen_territory(pr
     assert registry._check_territories(brand, state) == [
         "territories/territories.json has 1 territory; the full track needs 2 or 3 (add one, or run: logomaker brand set keystone "
         "--track express)"]
-    assert registry._check_territories(brand, state, current=False) == registry._check_territories(brand, state)
+    # Past territories the count is spent (as on the way down to express), but the chosen territory must still be in the spec.
+    assert registry._check_territories(brand, state, current=False) == [not_chosen]  # ledger was the one popped
+    state = registry.set_fields(project(), "keystone", territory="forge")
+    assert registry._check_territories(brand, state, current=False) == []
     state = registry.set_fields(project(), "keystone", track="express", territory="forge")  # ledger was the one popped
     assert registry._check_territories(brand, state) == []
     spec.write_text(json.dumps({"territories": []}))  # none is the spec's own problem, on either track
@@ -561,3 +564,23 @@ def test_track_can_go_to_full_any_time_but_to_express_only_before_concepts(proje
     code, payload = run("brand", "set", "keystone", "--track", "express")
     assert code == 2 and payload["errors"] == ["cannot move to the express track from concepts on; the earlier phases' counts are spent"]
     assert registry.load_state(project(), "keystone").track == "full"
+
+
+def test_set_fields_refuses_an_unknown_track(project_root):
+    run("brand", "new", "Keystone")
+    with pytest.raises(CliError, match="track must be full or express, got 'fast'"):
+        registry.set_fields(project(), "keystone", track="fast")
+    assert registry.load_state(project(), "keystone").track == "full"
+
+
+def test_an_express_brand_upgraded_after_territories_is_not_held_to_the_full_count(project_root):
+    run("brand", "new", "Keystone", "--express")
+    make_final_brand(project_root, phase=Phase.territories)  # reuses the express brand
+    spec = project_root / "brands" / "keystone" / "territories" / "territories.json"
+    payload = json.loads(spec.read_text())
+    spec.write_text(json.dumps({"territories": [t for t in payload["territories"] if t["slug"] == "forge"]}))
+    code, payload = run("brand", "advance", "keystone", "--to", "concepts")
+    assert code == 0, payload
+    assert run("brand", "set", "keystone", "--track", "full")[0] == 0
+    code, payload = run("brand", "advance", "keystone", "--to", "refinement")
+    assert code == 0 and payload["brand"]["phase"] == "refinement", payload

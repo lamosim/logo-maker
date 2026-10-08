@@ -197,6 +197,8 @@ def set_fields(paths: ProjectPaths, slug: str, **fields: Any) -> BrandState:
         elif key == "surfaces":
             state.surfaces = list(value)
         elif key == "track":
+            if value not in ("full", "express"):
+                raise CliError(f"track must be full or express, got {value!r}")
             if value == "express" and PHASE_ORDER.index(state.phase) >= PHASE_ORDER.index(Phase.concepts):
                 raise CliError("cannot move to the express track from concepts on; the earlier phases' counts are spent")
             state.track = value
@@ -280,14 +282,15 @@ def _check_strategy(brand: Path, state: BrandState, current: bool = True) -> lis
 
 
 def _check_territories(brand: Path, state: BrandState, current: bool = True) -> list[str]:
-    """territories.json must be a valid TerritoriesSpec (its slugs are slugs, and unique) that holds the chosen territory, and
-    on the full track at least FULL_TERRITORIES_MIN territories."""
+    """territories.json must be a valid TerritoriesSpec (its slugs are slugs, and unique) that holds the chosen territory, and,
+    when leaving territories on the full track, at least FULL_TERRITORIES_MIN territories. Past territories the count is
+    spent, so a brand that moves to the full track later is not held to it (as a move to express is refused from concepts on)."""
     path = brand / "territories" / "territories.json"
     try:
         spec = load_model(path, TerritoriesSpec, str(path.relative_to(brand)))
     except CliError as err:  # missing, malformed or invalid, named as the gate names it
         return [str(err)]
-    if state.track == "full" and len(spec.territories) < FULL_TERRITORIES_MIN:
+    if current and state.track == "full" and len(spec.territories) < FULL_TERRITORIES_MIN:
         count = len(spec.territories)
         return [f"{path.relative_to(brand)} has {count} territor{'y' if count == 1 else 'ies'}; the full track needs 2 or 3 "
                 f"(add one, or run: logomaker brand set {state.slug} --track express)"]
