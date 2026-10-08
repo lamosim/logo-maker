@@ -15,7 +15,7 @@ The ten criteria merge the judging lists the research found: Haviv's three (appr
 | 5 | `adaptable` | Does it work in one colour, reversed, as an app icon, and ready to move? | the white-on-black and one-colour panels; the phone and avatar mockups; `small` and `favicon` tiers drawn |
 | 6 | `timeless` | Is it free of trend shapes from trends.md, or are they justified? | no "avoid" item; any "use carefully" item has a reason in strategy.md |
 | 7 | `universal` | Are the mirrored and rotated panels free of unintended readings, and the brief's cultural notes respected? | both panels read clean; nothing in `cultural` is touched |
-| 8 | `clear` | Has the knock-out found no look-alike or conflicting mark? | a web search by description before presenting (CGH knock-out every option first) [01 §1.1]; `final/knockout.md` in refinement |
+| 8 | `clear` | Has the knock-out found no look-alike or conflicting mark? | a web search by description before presenting (CGH knock-out every option first) [01 §1.1] and the image knock-out in `knockout.json` (Google Lens; Lens and WIPO for `final/`) [code]; `final/knockout.md` in refinement |
 | 9 | `congruent` | Do shape, weight, colour and type match `strategy.json`'s targets and the name's sound? | each target compared in a line; no CLI check reads the targets, so this is Claude's judgment [code] |
 | 10 | `system` | Do lockups, tiers and variants derive cleanly, and does a one-paragraph rationale exist? | horizontal, stacked, symbol, small and favicon outputs all built without tier warnings; a rationale draft in critique.md |
 
@@ -32,7 +32,7 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
 | adaptable | fails in one colour or reversed | works in one colour; the icon needs a redraw | works in one colour, reversed, as an icon, with a clear motion logic |
 | timeless | built on an "avoid" trend | carries a "use carefully" trend with a reason | no trend shape; would have read the same ten years ago |
 | universal | an unintended reading in a panel, or a cultural conflict | a faint secondary reading | nothing reads but the mark in any panel |
-| clear | a close look-alike or registered conflict found | similar marks in other categories | nothing similar found by description |
+| clear | a close look-alike or registered conflict found | similar marks in other categories | nothing similar found by description or by image (Lens; WIPO for `final/`) |
 | congruent | contradicts three or more targets or the name's sound | matches most targets | matches every target and the name's sound |
 | system | tiers or lockups missing or broken | tiers built, lockups uneven | every lockup, tier and variant derives cleanly, rationale written |
 
