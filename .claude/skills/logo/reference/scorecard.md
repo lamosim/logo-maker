@@ -36,6 +36,14 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
 | congruent | contradicts three or more targets or the name's sound | matches most targets | matches every target and the name's sound |
 | system | tiers or lockups missing or broken | tiers built, lockups uneven | every lockup, tier and variant derives cleanly, rationale written |
 
+## Routes and the probe
+
+Seven routes name how a concept gets from the one idea to a drawing [spec 2026-10-08 §6.1]: `object` (the thing itself), `abstraction` (the thing reduced past recognition), `letterform` (a letter of the name), `negative-space` (a second figure in a counter or gap), `type-quirk` (the wordmark with one or two owned moves), `system` (a repeated element or a rule that makes the mark), `metaphor-2` (two steps from the idea, not its obvious object). `object` is the literal route; the other six are non-literal. Every line of `concepts/ideas.md` carries its route in brackets, the ideas cover at least five routes, the directions built cover at least three, and at least one survivor on the concept sheet is non-literal: `sheet concepts` refuses a sheet whose survivors all take `object` [code].
+
+The obviousness probe keeps criterion 2 honest [spec 2026-10-08 §6.2]. Before building a direction, image-search "<motif> logo" (the construction's plain noun: "arch keystone logo") and count, among the first twenty results, those showing the same construction. Record it in the card as `probe` with the query, the count and the date; the evidence line for `distinctive` cites it. The schema caps `distinctive`: with 3 or more hits it is capped at 3, with 8 or more capped at 2, and a card scoring above its cap is rejected with the cap in the message [code]. The critic is never told the probe.
+
+Every card records both: `sheet concepts` and `brand advance --to refinement` refuse a scorecard without `route` and `probe` (`registry.passing_scorecard`), and `brand advance --to package` refuses a `final/scorecard.json` without them [code]. The final card carries the chosen concept's route and probe forward, with a fresh probe if refinement changed the construction.
+
 ## Gate
 
 - Gate criteria: `appropriate`, `simple` and `legible` must each be 4 or more, and `kill` must be false (`schemas.GATE`, `GATE_MIN = 4`) [code] [spec §8.2].
@@ -50,7 +58,7 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
 
 ## scorecard.json format
 
-`<concept>/scorecard.json` validates as `schemas.Scorecard` in `src/logomaker/schemas.py` [code]: `scores` holds all ten keys as whole numbers from 1 to 5, `evidence` maps criteria to a line each, `kill` is true or false, `reason` is text, and `reconciled` maps each criterion the critic's card puts two or more away to one line saying whose score stands and why (empty by default). A passing card, reconciled with a critic who scored `distinctive` 2:
+`<concept>/scorecard.json` validates as `schemas.Scorecard` in `src/logomaker/schemas.py` [code]: `scores` holds all ten keys as whole numbers from 1 to 5, `evidence` maps criteria to a line each, `kill` is true or false, `reason` is text, and `reconciled` maps each criterion the critic's card puts two or more away to one line saying whose score stands and why (empty by default), `route` is one of the seven routes, and `probe` holds `query`, `hits` (0 to 20) and `date` ("Routes and the probe"). A passing card, reconciled with a critic who scored `distinctive` 2:
 
 ```json
 {
@@ -58,18 +66,20 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
              "timeless": 4, "universal": 5, "clear": 3, "congruent": 4, "system": 4},
   "evidence": {
     "appropriate": "the O reads as a socket at once; Ostrom makes tools",
-    "distinctive": "no competitor among the five uses a letter as the tool end",
+    "distinctive": "no competitor among the five uses a letter as the tool end; probe: 1 of 20 for \"socket O logo\"",
     "simple": "one oval, one square hole; drawable in two strokes",
     "legible": "the square stays open at 16 px; Ostrom reads at 120 px wide",
     "clear": "description search found no socket-O mark yet; full knock-out in refinement"
   },
   "kill": false,
   "reason": "",
-  "reconciled": {"distinctive": "the critic read the O as a stock ring; at 16 px the square hole is what reads, so 4 stands"}
+  "reconciled": {"distinctive": "the critic read the O as a stock ring; at 16 px the square hole is what reads, so 4 stands"},
+  "route": "object",
+  "probe": {"query": "socket O logo", "hits": 1, "date": "2026-10-09"}
 }
 ```
 
-`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format; `brand advance --to package` and `package build` read its `reconciled` entries against `final/critic.json` [code].
+`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format, with the chosen concept's `route` and `probe` carried forward (a fresh probe if the construction changed); `brand advance --to package` refuses it without both, and it and `package build` read its `reconciled` entries against `final/critic.json` [code].
 
 A killed card keeps every score:
 
@@ -79,10 +89,12 @@ A killed card keeps every score:
              "timeless": 3, "universal": 4, "clear": 3, "congruent": 3, "system": 3},
   "evidence": {"legible": "the counters close at 24 px after four rounds"},
   "kill": true,
-  "reason": "cannot pass legible within four rounds"
+  "reason": "cannot pass legible within four rounds",
+  "route": "letterform",
+  "probe": {"query": "interlocking O logo", "hits": 4, "date": "2026-10-09"}
 }
 ```
 
 ## Sources
 
-01 §4 (Haviv's three criteria, Rand's seven questions, Bierut, Collins rule 34, Romaniuk's grid, Interbrand, the composite scorecard), §1.1 (CGH's knock-out before presenting); 05 §5.1 (the masters' tests); spec §3.3, §8.1, §8.2; code: `schemas.Scorecard`, `schemas.CRITERIA`, `schemas.GATE`, `schemas.GATE_MIN`, `registry.passing_scorecard`, `registry.vetted_scorecard`, `registry.require_final_critic`, `sheets.concepts_sheet`; spec 2026-10-08 §3.3.
+01 §4 (Haviv's three criteria, Rand's seven questions, Bierut, Collins rule 34, Romaniuk's grid, Interbrand, the composite scorecard), §1.1 (CGH's knock-out before presenting); 05 §5.1 (the masters' tests); spec §3.3, §8.1, §8.2; code: `schemas.Scorecard`, `schemas.ROUTES`, `schemas.Probe`, `schemas.distinctive_cap`, `schemas.CRITERIA`, `schemas.GATE`, `schemas.GATE_MIN`, `registry.passing_scorecard`, `registry.vetted_scorecard`, `registry.require_final_critic`, `sheets.concepts_sheet`, `registry._check_final`; spec 2026-10-08 §3.3, §6.1, §6.2.

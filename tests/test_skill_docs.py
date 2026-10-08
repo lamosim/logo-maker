@@ -175,3 +175,12 @@ def test_skill_pins_the_knockout_by_image():
     assert "knock-out skipped:" in text
     naming = (REF / "naming.md").read_text(encoding="utf-8")
     assert "## Knock-out by image" in naming and "lens.google.com" in naming and "branddb.wipo.int" in naming
+
+
+def test_skill_pins_the_routes_and_the_probe():
+    concepts = flat(section(SKILL.read_text(encoding="utf-8"), "Phase runbook"))
+    assert "tagged with its route" in concepts and "at least five routes" in concepts
+    assert "at least one survivor on the sheet is non-literal" in concepts
+    assert '"<motif> logo"' in concepts and "first twenty image results" in concepts and "`probe`" in concepts
+    card = (REF / "scorecard.md").read_text(encoding="utf-8")
+    assert "## Routes and the probe" in card and "metaphor-2" in card and "capped at 3" in card and "capped at 2" in card

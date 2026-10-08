@@ -47,6 +47,7 @@ The fourteen-item craft checklist [05 §5.4], with where each item is settled:
 
 - [ ] One idea per mark, said in one sentence without the word "represents" (`META.idea`)
 - [ ] 30 or more thumbnails before any vector; 3 to 5 directions picked, 2 to 3 developed, 1 to 3 presented (here: 12 to 20 ideas in concepts/ideas.md, 5 to 8 directions, 3 to 5 survivors [spec §4.5])
+- [ ] Ideas tagged by route, five or more routes covered, one non-literal survivor on the sheet (scorecard.md, "Routes and the probe")
 - [ ] Designed in black first; colour is the last decision and must not be load-bearing (phase 4 is black only)
 - [ ] Passes Rand's seven and Haviv's three; "appropriate" checked against archetype and category register (scorecard)
 - [ ] Reads correctly at a glance to strangers: the first-read test, the Kia test

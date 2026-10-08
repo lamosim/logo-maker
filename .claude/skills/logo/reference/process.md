@@ -2,7 +2,7 @@
 
 Read this when: starting or resuming a brand, before every `brand advance`, and before showing the owner anything.
 
-Agencies run one stable sequence: "research before decisions, strategy before design, design before rollout"; "skipping straight to visuals is the most common cause of rebrand failure" [01 §1.1]. This workflow runs it as seven working phases and a closing state. Each phase ends at a gate the owner passes and the CLI checks [spec §3.2] [code].
+Agencies run one stable sequence: "research before decisions, strategy before design, design before rollout"; "skipping straight to visuals is the most common cause of rebrand failure" [01 §1.1]. This workflow runs seven working phases and a closing state. Each phase ends at a gate the owner passes and the CLI checks [spec §3.2] [code].
 
 ## Phases and gates
 
@@ -12,7 +12,7 @@ Agencies run one stable sequence: "research before decisions, strategy before de
 | `naming`, only for a brand made with `--unnamed` | 15 to 25 candidates across descriptive, evocative and invented; analysis, availability and a web knock-out of the shortlist | `names analyze`, `names check`, `brand rename --name` | `naming.md` | Owner picks a name |
 | `strategy` | Positioning, archetype, personality, the one idea, ladder, category audit, feature targets, logo type, constraints | `brand set --industry --surface` | `strategy.md`, `strategy.json` | Owner approves |
 | `territories` | Two or three visual territories | `fonts fetch`, `sheet territories`, `brand set --territory --font` | `territories/territories.json`, `board.html`, `board.png` | Owner picks one |
-| `concepts` | 12 to 20 ideas; 5 to 8 directions as black-only concept modules; critique, score, revise or kill; 3 to 5 survivors; the blind critic's two passes, reconciled | `concept run <slug> <NN-slug>`, `concept knockout`, `sheet critic --concepts`, `concept critic --sheet`, `sheet concepts --concepts`, `brand set --concept` | `concepts/ideas.md`, `concepts/NN-slug/` with `knockout.json`, `sheets/concepts.html` | Owner picks one; no blending |
+| `concepts` | 12 to 20 ideas tagged by route; the obviousness probe per direction; 5 to 8 directions as black-only concept modules; critique, score, revise or kill; 3 to 5 survivors; the blind critic's two passes, reconciled | `concept run <slug> <NN-slug>`, `concept knockout`, `sheet critic --concepts`, `concept critic --sheet`, `sheet concepts --concepts`, `brand set --concept` | `concepts/ideas.md`, `concepts/NN-slug/` with `knockout.json`, `sheets/concepts.html` | Owner picks one; no blending |
 | `refinement` | Optical corrections, small tiers, wordmark quirk, lockups, colour, reverse, unintended readings, knock-out, the critic's last pass | `concept run <slug> final`, `concept knockout`, `sheet critic --final`, `concept critic --sheet`, `color ramp`, `color check`, `brand set --primary-lockup`, `sheet refine` | `final/` with its module, `params.json`, `tokens.json`, `knockout.md`, `knockout.json`; `sheets/refine-N.html` | Owner approves after one to three rounds |
 | `package` | Writes `final/rationale.md`, builds, verifies, reads the brand sheet | `package build` (Bash timeout 300000), `package verify` | `package/` with `manifest.json`, `verify.json`, `BRAND.md`, `brand-sheet.pdf`, `README.md` | Owner has the folder and the sheet |
 | `done` | Summarises what was delivered and where | `brand advance <slug> --to done` | the registry entry at `done` | none: the brand is finished |
@@ -20,9 +20,9 @@ Agencies run one stable sequence: "research before decisions, strategy before de
 Moving between phases [code]:
 
 - `uv run logomaker brand advance <slug> --to <phase>` accepts only the next phase. `intake` leads to `naming` when the brand needs a name, otherwise to `strategy`.
-- It re-checks every earlier phase's artifacts, not only the current one's. A refusal exits 2 and lists the reasons under `missing`, most of them ending with the command that clears them.
+- It re-checks every earlier phase's artifacts too. A refusal exits 2 and lists the reasons under `missing`, most ending with the command that clears them.
 - `uv run logomaker brand status <slug>` shows the phase, `next` and the same `missing` list without moving anything. Run it first when resuming.
-- `uv run logomaker brand decide <slug> --phase <phase> --by user --note "..."` records each owner decision in brand.json's log, for the rationale and resuming.
+- `uv run logomaker brand decide <slug> --phase <phase> --by user --note "..."` logs each owner decision in brand.json, for the rationale and resuming.
 
 ## Artifacts each phase must contain
 
@@ -32,9 +32,9 @@ What `brand advance` checks, phase by phase, as `registry.PHASE_CHECKS` implemen
 - `naming`: checked only when leaving `naming`, and only that `naming.md` exists. Advancing to `strategy` while the brand still needs a name is refused until `brand rename <slug> --name "<Name>"`.
 - `strategy`: `strategy.md` exists; `strategy.json` validates as `Strategy` (at least three ladder rungs, a full set of feature targets, `logo_type` one of the seven values in logo-types.md).
 - `territories`: `territories/territories.json` validates as `TerritoriesSpec` (two or three territories with unique, slug-shaped slugs; one to three fonts and two to six colours each) and contains the territory chosen with `brand set --territory`.
-- `concepts`: a concept chosen with `brand set --concept <NN-slug>`; its `concept.py`; its `scorecard.json`, valid and passing the gate in scorecard.md; its `audit.json`. When leaving `concepts`, that audit must be fresh (its fingerprint matches the files now), rendered (not `--no-render`) and ok, and its `critic.json` fresh, with every disagreement reconciled (critic.md), and its `knockout.json` fresh, the image search done or skipped by the owner's decision (naming.md). Later phases only need the audit present and valid JSON and the scorecard passing, because `final/` is what ships.
-- `refinement`: `final/concept.py`; `final/params.json` (`{}` is enough); `final/tokens.json`, valid as `Tokens`; `final/audit.json`, fresh, rendered and ok; `final/critic.json`, fresh, and `final/scorecard.json` reconciled; then `final/knockout.json`, fresh, with the image and WIPO searches each done or skipped by the owner's decision.
-- `package`, checked by `--to done`: `package/verify.json` reports ok, and the inputs fingerprint it checked is still the current one.
+- `concepts`: a concept chosen with `brand set --concept <NN-slug>`; its `concept.py`; its `scorecard.json`, valid, with route and probe, and passing the gate in scorecard.md; its `audit.json`. When leaving `concepts`, that audit must be fresh (its fingerprint matches the files now), rendered (not `--no-render`) and ok, and its `critic.json` fresh, with every disagreement reconciled (critic.md), and its `knockout.json` fresh, the image search done or skipped by the owner's decision (naming.md). Later phases need only the audit present and valid JSON and the scorecard passing: `final/` is what ships.
+- `refinement`: `final/concept.py`; `final/params.json` (`{}` is enough); `final/tokens.json`, valid as `Tokens`; `final/audit.json`, fresh, rendered and ok; `final/scorecard.json` with route and probe; `final/critic.json`, fresh, and the scorecard reconciled; then `final/knockout.json`, fresh, with the image and WIPO searches each done or skipped by the owner's decision.
+- `package`, checked by `--to done`: `package/verify.json` reports ok against the current inputs fingerprint.
 
 Freshness [code]:
 
