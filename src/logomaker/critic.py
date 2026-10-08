@@ -59,6 +59,13 @@ class Key(BaseModel):
     fingerprints: dict[str, str]
     final: bool = False
 
+    @model_validator(mode="after")
+    def fingerprints_every_concept(self) -> Key:
+        missing = sorted(set(self.letters.values()) - set(self.fingerprints))
+        if missing:
+            raise ValueError(f"fingerprints missing for {', '.join(missing)}")
+        return self
+
 
 def round_half_up(value: float) -> int:
     return int(math.floor(value + 0.5))
@@ -144,10 +151,13 @@ def write_cards(paths: ProjectPaths, slug: str, round_n: int) -> dict:
         raise CliError(f"no pass files for critic sheet {round_n}; the critic writes sheets/critic-{round_n}.pass-1.json (and pass-2)")
     passes = [_load(path, CriticPass, str(path.relative_to(brand))) for path in files]
     cards = merge(key, passes)
+    folders = {name: brand / "final" if name == "final" else brand / "concepts" / name for name in cards}
+    for folder in folders.values():
+        if not folder.is_dir():
+            raise CliError(f"{folder.relative_to(brand)} is missing; critic sheet {round_n} lettered it")
     written = {}
     for name, card in cards.items():
-        folder = brand / "final" if name == "final" else brand / "concepts" / name
-        target = folder / "critic.json"
+        target = folders[name] / "critic.json"
         target.write_text(json.dumps(card.model_dump(), indent=2) + "\n", encoding="utf-8")
         written[name] = str(target)
     return {"sheet": round_n, "passes": len(passes), "cards": written}

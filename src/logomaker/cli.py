@@ -396,6 +396,17 @@ def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tok
                 result, warnings=report["warnings"])
 
 
+@concept_group.command("critic")
+@click.argument("slug")
+@click.option("--sheet", "round_n", type=click.IntRange(min=1), required=True, help="The critic sheet whose passes to merge.")
+@command
+def concept_critic(slug: str, round_n: int) -> None:
+    """Merge sheets/critic-N.pass-*.json by the sheet's key into critic.json in each concept folder (final/ for a final sheet)."""
+    from . import critic as criticlib
+
+    emit(criticlib.write_cards(project(), slug, round_n))
+
+
 @main.group("sheet")
 def sheet_group() -> None:
     """Owner-facing sheets (opened in the browser)."""

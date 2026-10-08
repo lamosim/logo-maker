@@ -1,4 +1,5 @@
 import json
+import shutil
 
 import pytest
 from click.testing import CliRunner
@@ -147,3 +148,55 @@ def test_sheet_critic_cli_needs_concepts_or_final_but_not_both(project_root):
     assert code == 2 and payload["errors"] == ["give --concepts <a,b,c> for survivors, or --final for the final mark"]
     code, payload = run("sheet", "critic", "keystone", "--concepts", "01-good", "--final")
     assert code == 2 and payload["errors"] == ["--final takes no --concepts"]
+
+
+def test_key_needs_a_fingerprint_for_every_lettered_concept():
+    with pytest.raises(ValidationError, match="fingerprints missing for 01-k-jaw"):
+        critic.Key.model_validate({**KEY, "fingerprints": {"02-arch": "f2"}})
+
+
+def write_pass(brand, round_n: int, number: int, letters: dict[str, str], prefer: str | None = None, **scores):
+    cards = {letter: pass_card(**scores) for letter in letters}
+    pairs = []
+    if prefer and len(letters) == 2:
+        a, b = sorted(letters)
+        pairs = both_orders(a, b, prefer)
+    (brand / "sheets" / f"critic-{round_n}.pass-{number}.json").write_text(json.dumps({"cards": cards, "pairs": pairs}))
+
+
+def test_concept_critic_merges_the_passes_into_each_concept_folder(project_root):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    info = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], renderer=StubChrome())
+    brand = project_root / "brands" / "keystone"
+    winner = next(letter for letter, name in info["letters"].items() if name == "01-good")
+    write_pass(brand, 1, 1, info["letters"], prefer=winner, distinctive=3)
+    write_pass(brand, 1, 2, info["letters"], prefer=winner, distinctive=4)
+    code, payload = run("concept", "critic", "keystone", "--sheet", "1")
+    assert code == 0 and payload["passes"] == 2 and set(payload["cards"]) == {"01-good", "02-dots"}
+    good = json.loads((brand / "concepts" / "01-good" / "critic.json").read_text())
+    assert good["scores"]["distinctive"] == 4 and good["preferred_over"] == ["02-dots"] and good["sheet"] == 1
+    dots = json.loads((brand / "concepts" / "02-dots" / "critic.json").read_text())
+    assert dots["preferred_over"] == [] and dots["tied_with"] == ["01-good"]
+
+
+def test_concept_critic_refuses_without_passes_and_names_the_file(project_root):
+    prepare(project_root, "01-good")
+    sheets.critic_sheet(project(), "keystone", ["01-good"], renderer=StubChrome())
+    code, payload = run("concept", "critic", "keystone", "--sheet", "1")
+    assert code == 2 and "sheets/critic-1.pass-1.json" in payload["errors"][0]
+    assert not (project_root / "brands" / "keystone" / "concepts" / "01-good" / "critic.json").exists()
+    code, payload = run("concept", "critic", "keystone", "--sheet", "9")
+    assert code == 2 and payload["errors"] == ["sheets/critic-9.key.json is missing"]
+
+
+def test_concept_critic_refuses_a_missing_concept_folder_before_writing_any_card(project_root):
+    prepare(project_root, "01-good")
+    folder = prepare(project_root, "02-dots", "two_dots")
+    info = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], renderer=StubChrome())
+    brand = project_root / "brands" / "keystone"
+    write_pass(brand, 1, 1, info["letters"])
+    shutil.rmtree(folder)
+    code, payload = run("concept", "critic", "keystone", "--sheet", "1")
+    assert code == 2 and payload["errors"] == ["concepts/02-dots is missing; critic sheet 1 lettered it"]
+    assert not (brand / "concepts" / "01-good" / "critic.json").exists()
