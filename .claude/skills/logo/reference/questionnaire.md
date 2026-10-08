@@ -24,7 +24,7 @@ Whether the venture has a name decides how the brand is created, so settle that 
 
 ## Express intake
 
-On the express track ask questions 1, 3, 4, 7 and 11 only, in that order; infer `one_idea` from 3, `persona` and the archetype from 4, `harshest` from 7's first surface (an app icon or favicon means the 16 px tier), `colours_*` and `off_limits` from the category's uniform in cliches.md, and show every inference in the write-back for correction [spec 2026-10-08 §8]. The brand was made with `uv run logomaker brand new "<Name>" --express`, so question 11 confirms the name rather than opening a naming phase [code].
+On the express track ask questions 1, 3, 4, 7 and 11 only, in that order; infer `one_idea` from 3, `persona` and the archetype from 4, `harshest` from 7's first surface (an app icon or favicon means the 16 px tier), `colours_category` and `off_limits` from the category's uniform in cliches.md, leave `admired`, `disliked`, `colours_wanted`, `colours_forbidden` and `cultural` at their empty defaults, and show every inference in the write-back for correction [spec 2026-10-08 §8]. The brand was made with `uv run logomaker brand new "<Name>" --express`, so question 11 confirms the name rather than opening a naming phase [code].
 
 ## Optional questions
 
