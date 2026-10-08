@@ -124,7 +124,7 @@ For four or more directions you may dispatch one subagent per direction with the
 
 `--no-render` is for iteration only: it skips the raster checks and the critique sheet, and `sheet concepts` and the phase gates refuse its audit. When the subagents finish, run `uv run logomaker concept run <slug> NN-slug` for each yourself, read every critique sheet and score each concept; subagents do not score or present.
 
-The blind critic is a subagent too (`reference/critic.md`, "Dispatch"). Set `model` explicitly to `opus` or cheaper; never leave it to inherit the session's model. For the survivors, send two Agent calls in one message, each with `model: "opus"` and its own critic sheet; for `final/`, one call. Give each critic the prompt in `reference/critic.md` verbatim and nothing else: never a key, a scorecard, `ideas.md` or a `concept.py`.
+The blind critic is a subagent too (`reference/critic.md`, "Dispatch"). Set `model` explicitly to `opus` or cheaper; never leave it to inherit the session's model. For the survivors, send two Agent calls in one message, each with `model: "opus"` and its own critic sheet; for `final/`, one call. On the express track the survivors get one critic call, not two. Give each critic the prompt in `reference/critic.md` verbatim and nothing else: never a key, a scorecard, `ideas.md` or a `concept.py`.
 
 ## Resuming
 
