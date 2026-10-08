@@ -5,11 +5,14 @@ notch, a stroke or a move.
 """
 from __future__ import annotations
 
+import math
+from dataclasses import dataclass, field
+
 import numpy as np
 import skia
 
-from .primitives import stroked_path
-from .shape import Box, Shape, contour_nesting, normalize_winding
+from .primitives import rect, stroked_path
+from .shape import Box, Point, Shape, _quad_to_cubic, _xy, contour_nesting, normalize_winding, path_from_commands
 
 
 def _op(a: skia.Path, b: skia.Path, op: skia.PathOp) -> skia.Path:
@@ -239,3 +242,179 @@ def fit(shape: Shape, w: float, h: float, cx: float = 0, cy: float = 0) -> Shape
         raise ValueError("fit needs a shape with non-zero width and height")
     factor = min(w / b.w, h / b.h)
     return center(scale(shape, factor, cx=b.cx, cy=b.cy), cx, cy)
+
+
+@dataclass(frozen=True)
+class Node:
+    index: int
+    x: float
+    y: float
+    subpath: int
+    smooth: bool
+
+
+@dataclass
+class _Contour:
+    """An editable contour: `start`, then segments ("L", [end]) or ("C", [c1, c2, end]). A closed contour's last segment
+    ends on `start` (one is added when the path's Z implied it), so its nodes are start plus every segment end but the
+    last, and node i has segs[i - 1] coming in and segs[i] going out, modulo the count."""
+
+    start: Point
+    segs: list[tuple[str, list[Point]]] = field(default_factory=list)
+    closed: bool = False
+
+    def node_count(self) -> int:
+        return len(self.segs) if self.closed else len(self.segs) + 1
+
+    def point(self, i: int) -> Point:
+        return self.start if i == 0 else self.segs[i - 1][1][-1]
+
+
+def _conic_to_cubic(p0: Point, q: Point, p2: Point, weight: float) -> list[Point]:
+    """One cubic for a conic: control points a fraction 4w / (3 (1 + w)) of the way from each end to the conic's
+    control point. For a quarter-circle conic (w = cos 45°) that is the 0.5523 a circle's cubic uses."""
+    k = 4 * weight / (3 * (1 + weight))
+    return [(p0[0] + (q[0] - p0[0]) * k, p0[1] + (q[1] - p0[1]) * k), (p2[0] + (q[0] - p2[0]) * k, p2[1] + (q[1] - p2[1]) * k), p2]
+
+
+def _parse(shape: Shape) -> list[_Contour]:
+    """The path's own verbs, one segment each: a line stays a line, a quad and a conic become one cubic each (never the
+    four quads Shape.commands splits a conic into, which would give a circle 16 nodes), a cubic stays. A closed contour
+    gets an explicit last segment back to its start when the Z implied it."""
+    contours: list[_Contour] = []
+    it = skia.Path.RawIter(shape.path)
+    current: Point = (0.0, 0.0)
+    while True:
+        verb, pts = it.next()
+        if verb == skia.Path.Verb.kDone_Verb:
+            break
+        if verb == skia.Path.Verb.kMove_Verb:
+            current = _xy(pts[0])
+            contours.append(_Contour(current))
+        elif verb == skia.Path.Verb.kClose_Verb:
+            c = contours[-1]
+            c.closed = True
+            if c.segs and math.dist(c.segs[-1][1][-1], c.start) > 1e-6:
+                c.segs.append(("L", [c.start]))
+            current = c.start
+        elif verb == skia.Path.Verb.kLine_Verb:
+            current = _xy(pts[1])
+            contours[-1].segs.append(("L", [current]))
+        elif verb == skia.Path.Verb.kQuad_Verb:
+            contours[-1].segs.append(("C", _quad_to_cubic(current, _xy(pts[1]), _xy(pts[2]))))
+            current = _xy(pts[2])
+        elif verb == skia.Path.Verb.kConic_Verb:
+            contours[-1].segs.append(("C", _conic_to_cubic(current, _xy(pts[1]), _xy(pts[2]), it.conicWeight())))
+            current = _xy(pts[2])
+        elif verb == skia.Path.Verb.kCubic_Verb:
+            contours[-1].segs.append(("C", [_xy(pts[1]), _xy(pts[2]), _xy(pts[3])]))
+            current = _xy(pts[3])
+    return [c for c in contours if c.segs]
+
+
+def _emit(shape: Shape, contours: list[_Contour]) -> Shape:
+    commands = []
+    for c in contours:
+        commands.append(("M", [c.start]))
+        commands += [(kind, pts) for kind, pts in c.segs]
+        if c.closed:
+            commands.append(("Z", []))
+    return shape._with_path(normalize_winding(path_from_commands(commands)), shape.free_segments)
+
+
+def _locate(contours: list[_Contour], index: int) -> tuple[_Contour, int]:
+    offset_ = 0
+    for c in contours:
+        if 0 <= index < offset_ + c.node_count():
+            return c, index - offset_
+        offset_ += c.node_count()
+    raise ValueError(f"no node {index}; the shape has {offset_} nodes")
+
+
+def _neighbours(c: _Contour, i: int) -> tuple[tuple[str, list[Point]] | None, tuple[str, list[Point]] | None]:
+    """The segment into node i and the one out of it (None at an open contour's ends)."""
+    n = c.node_count()
+    incoming = c.segs[(i - 1) % len(c.segs)] if (c.closed or i > 0) else None
+    outgoing = c.segs[i % len(c.segs)] if (c.closed or i < n - 1) else None
+    return incoming, outgoing
+
+
+def nodes(shape: Shape) -> list[Node]:
+    """The on-curve nodes in path order: each contour's start and segment ends (a closed contour's return to its start
+    counted once). `smooth` is whether the handles either side of a node are collinear with it."""
+    out: list[Node] = []
+    index = 0
+    for subpath, c in enumerate(_parse(shape)):
+        for i in range(c.node_count()):
+            x, y = c.point(i)
+            incoming, outgoing = _neighbours(c, i)
+            smooth = False
+            if incoming and outgoing:
+                before = incoming[1][-2] if incoming[0] == "C" else c.point((i - 1) % c.node_count())  # the handle, or the node before
+                after = outgoing[1][0] if outgoing[0] == "C" else outgoing[1][-1]
+                ax, ay, bx, by = x - before[0], y - before[1], after[0] - x, after[1] - y
+                cross, dot = ax * by - ay * bx, ax * bx + ay * by
+                smooth = dot > 0 and abs(cross) <= 1e-3 * (math.hypot(ax, ay) * math.hypot(bx, by) or 1)
+            out.append(Node(index, x, y, subpath, smooth))
+            index += 1
+    return out
+
+
+def move_node(shape: Shape, index: int, dx: float, dy: float) -> Shape:
+    """`shape` with node `index` and the two handles attached to it moved by (dx, dy)."""
+    contours = _parse(shape)
+    c, i = _locate(contours, index)
+    x, y = c.point(i)
+    moved = (x + dx, y + dy)
+    if i == 0:
+        c.start = moved
+    else:
+        c.segs[i - 1][1][-1] = moved
+    if c.closed and i == 0:
+        c.segs[-1][1][-1] = moved  # the explicit return to the start
+    incoming, outgoing = _neighbours(c, i)
+    if incoming and incoming[0] == "C":
+        incoming[1][1] = (incoming[1][1][0] + dx, incoming[1][1][1] + dy)
+    if outgoing and outgoing[0] == "C":
+        outgoing[1][0] = (outgoing[1][0][0] + dx, outgoing[1][0][1] + dy)
+    return _emit(shape, contours)
+
+
+def delete_node(shape: Shape, index: int) -> Shape:
+    """`shape` without node `index`: its two segments become one, a line when both were lines, else a cubic keeping the
+    outer handles (the incoming segment's first handle and the outgoing segment's second). An open contour's endpoint
+    cannot be deleted."""
+    contours = _parse(shape)
+    c, i = _locate(contours, index)
+    incoming, outgoing = _neighbours(c, i)
+    if incoming is None or outgoing is None:
+        raise ValueError("an open contour's endpoint cannot be deleted")
+    if c.closed and c.node_count() <= 3:
+        raise ValueError("a contour keeps at least three nodes")
+    before = c.point((i - 1) % c.node_count())
+    end = outgoing[1][-1]
+    if incoming[0] == "L" and outgoing[0] == "L":
+        merged = ("L", [end])
+    else:
+        c1 = incoming[1][0] if incoming[0] == "C" else before
+        c2 = outgoing[1][1] if outgoing[0] == "C" else end
+        merged = ("C", [c1, c2, end])
+    n = len(c.segs)
+    if i == 0:  # the start goes: node 1 becomes the start, and the merged segment closes the loop
+        c.start = c.segs[0][1][-1]
+        c.segs = c.segs[1:n - 1] + [merged]
+    else:
+        c.segs[i - 1:i + 1] = [merged]
+    return _emit(shape, contours)
+
+
+_HALF = 100000.0  # far beyond the canvas: a half-plane for cut()
+
+
+def cut(shape: Shape, x1: float, y1: float, x2: float, y2: float) -> tuple[Shape, Shape]:
+    """`shape` split along the line through (x1, y1) and (x2, y2): (left, right), left being the side to the left when
+    travelling from the first point to the second. A line that misses leaves one side whole and the other empty."""
+    angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
+    left_half = translate(rotate(rect(-_HALF, 0, 2 * _HALF, _HALF, free=True), angle), x1, y1)
+    right_half = translate(rotate(rect(-_HALF, -_HALF, 2 * _HALF, _HALF, free=True), angle), x1, y1)
+    return intersect(shape, left_half), intersect(shape, right_half)

@@ -6,10 +6,14 @@ import skia
 from logomaker.kit.ops import (
     align,
     center,
+    cut,
+    delete_node,
     fit,
     intersect,
     mirror_x,
     mirror_y,
+    move_node,
+    nodes,
     offset,
     rotate,
     scale,
@@ -20,8 +24,9 @@ from logomaker.kit.ops import (
     xor,
 )
 from logomaker.kit.optical import compensate_stroke, optical_center, overshoot
-from logomaker.kit.primitives import bezier, circle, line, polygon, rect, rect_centered, ring
-from logomaker.kit.shape import Shape, normalize_winding
+from logomaker.kit.primitives import bezier, circle, line, polygon, rect, rect_centered, ring, spline
+from logomaker.kit.shape import Shape, normalize_winding, path_from_commands
+from logomaker.kit.text import glyph
 from tests.test_kit_shape import signed_area
 
 
@@ -244,3 +249,69 @@ def test_optical_helpers():
     widths = compensate_stroke(100)
     assert (widths.vertical, widths.horizontal, widths.curve) == (100, 92, 105)
     assert optical_center(rect(0, 0, 10, 20)) == (5, 10)
+
+
+def test_nodes_lists_on_curve_points_in_path_order():
+    square = rect(0, 0, 100, 100)
+    found = nodes(square)
+    assert [(n.index, n.subpath) for n in found] == [(0, 0), (1, 0), (2, 0), (3, 0)]
+    assert {(n.x, n.y) for n in found} == {(0, 0), (100, 0), (100, 100), (0, 100)}
+    assert all(not n.smooth for n in found)
+    disc = nodes(circle(0, 0, 100))
+    assert len(disc) == 4 and all(n.smooth for n in disc)
+    assert len(nodes(spline([(0, 300), (300, 0), (0, -300), (-300, 0)]))) == 4
+
+
+def test_move_node_moves_the_point_and_its_handles():
+    square = rect(0, 0, 100, 100)
+    corner = next(n for n in nodes(square) if (n.x, n.y) == (100, 100))
+    moved = move_node(square, corner.index, 50, 0)
+    assert {(n.x, n.y) for n in nodes(moved)} == {(0, 0), (100, 0), (150, 100), (0, 100)}
+    assert math.isclose(moved.area, 100 * 100 + 50 * 100 / 2)
+    disc = circle(0, 0, 100)
+    top = next(n for n in nodes(disc) if n.y > 99)
+    taller = move_node(disc, top.index, 0, 50)
+    assert math.isclose(taller.bounds.y1, 150, abs_tol=0.01) and taller.area > disc.area
+    assert taller.anchor_count() == 4  # the handles moved with the node, no new segment
+    with pytest.raises(ValueError, match="no node 9"):
+        move_node(square, 9, 1, 1)
+    with pytest.raises(ValueError, match="no node -1"):
+        move_node(square, -1, 1, 1)
+    with pytest.raises(ValueError, match="no node 0; the shape has 0 nodes"):
+        delete_node(Shape.empty(), 0)
+
+
+def test_delete_node_joins_the_neighbours():
+    square = rect(0, 0, 100, 100)
+    corner = next(n for n in nodes(square) if (n.x, n.y) == (100, 100))
+    tri = delete_node(square, corner.index)
+    assert tri.anchor_count() == 3 and math.isclose(tri.area, 5000)
+    disc = circle(0, 0, 100)
+    three = delete_node(disc, nodes(disc)[0].index)
+    assert three.anchor_count() == 3 and three.area < disc.area
+    open_curve = spline([(-300, 0), (0, 200), (300, 0)], closed=False)  # filled, so bezier closes it: three nodes, one implied line
+    with pytest.raises(ValueError, match="a contour keeps at least three nodes"):
+        delete_node(open_curve, nodes(open_curve)[1].index)
+    open_path = Shape(path_from_commands([("M", [(0.0, 0.0)]), ("L", [(100.0, 0.0)]), ("L", [(100.0, 100.0)])]))
+    with pytest.raises(ValueError, match="an open contour's endpoint cannot be deleted"):
+        delete_node(open_path, nodes(open_path)[0].index)
+    assert delete_node(open_path, nodes(open_path)[1].index).anchor_count() == 2
+
+
+def test_cut_splits_along_a_line_and_keeps_text_metrics():
+    square = rect(-100, -100, 200, 200)
+    left, right = cut(square, 0, -500, 0, 500)  # travelling up: left is x < 0
+    assert math.isclose(left.area, 20000) and math.isclose(right.area, 20000)
+    assert left.bounds.x1 <= 0.01 and right.bounds.x0 >= -0.01
+    whole, nothing = cut(square, 500, -500, 500, 500)  # a line that misses: everything is on the left
+    assert math.isclose(whole.area, 40000) and nothing.is_empty
+    k = glyph("K", "Fira Code", weight=700, cap_height=600)
+    top, bottom = cut(k, -500, 300, 500, 300)
+    assert hasattr(top, "cap_height") and top.cap_height == k.cap_height and bottom.area > 0
+
+
+def test_delete_node_on_a_glyph_keeps_it_a_text_shape():
+    o = glyph("O", "Fira Code", weight=700, cap_height=600)
+    first = nodes(o)[0].index
+    fewer = delete_node(o, first)
+    assert hasattr(fewer, "cap_height") and fewer.anchor_count() == o.anchor_count() - 1

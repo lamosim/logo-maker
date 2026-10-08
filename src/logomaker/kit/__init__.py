@@ -2,12 +2,17 @@
 from .concept import Meta, Params  # noqa: F401
 from .mark import Composite, Mark, Placed  # noqa: F401
 from .ops import (  # noqa: F401
+    Node,
     align,
     center,
+    cut,
+    delete_node,
     fit,
     intersect,
     mirror_x,
     mirror_y,
+    move_node,
+    nodes,
     offset,
     rotate,
     scale,
@@ -47,6 +52,7 @@ __all__ = [
     "rrect", "rrect_centered", "snap", "snap_angle", "spline", "wedge",
     "align", "center", "fit", "intersect", "mirror_x", "mirror_y", "offset", "rotate", "scale", "stroke", "subtract",
     "translate", "union", "xor",
+    "Node", "nodes", "move_node", "delete_node", "cut",
     "StrokeWidths", "compensate_stroke", "optical_center", "overshoot",
     "TextShape", "glyph", "text",
     "Composite", "Mark", "Placed", "Meta", "Params",
