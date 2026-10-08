@@ -68,8 +68,8 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 
 - `text(string, family, weight=400, cap_height=200, tracking=0, kern=None, features=("kern", "liga"), italic=False)` returns a `TextShape`: shaped by HarfBuzz, outlined by fontTools, baseline at y = 0, starting at x = 0, capitals `cap_height` tall.
 - `glyph(char, family, weight=400, cap_height=200, italic=False)` is one letter, with no OpenType features.
-- `TextShape` adds `advance`, `cap_height`, `x_height`, `glyph_bounds` (one `Box` per drawn glyph, in order; a space has none), `glyph_chars` (the characters each drawn glyph covers, a ligature's several), `font` (such as "Fira Code 600") and `baseline`; transforms rescale them.
-- `wordmark_gaps(word)` lists the gap between each adjacent pair of drawn glyphs, `[{"pair": "Ke", "gap": 12.5}, ...]`, in units and negative where boxes overlap: what the audit's `spacing_rhythm` reads against the median gap.
+- `TextShape` adds `advance`, `cap_height`, `x_height`, `glyph_bounds` (one `Box` per drawn glyph, in order; a space has none), `glyph_chars` (the characters each drawn glyph covers: a ligature's several, "" for a mark drawn apart from its base, a space folded into the next glyph), `font` (such as "Fira Code 600") and `baseline`; transforms rescale them.
+- `wordmark_gaps(word)` lists the gap between each adjacent pair of drawn glyphs, `[{"pair": "Ke", "gap": 12.5}, ...]`, in units and negative where boxes overlap, between clusters within a word (a base and its combining marks measure as one; nothing is measured across a space): what the audit's `spacing_rhythm` reads against the median gap.
 - `tracking` and `kern` are in 1/1000 em, applied between clusters only; `kern={"AV": -40}` adds to the font's own kerning for that pair.
 - `features` is the exact set applied: HarfBuzz's default kern, liga, calt and clig are off unless listed, and a stylistic set can be listed (Fira Code has `ss01` to `ss10`).
 - A variable font draws any weight in its range, clamping outside it (Fira Code: 300 to 700); a static family uses its nearest weight file. A missing character exits 2, an uncached family 3 [code].

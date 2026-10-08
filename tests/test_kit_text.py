@@ -171,3 +171,19 @@ def test_wordmark_gaps_name_each_pair(project_root):
     assert [g["pair"] for g in gaps] == ["Ke", "ey", "ys", "st", "to", "on", "ne"]
     assert all(isinstance(g["gap"], float) for g in gaps)
     assert wordmark_gaps(text("K", "Fira Code", cap_height=200)) == []
+
+
+def test_wordmark_gaps_skip_the_space_between_words(project_root):
+    word = text("Clear Ledger", "Fira Code", weight=600, cap_height=200)
+    assert "".join(word.glyph_chars) == "Clear Ledger" and len(word.glyph_chars) == len(word.glyph_bounds)
+    pairs = [g["pair"] for g in wordmark_gaps(word)]
+    assert pairs == ["Cl", "le", "ea", "ar", "Le", "ed", "dg", "ge", "er"]  # nothing across the space
+
+
+def test_wordmark_gaps_keep_a_combining_mark_with_its_base(project_root):
+    word = text("n̈o", "Fira Code", weight=600, cap_height=200)  # n + combining diaeresis, drawn as two glyphs
+    assert len(word.glyph_bounds) == 3 and word.glyph_chars == ["n̈", "", "o"]
+    gaps = wordmark_gaps(word)
+    assert [g["pair"] for g in gaps] == ["n̈o"]
+    base, o = word.glyph_bounds[0], word.glyph_bounds[2]
+    assert gaps[0]["gap"] > 0 and gaps[0]["gap"] <= round(o.x0 - base.x1, 2)  # the cluster's box, base and mark together

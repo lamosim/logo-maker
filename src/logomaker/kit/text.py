@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import unicodedata
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -110,7 +111,7 @@ class TextShape(Shape):
         self.cap_height = cap_height
         self.x_height = x_height
         self.glyph_bounds = glyph_bounds
-        self.glyph_chars = list(glyph_chars or [])  # the characters each drawn glyph covers, in glyph_bounds order
+        self.glyph_chars = list(glyph_chars or [])  # the characters each drawn glyph covers, in glyph_bounds order (see text())
         self.font = font
         self.baseline = baseline
 
@@ -153,7 +154,10 @@ def text(
     between a base and its marks; `kern` values (e.g. {"AV": -40}) are added to the font's own kerning. A variable
     font's weight is clamped to its wght axis range; a static font ignores it (`font_path` already picked the nearest
     weight's file). `font` names what was drawn: the family, the weight used and "italic" only for an italic file.
-    A character the font has no glyph for raises CliError.
+    A character the font has no glyph for raises CliError. `glyph_chars` gives each drawn glyph the text of its
+    cluster: a ligature's several characters; "" for a further glyph of a cluster already covered (a combining mark
+    drawn on its own); an inkless cluster such as a space goes to the next drawn glyph (trailing ones to the last), so
+    the joined list is the string.
     """
     ff = fontlib.font_path(project(), family, weight, italic)
     tt = _ttfont(str(ff.path))
@@ -184,16 +188,22 @@ def text(
         raise CliError(f"Font family {family!r} has no glyph for {', '.join(map(repr, missing))}; "
                        "choose a family that covers them")
     track_units = tracking / 1000 * metrics.upem
+    starts = sorted({info.cluster for info in infos}) + [len(string)]
+    cluster_text = {c: string[c:starts[k + 1]] for k, c in enumerate(starts[:-1])}
+    pending, covered = "", set()  # text not yet given to a drawn glyph; clusters already given out
     for i, (info, pos) in enumerate(zip(infos, positions)):
         pen = _SkiaPen(glyph_set)
         tp = TransformPen(pen, (scale, 0, 0, scale, (x + pos.x_offset) * scale, pos.y_offset * scale))
         glyph_set[order[info.codepoint]].draw(tp)
+        if info.cluster not in covered:
+            pending += cluster_text[info.cluster]
+            covered.add(info.cluster)
         if not pen.path.isEmpty():
             r = pen.path.computeTightBounds()
             bounds.append(Box(r.left(), r.top(), r.right(), r.bottom()))
             path.addPath(pen.path)
-            nxt = infos[i + 1].cluster if i + 1 < len(infos) else len(string)
-            chars.append(string[info.cluster:nxt] if nxt > info.cluster else string[info.cluster])
+            chars.append(pending)
+            pending = ""
         advance = float(pos.x_advance)
         if i + 1 < len(infos) and infos[i + 1].cluster != info.cluster:  # between clusters, never inside one
             nxt = infos[i + 1].cluster
@@ -201,6 +211,8 @@ def text(
             if kern:  # keyed by the two characters either side of the cluster boundary
                 advance += kern.get(string[nxt - 1] + string[nxt], 0.0) / 1000 * metrics.upem
         x += advance
+    if pending and chars:  # trailing inkless text (a final space) belongs to the last drawn glyph
+        chars[-1] += pending
     try:  # merge overlapping contours, then wind them for fill-rule nonzero
         outline = normalize_winding(skia.Simplify(path))
     except RuntimeError:  # skia-python raises when pathops fails; keep the unmerged outlines
@@ -216,15 +228,40 @@ def text(
     )
 
 
+def _last_grapheme(s: str) -> str:
+    """The last base character of `s` with the combining marks after it ("n" + diaeresis stays whole)."""
+    i = len(s) - 1
+    while i > 0 and unicodedata.combining(s[i]):
+        i -= 1
+    return s[i:]
+
+
+def _first_grapheme(s: str) -> str:
+    i = 1
+    while i < len(s) and unicodedata.combining(s[i]):
+        i += 1
+    return s[:i]
+
+
 def wordmark_gaps(word: TextShape) -> list[dict]:
-    """The gap between each adjacent pair of drawn glyphs, in units, named by the characters either side ("Ke"): what
-    the wordmark sheet draws and the spacing_rhythm audit reads. Negative when kerned boxes overlap."""
+    """The gap between each adjacent pair of clusters within a word, in units, named by the characters either side
+    ("Ke"): what the wordmark sheet draws and the spacing_rhythm audit reads. Negative when kerned boxes overlap.
+
+    A cluster is the shaper's: a base and its combining marks measure as one box ("n" + diaeresis then "o" is one
+    pair), and a ligature is one cluster. A pair with whitespace between it (the space between two words) is skipped.
+    """
+    clusters: list[tuple[Box, str]] = []
+    for i, box in enumerate(word.glyph_bounds):
+        chars = word.glyph_chars[i] if i < len(word.glyph_chars) else str(i + 1)
+        if chars == "" and clusters:  # a further glyph of the cluster before it
+            clusters[-1] = (Box.union([clusters[-1][0], box]), clusters[-1][1])
+        else:
+            clusters.append((box, chars))
     gaps = []
-    for i in range(len(word.glyph_bounds) - 1):
-        a, b = word.glyph_bounds[i], word.glyph_bounds[i + 1]
-        left = word.glyph_chars[i][-1] if i < len(word.glyph_chars) else str(i + 1)
-        right = word.glyph_chars[i + 1][0] if i + 1 < len(word.glyph_chars) else str(i + 2)
-        gaps.append({"pair": left + right, "gap": round(float(b.x0 - a.x1), 2)})
+    for (a, left), (b, right) in zip(clusters, clusters[1:]):
+        if any(c.isspace() for c in right):  # the inkless space went to the cluster after it: a word break
+            continue
+        gaps.append({"pair": _last_grapheme(left) + _first_grapheme(right), "gap": round(float(b.x0 - a.x1), 2)})
     return gaps
 
 
