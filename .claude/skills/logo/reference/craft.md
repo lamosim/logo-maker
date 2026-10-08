@@ -43,7 +43,7 @@ The research gives the direction of each correction, not its size; the kit's 1.5
 
 ## Construction checklist
 
-The fourteen-item craft checklist [05 §5.4], with where each item is settled:
+The fourteen-item craft checklist [05 §5.4], plus the routes item, with where each item is settled:
 
 - [ ] One idea per mark, said in one sentence without the word "represents" (`META.idea`)
 - [ ] 30 or more thumbnails before any vector; 3 to 5 directions picked, 2 to 3 developed, 1 to 3 presented (here: 12 to 20 ideas in concepts/ideas.md, 5 to 8 directions, 3 to 5 survivors [spec §4.5])

@@ -63,6 +63,7 @@ You score first, before the critic sheet exists; the critic never sees your card
 
 - Where your score and the critic's differ by `critic.DISAGREEMENT` (2) or more, add a `reconciled` entry to your `scorecard.json`: `{"<criterion>": "<one line: whose score stands and why>"}`. A difference of one needs nothing.
 - A `clear` gap of two is expected, since your score rests on the web search by description (the knock-out, scorecard.md) and the critic's on memory alone: reconcile it by citing that search, what you searched for and what it found.
+- A `distinctive` the probe caps (scorecard.md) against a higher critic score is reconciled by citing the probe: its query and hit count. The cap is yours alone; the critic never sees the probe and never applies it.
 - You may change your own score after reading the critic's evidence; then say so in the entry. You never edit `critic.json`: the merge writes it, and the gates read it as the critic left it.
 - The gate criteria stay yours. The critic informs the gate; it does not own it. A critic's 2 on `legible` against your 4 is a reason to look again at the ladder, then to lower your score or say in one line why 4 stands.
 - `uv run logomaker sheet concepts <slug> --concepts <a,b,c>` refuses a survivor whose `critic.json` is missing, invalid or stale, or whose scorecard leaves a disagreement of two or more without a `reconciled` entry; each refusal names the command that clears it. `brand advance --to refinement` applies the same rule to the chosen concept [code].

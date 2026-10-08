@@ -38,11 +38,11 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
 
 ## Routes and the probe
 
-Seven routes name how a concept gets from the one idea to a drawing [spec 2026-10-08 §6.1]: `object` (the thing itself), `abstraction` (the thing reduced past recognition), `letterform` (a letter of the name), `negative-space` (a second figure in a counter or gap), `type-quirk` (the wordmark with one or two owned moves), `system` (a repeated element or a rule that makes the mark), `metaphor-2` (two steps from the idea, not its obvious object). `object` is the literal route; the other six are non-literal. Every line of `concepts/ideas.md` carries its route in brackets, the ideas cover at least five routes, the directions built cover at least three, and at least one survivor on the concept sheet is non-literal: `sheet concepts` refuses a sheet whose survivors all take `object` [code].
+Seven routes name how a concept gets from the one idea to a drawing [spec 2026-10-08 §6.1]: `object` (the thing itself), `abstraction` (the thing reduced past recognition), `letterform` (a letter of the name), `negative-space` (a second figure in a counter or gap), `type-quirk` (the wordmark with one or two owned moves), `system` (a repeated element or a rule that makes the mark), `metaphor-2` (two steps from the idea, not its obvious object). `object` is the literal route; the other six are non-literal. Every line of `concepts/ideas.md` carries its route in brackets and its motifs, as in `- [negative-space] an invoice whose fold forms a K (motifs: paper, fold, K)`; the ideas cover at least five routes, the directions built cover at least three, and at least one survivor on the concept sheet is non-literal: `sheet critic` (for survivors, not `--final`) and `sheet concepts` refuse a sheet whose survivors all take `object` [code].
 
-The obviousness probe keeps criterion 2 honest [spec 2026-10-08 §6.2]. Before building a direction, image-search "<motif> logo" (the construction's plain noun: "arch keystone logo") and count, among the first twenty results, those showing the same construction. Record it in the card as `probe` with the query, the count and the date; the evidence line for `distinctive` cites it. The schema caps `distinctive`: with 3 or more hits it is capped at 3, with 8 or more capped at 2, and a card scoring above its cap is rejected with the cap in the message [code]. The critic is never told the probe.
+The obviousness probe keeps criterion 2 honest [spec 2026-10-08 §6.2]. Before building a direction, image-search "<motif> logo" (the construction's plain noun: "arch keystone logo") and count, among the first twenty results, those showing the same construction. Use Firecrawl image search (`sources: ["images"]`) when available, else Google Images through the Chrome extension, else a plain web search for the same query, counting the first twenty results that show or describe the construction; name the tool in brackets at the end of the `query` ("arch keystone logo [firecrawl-images]"). Record it in the card as `probe` with the query, the count and the date; the evidence line for `distinctive` cites it. The schema caps `distinctive`: with 3 or more hits it is capped at 3, with 8 or more capped at 2, and a card scoring above its cap is rejected with the cap in the message [code]. The critic is never told the probe.
 
-Every card records both: `sheet concepts` and `brand advance --to refinement` refuse a scorecard without `route` and `probe` (`registry.passing_scorecard`), and `brand advance --to package` refuses a `final/scorecard.json` without them [code]. The final card carries the chosen concept's route and probe forward, with a fresh probe if refinement changed the construction.
+Every card records both: `sheet concepts` and `brand advance --to refinement` refuse a scorecard without `route` and `probe` (`registry.passing_scorecard`), and `brand advance --to package` and `package build` refuse a `final/scorecard.json` without them [code]. The final card carries the chosen concept's route and probe forward, with a fresh probe if refinement changed the construction.
 
 ## Gate
 
@@ -74,12 +74,12 @@ Every card records both: `sheet concepts` and `brand advance --to refinement` re
   "kill": false,
   "reason": "",
   "reconciled": {"distinctive": "the critic read the O as a stock ring; at 16 px the square hole is what reads, so 4 stands"},
-  "route": "object",
-  "probe": {"query": "socket O logo", "hits": 1, "date": "2026-10-09"}
+  "route": "letterform",
+  "probe": {"query": "socket O logo [firecrawl-images]", "hits": 1, "date": "2026-10-09"}
 }
 ```
 
-`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format, with the chosen concept's `route` and `probe` carried forward (a fresh probe if the construction changed); `brand advance --to package` refuses it without both, and it and `package build` read its `reconciled` entries against `final/critic.json` [code].
+`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format, with the chosen concept's `route` and `probe` carried forward (a fresh probe if the construction changed); `brand advance --to package` and `package build` refuse it without both, and they and `package build` read its `reconciled` entries against `final/critic.json` [code].
 
 A killed card keeps every score:
 
@@ -91,10 +91,10 @@ A killed card keeps every score:
   "kill": true,
   "reason": "cannot pass legible within four rounds",
   "route": "letterform",
-  "probe": {"query": "interlocking O logo", "hits": 4, "date": "2026-10-09"}
+  "probe": {"query": "interlocking O logo [firecrawl-images]", "hits": 4, "date": "2026-10-09"}
 }
 ```
 
 ## Sources
 
-01 §4 (Haviv's three criteria, Rand's seven questions, Bierut, Collins rule 34, Romaniuk's grid, Interbrand, the composite scorecard), §1.1 (CGH's knock-out before presenting); 05 §5.1 (the masters' tests); spec §3.3, §8.1, §8.2; code: `schemas.Scorecard`, `schemas.ROUTES`, `schemas.Probe`, `schemas.distinctive_cap`, `schemas.CRITERIA`, `schemas.GATE`, `schemas.GATE_MIN`, `registry.passing_scorecard`, `registry.vetted_scorecard`, `registry.require_final_critic`, `sheets.concepts_sheet`, `registry._check_final`; spec 2026-10-08 §3.3, §6.1, §6.2.
+01 §4 (Haviv's three criteria, Rand's seven questions, Bierut, Collins rule 34, Romaniuk's grid, Interbrand, the composite scorecard), §1.1 (CGH's knock-out before presenting); 05 §5.1 (the masters' tests); spec §3.3, §8.1, §8.2; code: `schemas.Scorecard`, `schemas.ROUTES`, `schemas.Probe`, `schemas.distinctive_cap`, `schemas.CRITERIA`, `schemas.GATE`, `schemas.GATE_MIN`, `registry.passing_scorecard`, `registry.vetted_scorecard`, `registry.require_final_critic`, `sheets.concepts_sheet`, `sheets.critic_sheet`, `registry._check_final`; spec 2026-10-08 §3.3, §6.1, §6.2.

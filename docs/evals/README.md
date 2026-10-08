@@ -32,7 +32,7 @@ Cycles: `baseline` (after the blind critic, before the kit and ideation work), `
 
 ## Results
 
-A row per brief and cycle. Single runs are noisy: read the direction across cycles, and treat a change under one point on one criterion as no finding. The "Critic distinctive/total (chosen)" columns come from the concept-stage `critic.json` of the chosen concept, not from `final/critic.json` (which the report's `final critic` row gives). Minutes are the report's wall clock.
+A row per brief and cycle. Single runs are noisy: read the direction across cycles, and treat a change under one point on one criterion as no finding. The "Critic distinctive/total (chosen)" columns come from the concept-stage `critic.json` of the chosen concept, not from `final/critic.json` (which the report's `final critic` row gives). "Non-literal survivors" counts the concepts on `sheets/concepts.png` whose scorecard `route` is not `object`, read from the kept `concepts/*/scorecard.json` of the concepts shown on the sheet. Minutes are the report's wall clock.
 
 | Brief | Cycle | Critic `distinctive` (chosen) | Critic total (chosen) | Non-literal survivors | Gate regressions | Minutes |
 |---|---|---|---|---|---|---|
