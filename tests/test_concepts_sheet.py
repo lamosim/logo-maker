@@ -17,7 +17,7 @@ from logomaker.kit.text import text
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.render import fit_box
-from logomaker.schemas import CRITERIA, Scorecard
+from logomaker.schemas import CRITERIA, ROUTES, Probe, Scorecard, distinctive_cap
 from tests.conftest import (
     REPO,
     StubChrome,
@@ -88,6 +88,30 @@ def test_scorecard_validation_and_gate():
         Scorecard.model_validate({"scores": {c: 6 for c in CRITERIA}})
     with pytest.raises(ValidationError, match="scores missing: distinctive, simple, legible"):
         Scorecard.model_validate({"scores": {"appropriate": 4}})
+
+
+def test_distinctive_cap_steps_with_the_probe_hits():
+    assert [distinctive_cap(h) for h in (0, 2, 3, 7, 8, 20)] == [5, 5, 3, 3, 2, 2]
+
+
+def test_scorecard_route_and_probe():
+    probe = {"query": "arch keystone logo", "hits": 3, "date": "2026-10-09"}
+    card = Scorecard.model_validate({**scorecard(distinctive=3), "route": "object", "probe": probe})
+    assert card.route == "object" and card.probe == Probe(**probe)
+    capped_at_3 = r"distinctive is capped at 3 by the probe \(3 of 20 first-page results show the construction\)"
+    with pytest.raises(ValidationError, match=capped_at_3):
+        Scorecard.model_validate({**scorecard(distinctive=4), "route": "object", "probe": probe})
+    with pytest.raises(ValidationError, match="distinctive is capped at 2"):
+        Scorecard.model_validate({**scorecard(distinctive=3), "route": "object", "probe": {**probe, "hits": 8}})
+    uncapped = Scorecard.model_validate({**scorecard(distinctive=5), "route": "abstraction", "probe": {**probe, "hits": 2}})
+    assert uncapped.scores["distinctive"] == 5
+    routes = "object, abstraction, letterform, negative-space, type-quirk, system, metaphor-2"
+    with pytest.raises(ValidationError, match=f"route must be one of {routes}"):
+        Scorecard.model_validate({**scorecard(), "route": "Negative_space", "probe": probe})
+    with pytest.raises(ValidationError, match="hits"):
+        Scorecard.model_validate({**scorecard(), "route": "object", "probe": {**probe, "hits": 21}})
+    assert Scorecard.model_validate(scorecard()).route is None  # legacy cards still load; the gate decides
+    assert len(ROUTES) == 7
 
 
 def test_neighbour_icons_are_generated_and_distinct():

@@ -267,20 +267,53 @@ def check_scores(scores: dict[str, int]) -> None:
         raise ValueError(f"scores must be 1..5: {bad}")
 
 
+ROUTES = ("object", "abstraction", "letterform", "negative-space", "type-quirk", "system", "metaphor-2")  # spec 2026-10-08 §6.1
+LITERAL_ROUTE = "object"
+PROBE_CAPS = ((8, 2), (3, 3))  # first-page hits at or above the threshold cap `distinctive` at the value
+
+
+def distinctive_cap(hits: int) -> int:
+    """The most `distinctive` may score after an obviousness probe found `hits` of twenty first-page results showing the
+    construction: 2 from 8 hits, 3 from 3, else 5."""
+    for threshold, cap in PROBE_CAPS:
+        if hits >= threshold:
+            return cap
+    return 5
+
+
+class Probe(BaseModel):
+    """The obviousness probe: an image search for "<motif> logo", and how many of its first twenty results show the
+    same construction (spec 2026-10-08 §6.2)."""
+
+    query: str
+    hits: int = Field(ge=0, le=20)
+    date: str
+
+
 class Scorecard(BaseModel):
     """<concept>/scorecard.json: Claude's ten scores (spec 8.2), each 1 to 5, with evidence, whether the concept is killed,
-    and `reconciled`: for each criterion the blind critic's card disagrees on by two or more, one line saying whose score
-    stands and why (spec 2026-10-08 §3.3)."""
+    `reconciled`: for each criterion the blind critic's card disagrees on by two or more, one line saying whose score
+    stands and why (spec 2026-10-08 §3.3), `route`: which of ROUTES the concept took (§6.1), and `probe`: the obviousness
+    probe, whose hits cap `distinctive` (§6.2)."""
 
     scores: dict[str, int]
     evidence: dict[str, str] = Field(default_factory=dict)
     kill: bool = False
     reason: str = ""
     reconciled: dict[str, str] = Field(default_factory=dict)
+    route: str | None = None
+    probe: Probe | None = None
 
     @model_validator(mode="after")
     def complete_and_in_range(self) -> Scorecard:
         check_scores(self.scores)
+        if self.route is not None and self.route not in ROUTES:
+            raise ValueError(f"route must be one of {', '.join(ROUTES)}, got {self.route!r}")
+        if self.probe is not None:
+            cap = distinctive_cap(self.probe.hits)
+            if self.scores["distinctive"] > cap:
+                raise ValueError(f"distinctive is capped at {cap} by the probe ({self.probe.hits} of 20 first-page results "
+                                 "show the construction)")
         return self
 
     @property
