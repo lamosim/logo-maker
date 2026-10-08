@@ -33,6 +33,7 @@ Every primitive returns a `Shape` and takes `free=False`.
 | `line(x1, y1, x2, y2, width, cap="butt")` | a stroked segment |
 | `polyline(points, width, cap="butt", join="miter")` | a stroked open path; joins `miter`, `round`, `bevel` |
 | `bezier(points, width=None, closed=False)` | a cubic chain p0, c1, c2, p1, ... (1 + 3k points): filled when `width` is None, else stroked with round joins |
+| `brush(points, widths, cap="round")` | a variable-width stroke along a `bezier` chain; `widths` per on-curve node, or one |
 
 `snap(value, step=0.25)` and `snap_angle(angle, step=15)` do the snapping.
 

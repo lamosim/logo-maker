@@ -5,6 +5,7 @@ import pytest
 from logomaker.kit.primitives import (
     arc,
     bezier,
+    brush,
     circle,
     line,
     polygon,
@@ -125,3 +126,62 @@ def test_non_positive_widths_are_rejected():
         arc(0, 0, 100, 0, 90, 0)
     with pytest.raises(ValueError, match="ring width must be positive"):
         ring(0, 0, 100, 0.1)  # snaps to 0
+
+
+S_CURVE = [(-400, -200), (-200, 300), (200, -300), (400, 200)]  # one cubic: p0 c1 c2 p1
+WAVE = [(-400, 0), (-300, 200), (-100, 200), (0, 0), (100, -200), (300, -200), (400, 0)]  # two cubics, three nodes
+
+
+def test_brush_with_a_constant_width_matches_the_stroked_bezier():
+    constant = brush(S_CURVE, 60, cap="butt")
+    stroked = bezier(S_CURVE, width=60)
+    assert math.isclose(constant.area, stroked.area, rel_tol=0.03)
+
+
+def test_brush_widths_are_one_per_node_and_the_stroke_swells_between_them():
+    swelling = brush(WAVE, [20, 120, 20], cap="butt")
+    thin = brush(WAVE, [20, 20, 20], cap="butt")
+    assert swelling.area > 2 * thin.area
+    assert swelling.bounds.h > thin.bounds.h + 40  # the middle node is 120 wide where the thin one is 20
+    with pytest.raises(ValueError, match=r"brush needs one width per on-curve point \(3\), got 2"):
+        brush(WAVE, [20, 120])
+    with pytest.raises(ValueError, match="widths must be positive"):
+        brush(WAVE, [20, 0, 20])
+
+
+def test_brush_keeps_a_designers_anchor_count():
+    five_nodes = [(-400, 0), (-350, 150), (-250, 150), (-200, 0), (-150, -150), (-50, -150), (0, 0), (50, 150), (150, 150),
+                  (200, 0), (250, -150), (350, -150), (400, 0)]
+    assert brush(five_nodes, [30, 80, 30, 80, 30], cap="butt").anchor_count() < 24  # the fitted sides alone
+    assert brush(five_nodes, [30, 80, 30, 80, 30], cap="round").anchor_count() < 32  # two discs merged in
+
+
+def test_brush_caps():
+    butt = brush(S_CURVE, 60, cap="butt")
+    rounded = brush(S_CURVE, 60, cap="round")
+    square = brush(S_CURVE, 60, cap="square")
+    assert rounded.area > butt.area and square.area > rounded.area
+    assert math.isclose(rounded.area - butt.area, math.pi * 30**2, rel_tol=0.1)
+
+
+def test_brush_survives_a_tight_hook_without_slivers():
+    hook = [(0, 0), (300, 0), (300, 300), (0, 300), (-300, 300), (-300, 0), (0, 0)]  # a loop about 300 across
+    shape = brush(hook, 700, cap="butt")  # wider than twice the loop's radius: the inner side folds over itself
+    assert not shape.is_empty and shape.area > 0
+    assert all(part.area > 1 for part in shape.subpaths())  # no slivers from the folded inner side
+
+
+def test_brush_rejects_degenerate_input():
+    with pytest.raises(ValueError, match="widths must be positive"):
+        brush(S_CURVE, 0.1)  # snaps to 0
+    with pytest.raises(ValueError, match="nonzero length"):
+        brush([(5, 5)] * 4, 10)
+    with pytest.raises(ValueError, match=r"1 \+ 3k points"):
+        brush([(0, 0), (100, 0)], 10)
+    tail = brush([(0, 0), (10, 10), (20, 10), (30, 0), (30, 0), (30, 0), (30, 0)], 10, cap="butt")  # a zero-length last segment
+    assert math.isclose(tail.area, brush([(0, 0), (10, 10), (20, 10), (30, 0)], 10, cap="butt").area)
+
+
+def test_brush_bevels_a_corner_node_like_polyline():
+    corner = [(0, 0), (0, 0), (100, 0), (100, 0), (100, 0), (100, 100), (100, 100)]  # control points on their nodes
+    assert math.isclose(brush(corner, 20, cap="butt").area, polyline([(0, 0), (100, 0), (100, 100)], 20, join="bevel").area, rel_tol=1e-3)

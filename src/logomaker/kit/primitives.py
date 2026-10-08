@@ -205,3 +205,97 @@ def bezier(points: list[tuple[float, float]], width: float | None = None, closed
     if width is None:
         return _finish(path, free)
     return _finish(stroked_path(path, _v(width, free), "butt", "round"), free)
+
+
+BRUSH_STEPS = 24  # samples per cubic segment when offsetting a brush's sides
+
+Sample = tuple[tuple[float, float], float, tuple[float, float]]  # a centreline point, the width there, the unit tangent
+
+
+def _brush_segment(cubic: tuple, w0: float, w1: float) -> list[Sample]:
+    """BRUSH_STEPS + 1 samples along one cubic, t = 0 to 1, the width running linearly by arc length from w0 to w1; [] for
+    a segment of zero length. Tangents come from the derivative, or from neighbouring points where a control point sits on
+    its node and the derivative vanishes."""
+    from .fit import _derivative_at, cubic_at
+
+    ts = [i / BRUSH_STEPS for i in range(BRUSH_STEPS + 1)]
+    points = [cubic_at(cubic, t) for t in ts]
+    lengths = [0.0]
+    for a, b in zip(points, points[1:]):
+        lengths.append(lengths[-1] + math.dist(a, b))
+    if lengths[-1] < 1e-6:  # a segment of (nearly) one point; the Bernstein sum leaves float noise, not exact zeros
+        return []
+    samples = []
+    for t, p, length in zip(ts, points, lengths):
+        d = _derivative_at(cubic, t)
+        if math.hypot(*d) < 1e-9:
+            a, b = cubic_at(cubic, max(t - 1e-3, 0.0)), cubic_at(cubic, min(t + 1e-3, 1.0))
+            d = (b[0] - a[0], b[1] - a[1])
+        size = math.hypot(*d)
+        samples.append((p, w0 + (w1 - w0) * length / lengths[-1], (d[0] / size, d[1] / size)))
+    return samples
+
+
+def brush(points: list[tuple[float, float]], widths: float | list[float], cap: str = "round", free: bool = False) -> Shape:
+    """A stroke of varying width along a cubic chain (`points` as for bezier: 1 + 3k points). `widths` is one width per
+    on-curve node, interpolated linearly by arc length between nodes, or one number for all. Each segment's sides are
+    sampled, offset along the normals and fitted back to cubics (kit.fit), so the result keeps a designer's anchor count,
+    with anchors on the nodes; where a side folds (a width over twice the local radius) Simplify resolves the overlap and
+    slivers are dropped. Caps: round (discs at the ends), square (half a width beyond each end), butt."""
+    from .fit import fit_cubics
+    from .ops import union
+
+    if len(points) < 4 or (len(points) - 1) % 3 != 0:
+        raise ValueError("brush needs 1 + 3k points")
+    nodes = (len(points) - 1) // 3 + 1
+    if isinstance(widths, (int, float)):
+        widths = [float(widths)] * nodes
+    widths = [float(w) for w in widths]
+    if len(widths) != nodes:
+        raise ValueError(f"brush needs one width per on-curve point ({nodes}), got {len(widths)}")
+    if cap not in CAPS:
+        raise ValueError(f"cap must be one of {sorted(CAPS)}, got {cap!r}")
+    widths = [_v(w, free) if math.isfinite(w) else w for w in widths]
+    if any(not math.isfinite(w) or w <= 0 for w in widths):  # checked after snapping, which can round a width to 0
+        raise ValueError("brush widths must be positive")
+    pts = [(_v(x, free), _v(y, free)) for x, y in points]
+    segments = [_brush_segment(tuple(pts[3 * k:3 * k + 4]), widths[k], widths[k + 1]) for k in range(nodes - 1)]
+    segments = [s for s in segments if s]
+    if not segments:
+        raise ValueError("brush needs a path of nonzero length")
+    # Each segment's sides are fitted on their own: the width's slope changes at a node, so the sides have a slight
+    # corner there (a real one where the chain has a corner), and an anchor on the node is where a designer puts it.
+    left = [fit_cubics([(p[0] - t[1] * w / 2, p[1] + t[0] * w / 2) for p, w, t in s]) for s in segments]
+    right = [fit_cubics([(p[0] + t[1] * w / 2, p[1] - t[0] * w / 2) for p, w, t in reversed(s)]) for s in reversed(segments)]
+    path = skia.Path()
+    current = left[0][0][0]
+    path.moveTo(*current)
+    for piece in left + right:
+        if piece[0][0] != current:
+            path.lineTo(*piece[0][0])  # across the end of the stroke, or a bevel at a corner node
+        for c in piece:
+            path.cubicTo(*c[1], *c[2], *c[3])
+        current = piece[-1][3]
+    path.close()
+    body = Shape(normalize_winding(_drop_slivers(normalize_winding(skia.Simplify(path)))))
+    if cap == "butt":
+        return _finish(body.path, free)
+    (start, _, (sx, sy)), (end, _, (ex, ey)) = segments[0][0], segments[-1][-1]
+    extras = []
+    for (x, y), w, (tx, ty) in ((start, widths[0], (-sx, -sy)), (end, widths[-1], (ex, ey))):  # tangents pointing outwards
+        if cap == "round":
+            extras.append(circle(x, y, w / 2, free=True))
+        else:
+            extras.append(line(x, y, x + tx * w / 2, y + ty * w / 2, w, cap="butt", free=True))
+    return _finish(union(body, *extras).path, free)
+
+
+def _drop_slivers(path: skia.Path, min_area: float = 1.0) -> skia.Path:
+    """`path` without contours under `min_area` unit²: the slivers a folded brush side leaves after Simplify."""
+    from .shape import contour_nesting
+
+    out = skia.Path()
+    for contour, area, _, _ in contour_nesting(path):
+        if abs(area) >= min_area:
+            out.addPath(contour)
+    return out

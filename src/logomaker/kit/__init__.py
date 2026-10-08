@@ -21,6 +21,7 @@ from .optical import StrokeWidths, compensate_stroke, optical_center, overshoot 
 from .primitives import (  # noqa: F401
     arc,
     bezier,
+    brush,
     circle,
     line,
     polygon,
@@ -40,7 +41,7 @@ from .text import TextShape, glyph, text  # noqa: F401
 
 __all__ = [
     "Box", "Shape", "fmt", "normalize_winding",
-    "arc", "bezier", "circle", "line", "polygon", "polyline", "rect", "rect_centered", "regular_polygon", "ring",
+    "arc", "bezier", "brush", "circle", "line", "polygon", "polyline", "rect", "rect_centered", "regular_polygon", "ring",
     "rrect", "rrect_centered", "snap", "snap_angle", "wedge",
     "align", "center", "fit", "intersect", "mirror_x", "mirror_y", "offset", "rotate", "scale", "stroke", "subtract",
     "translate", "union", "xor",
