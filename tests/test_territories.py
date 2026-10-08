@@ -13,6 +13,7 @@ from logomaker.cli import main
 from logomaker.paths import project
 from logomaker.schemas import TerritoriesSpec, TerritoryShapes
 from tests.conftest import StubChrome, no_open_command, requires_chrome
+from tests.test_registry import run, write_brief
 
 
 def write_spec(project_root: Path, payload: dict) -> Path:
@@ -33,8 +34,11 @@ def test_spec_validation(territories_payload):
     spec = TerritoriesSpec.model_validate(territories_payload)
     assert [t.slug for t in spec.territories] == ["forge", "ledger"]
     bad = dict(territories_payload)
-    bad["territories"] = territories_payload["territories"][:1]
-    with pytest.raises(ValidationError):
+    bad["territories"] = []
+    with pytest.raises(ValidationError, match="at least 1 item"):
+        TerritoriesSpec.model_validate(bad)
+    bad["territories"] = territories_payload["territories"] * 2  # four is too many
+    with pytest.raises(ValidationError, match="at most 3 items"):
         TerritoriesSpec.model_validate(bad)
     bad = json.loads(json.dumps(territories_payload))
     bad["territories"][0]["fonts"] = []
@@ -196,3 +200,35 @@ def test_the_cli_opens_the_board_unless_told_not_to_and_warns_when_it_cannot(pro
     monkeypatch.setattr(subprocess, "Popen", no_open_command)
     code, payload = board()
     assert code == 0 and payload["warnings"] == [f"could not open {folder / 'board.html'}: [Errno 2] No such file or directory: 'open'"]
+
+
+def one_territory(payload: dict) -> dict:
+    return {"territories": payload["territories"][:1]}
+
+
+def test_one_territory_validates_but_the_full_track_gate_wants_two(project_root, territories_payload, brief_payload, strategy_payload):
+    spec = TerritoriesSpec.model_validate(one_territory(territories_payload))
+    assert len(spec.territories) == 1
+    run("brand", "new", "Keystone")
+    brand = project_root / "brands" / "keystone"
+    write_brief(project_root, "keystone", brief_payload)
+    (brand / "strategy.md").write_text("# Strategy\n")
+    (brand / "strategy.json").write_text(json.dumps(strategy_payload))
+    assert run("brand", "advance", "keystone", "--to", "strategy")[0] == 0
+    assert run("brand", "advance", "keystone", "--to", "territories")[0] == 0
+    (brand / "territories" / "territories.json").write_text(json.dumps(one_territory(territories_payload)))
+    run("brand", "set", "keystone", "--territory", "forge")
+    code, payload = run("brand", "advance", "keystone", "--to", "concepts")
+    assert code == 2 and ("territories/territories.json has 1 territory; the full track needs 2 or 3 (add one, or run: logomaker "
+                          "brand set keystone --track express)") in payload["missing"]
+    assert run("brand", "set", "keystone", "--track", "express")[0] == 0
+    code, payload = run("brand", "advance", "keystone", "--to", "concepts")
+    assert code == 0 and payload["brand"]["phase"] == "concepts"
+
+
+def test_the_board_renders_one_territory_on_the_express_track(project_root, territories_payload):
+    run("brand", "new", "Pip", "--express")
+    brand = project_root / "brands" / "pip"
+    (brand / "territories" / "territories.json").write_text(json.dumps(one_territory(territories_payload)))
+    info = sheets.territories_board(project(), "pip", renderer=StubChrome(), open_after=False)
+    assert info["territories"] == ["forge"]

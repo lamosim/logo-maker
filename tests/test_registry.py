@@ -387,10 +387,17 @@ def test_the_territories_gate_needs_a_valid_spec_holding_the_chosen_territory(pr
     assert registry._check_territories(brand, state) == [not_chosen]
     state = registry.set_fields(project(), "keystone", territory="ledger")
     assert registry._check_territories(brand, state) == []
-    territories_payload["territories"].pop()  # one territory is too few: the spec's own problem is the one reported
+    territories_payload["territories"].pop()  # one territory is too few for the full track, which the gate reports
     spec.write_text(json.dumps(territories_payload))
+    assert registry._check_territories(brand, state) == [
+        "territories/territories.json has 1 territory; the full track needs 2 or 3 (add one, or run: logomaker brand set keystone "
+        "--track express)"]
+    assert registry._check_territories(brand, state, current=False) == registry._check_territories(brand, state)
+    state = registry.set_fields(project(), "keystone", track="express", territory="forge")  # ledger was the one popped
+    assert registry._check_territories(brand, state) == []
+    spec.write_text(json.dumps({"territories": []}))  # none is the spec's own problem, on either track
     [problem] = registry._check_territories(brand, state)
-    assert problem.startswith("territories/territories.json is invalid: territories: List should have at least 2 items")
+    assert problem.startswith("territories/territories.json is invalid: territories: List should have at least 1 item")
 
 
 def test_load_model_returns_the_model_or_an_error_naming_the_file(project_root, territories_payload):
@@ -401,7 +408,7 @@ def test_load_model_returns_the_model_or_an_error_naming_the_file(project_root, 
     path.write_text(json.dumps({"territories": []}))
     with pytest.raises(CliError) as err:
         registry.load_model(path, TerritoriesSpec, "the spec", code=4)
-    assert err.value.code == 4 and str(err.value).startswith("the spec is invalid: territories: List should have at least 2 items")
+    assert err.value.code == 4 and str(err.value).startswith("the spec is invalid: territories: List should have at least 1 item")
     path.write_bytes(b"\xff\xfe")
     with pytest.raises(CliError, match="^the spec is not valid JSON: "):
         registry.load_model(path, TerritoriesSpec, "the spec")

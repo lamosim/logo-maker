@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 from .output import EXIT_RULE, CliError
 from .paths import CONCEPT_NAME, SLUG, ProjectPaths
 from .schemas import (
+    FULL_TERRITORIES_MIN,
     GATE,
     GATE_MIN,
     PHASE_ORDER,
@@ -279,12 +280,17 @@ def _check_strategy(brand: Path, state: BrandState, current: bool = True) -> lis
 
 
 def _check_territories(brand: Path, state: BrandState, current: bool = True) -> list[str]:
-    """territories.json must be a valid TerritoriesSpec (its slugs are slugs, and unique) that holds the chosen territory."""
+    """territories.json must be a valid TerritoriesSpec (its slugs are slugs, and unique) that holds the chosen territory, and
+    on the full track at least FULL_TERRITORIES_MIN territories."""
     path = brand / "territories" / "territories.json"
     try:
         spec = load_model(path, TerritoriesSpec, str(path.relative_to(brand)))
     except CliError as err:  # missing, malformed or invalid, named as the gate names it
         return [str(err)]
+    if state.track == "full" and len(spec.territories) < FULL_TERRITORIES_MIN:
+        count = len(spec.territories)
+        return [f"{path.relative_to(brand)} has {count} territor{'y' if count == 1 else 'ies'}; the full track needs 2 or 3 "
+                f"(add one, or run: logomaker brand set {state.slug} --track express)"]
     if state.territory not in [t.slug for t in spec.territories]:
         return [f"territory not chosen (run: logomaker brand set {state.slug} --territory <territory-slug>)"]
     return []

@@ -240,8 +240,11 @@ class Territory(BaseModel):
         return value
 
 
+FULL_TERRITORIES_MIN = 2  # the full track's territories gate; the express track's spec may hold just one
+
+
 class TerritoriesSpec(BaseModel):
-    territories: list[Territory] = Field(min_length=2, max_length=3)
+    territories: list[Territory] = Field(min_length=1, max_length=3)
 
     @field_validator("territories")
     @classmethod
