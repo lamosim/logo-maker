@@ -34,6 +34,8 @@ Every primitive returns a `Shape` and takes `free=False`.
 | `polyline(points, width, cap="butt", join="miter")` | a stroked open path; joins `miter`, `round`, `bevel` |
 | `bezier(points, width=None, closed=False)` | a cubic chain p0, c1, c2, p1, ... (1 + 3k points): filled when `width` is None, else stroked with round joins |
 | `brush(points, widths, cap="round")` | a variable-width stroke along a `bezier` chain; `widths` per on-curve node, or one |
+| `spline(points, tension=0.5, closed=True, width=None)` | a smooth Catmull-Rom curve through three or more points; `tension` 0 rounds most, 1 is straight chords; filled when `width` is None, else stroked |
+| `catmull_rom(points, tension, closed)` | the `bezier` chain `spline` draws, to edit or hand to `brush` |
 
 `snap(value, step=0.25)` and `snap_angle(angle, step=15)` do the snapping.
 

@@ -299,3 +299,32 @@ def _drop_slivers(path: skia.Path, min_area: float = 1.0) -> skia.Path:
         if abs(area) >= min_area:
             out.addPath(contour)
     return out
+
+
+def catmull_rom(points: list[tuple[float, float]], tension: float = 0.5, closed: bool = True) -> list[tuple[float, float]]:
+    """The cubic chain (1 + 3k points, as bezier takes) of a Catmull-Rom spline through `points`. `tension` 0 is the
+    uniform spline, 1 straight chords. Open splines clamp their end neighbours."""
+    n = len(points)
+    if n < 3:
+        raise ValueError("spline needs at least three points")
+    if not 0 <= tension <= 1:
+        raise ValueError(f"tension must be between 0 and 1, got {tension}")
+    k = (1 - tension) / 6
+    segments = n if closed else n - 1
+
+    def at(i: int) -> tuple[float, float]:
+        return points[i % n] if closed else points[min(max(i, 0), n - 1)]
+
+    chain = [points[0]]
+    for i in range(segments):
+        p0, p1, p2, p3 = at(i - 1), at(i), at(i + 1), at(i + 2)
+        c1 = (p1[0] + (p2[0] - p0[0]) * k, p1[1] + (p2[1] - p0[1]) * k)
+        c2 = (p2[0] - (p3[0] - p1[0]) * k, p2[1] - (p3[1] - p1[1]) * k)
+        chain += [c1, c2, p2]
+    return chain
+
+
+def spline(points: list[tuple[float, float]], tension: float = 0.5, closed: bool = True, width: float | None = None,
+           free: bool = False) -> Shape:
+    """A smooth curve through `points` (catmull_rom): filled when `width` is None, else stroked, as bezier draws it."""
+    return bezier(catmull_rom(points, tension, closed), width=width, closed=closed, free=free)

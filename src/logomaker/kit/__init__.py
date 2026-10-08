@@ -22,6 +22,7 @@ from .primitives import (  # noqa: F401
     arc,
     bezier,
     brush,
+    catmull_rom,
     circle,
     line,
     polygon,
@@ -34,6 +35,7 @@ from .primitives import (  # noqa: F401
     rrect_centered,
     snap,
     snap_angle,
+    spline,
     wedge,
 )
 from .shape import Box, Shape, fmt, normalize_winding  # noqa: F401
@@ -41,8 +43,8 @@ from .text import TextShape, glyph, text  # noqa: F401
 
 __all__ = [
     "Box", "Shape", "fmt", "normalize_winding",
-    "arc", "bezier", "brush", "circle", "line", "polygon", "polyline", "rect", "rect_centered", "regular_polygon", "ring",
-    "rrect", "rrect_centered", "snap", "snap_angle", "wedge",
+    "arc", "bezier", "brush", "catmull_rom", "circle", "line", "polygon", "polyline", "rect", "rect_centered", "regular_polygon", "ring",
+    "rrect", "rrect_centered", "snap", "snap_angle", "spline", "wedge",
     "align", "center", "fit", "intersect", "mirror_x", "mirror_y", "offset", "rotate", "scale", "stroke", "subtract",
     "translate", "union", "xor",
     "StrokeWidths", "compensate_stroke", "optical_center", "overshoot",

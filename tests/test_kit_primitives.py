@@ -6,6 +6,7 @@ from logomaker.kit.primitives import (
     arc,
     bezier,
     brush,
+    catmull_rom,
     circle,
     line,
     polygon,
@@ -17,6 +18,7 @@ from logomaker.kit.primitives import (
     rrect,
     snap,
     snap_angle,
+    spline,
     wedge,
 )
 
@@ -185,3 +187,27 @@ def test_brush_rejects_degenerate_input():
 def test_brush_bevels_a_corner_node_like_polyline():
     corner = [(0, 0), (0, 0), (100, 0), (100, 0), (100, 0), (100, 100), (100, 100)]  # control points on their nodes
     assert math.isclose(brush(corner, 20, cap="butt").area, polyline([(0, 0), (100, 0), (100, 100)], 20, join="bevel").area, rel_tol=1e-3)
+
+
+DIAMOND = [(0, 300), (300, 0), (0, -300), (-300, 0)]
+
+
+def test_spline_passes_through_its_points_and_rounds_between_them():
+    leaf = spline(DIAMOND)
+    for p in DIAMOND:  # the chain's on-curve nodes are the points
+        assert any(math.dist(p, (x, y)) < 0.01 for x, y in catmull_rom(DIAMOND, 0.5, True)[::3])
+    straight = spline(DIAMOND, tension=1)
+    assert math.isclose(straight.area, 2 * 300**2, rel_tol=0.01)  # tension 1 is the polygon
+    assert leaf.area > straight.area  # the curve bulges outside the chords
+    assert leaf.anchor_count() == 4
+
+
+def test_open_spline_is_stroked_or_filled():
+    chain = catmull_rom([(-300, 0), (0, 200), (300, 0)], 0.5, False)
+    assert len(chain) == 7 and chain[0] == (-300, 0) and chain[-1] == (300, 0)
+    stroked = spline([(-300, 0), (0, 200), (300, 0)], closed=False, width=40)
+    assert stroked.area > 600 * 40 * 0.9
+    with pytest.raises(ValueError, match="spline needs at least three points"):
+        spline([(0, 0), (1, 1)])
+    with pytest.raises(ValueError, match="tension must be between 0 and 1"):
+        spline(DIAMOND, tension=2)

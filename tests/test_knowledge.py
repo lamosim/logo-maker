@@ -34,6 +34,7 @@ REF = SKILL / "reference"
 BUILDER = REPO / "scripts" / "build_reference.py"
 GENERATED = ("cliches.md", "fonts.md")  # rendered from data by BUILDER, so the data sets their length: the floor applies, not the ceiling
 MIN_WORDS, MAX_WORDS = 600, 2000
+MAX_WORDS_BY_FILE = {"kit-api.md": 3000}  # the kit's API reference grows a row with every public name
 
 REQUIRED = {
     "process.md": ["Phases and gates", "Artifacts each phase must contain", "Agency rules", "Presentation protocol", "Sources"],
@@ -183,7 +184,8 @@ def test_the_fifteen_files_have_their_frame_headings_and_length():
         assert found[-1] == "Sources" and section(text, "Sources").strip(), f"{name}: must end with a Sources section"
         words = len(text.split())
         assert words >= MIN_WORDS, f"{name}: only {words} words"
-        assert name in GENERATED or words <= MAX_WORDS, f"{name}: {words} words, over {MAX_WORDS}"
+        cap = MAX_WORDS_BY_FILE.get(name, MAX_WORDS)
+        assert name in GENERATED or words <= cap, f"{name}: {words} words, over {cap}"
 
 
 def test_heading_match_needs_the_whole_heading():
