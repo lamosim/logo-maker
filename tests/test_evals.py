@@ -41,3 +41,24 @@ def test_build_prompt_carries_the_script_and_the_rules():
     assert "evaluation mode" in prompt and "Answer 13." in prompt and "Take the quiet option." in prompt
     for rule in ("--no-open", "brand decide", "scripted:", "DONE orvane", "never wait for the owner"):
         assert rule in prompt, rule
+
+
+BRIEFS = ("orvane", "clear-ledger", "pip")
+
+
+@pytest.mark.parametrize("slug", BRIEFS)
+def test_each_brief_has_thirteen_answers_and_the_conservative_section(slug):
+    runner = load_runner()
+    text = (runner.EVALS / slug / "owner.md").read_text(encoding="utf-8")
+    assert len(runner.answers(text, f"{slug}/owner.md")) == 13
+    assert "## Conservative answers" in text
+    assert "the critic" in text  # answer 12 chooses the survivor the critic preferred
+
+
+def test_readme_lists_every_brief_and_the_cycles():
+    text = (REPO / "docs" / "evals" / "README.md").read_text(encoding="utf-8")
+    for slug in BRIEFS:
+        assert f"`{slug}`" in text
+    for cycle in ("baseline", "kit", "ideation", "final"):
+        assert cycle in text
+    assert "scripts/eval_brand.py" in text
