@@ -4,6 +4,8 @@ import pytest
 import skia
 
 from logomaker.kit.ops import (
+    _emit,
+    _parse,
     align,
     center,
     cut,
@@ -315,3 +317,23 @@ def test_delete_node_on_a_glyph_keeps_it_a_text_shape():
     first = nodes(o)[0].index
     fewer = delete_node(o, first)
     assert hasattr(fewer, "cap_height") and fewer.anchor_count() == o.anchor_count() - 1
+
+
+def test_cut_counts_a_free_segment_only_for_an_off_grid_line():
+    square = rect(-100, -100, 200, 200)
+    top, bottom = cut(square, -500, 25, 500, 25)  # horizontal, through a grid point
+    assert top.free_segments == 0 and bottom.free_segments == 0
+    dx, dy = math.cos(math.radians(20)), math.sin(math.radians(20))
+    left, right = cut(square, 0, 0, dx, dy)  # 20 degrees is off the 15-degree step
+    assert left.free_segments == 1 and right.free_segments == 1
+    whole, nothing = cut(left, 500, -500, 500, 500)  # misses: the whole side keeps its count, the empty side has none
+    assert whole.free_segments == 1 and nothing.free_segments == 0 and nothing.is_empty
+    again, _ = cut(top, 0, -500, 0, 500)
+    assert again.free_segments == 0  # grid cuts never accumulate
+    with pytest.raises(ValueError, match="cut needs two distinct points"):
+        cut(square, 10, 10, 10, 10)
+
+
+def test_parse_and_emit_round_trip_a_primitive_exactly():
+    for shape in (rect(0, 0, 100, 50), polygon([(0, 0), (100, 0), (50, 75)])):
+        assert list(_emit(shape, _parse(shape)).commands()) == list(shape.commands())

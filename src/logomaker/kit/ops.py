@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import skia
 
-from .primitives import rect, stroked_path
+from .primitives import rect, snap, snap_angle, stroked_path
 from .shape import Box, Point, Shape, _quad_to_cubic, _xy, contour_nesting, normalize_winding, path_from_commands
 
 
@@ -315,8 +315,11 @@ def _parse(shape: Shape) -> list[_Contour]:
 def _emit(shape: Shape, contours: list[_Contour]) -> Shape:
     commands = []
     for c in contours:
+        segs = c.segs
+        if c.closed and len(segs) > 1 and segs[-1][0] == "L" and math.dist(segs[-1][1][-1], c.start) <= 1e-6:
+            segs = segs[:-1]  # the Z draws the closing line, as the source path did
         commands.append(("M", [c.start]))
-        commands += [(kind, pts) for kind, pts in c.segs]
+        commands += [(kind, pts) for kind, pts in segs]
         if c.closed:
             commands.append(("Z", []))
     return shape._with_path(normalize_winding(path_from_commands(commands)), shape.free_segments)
@@ -341,7 +344,9 @@ def _neighbours(c: _Contour, i: int) -> tuple[tuple[str, list[Point]] | None, tu
 
 def nodes(shape: Shape) -> list[Node]:
     """The on-curve nodes in path order: each contour's start and segment ends (a closed contour's return to its start
-    counted once). `smooth` is whether the handles either side of a node are collinear with it."""
+    counted once). `smooth` is whether the handles either side of a node are collinear with it. The editing ops rebuild
+    the whole shape from these nodes, so every conic in it becomes one cubic (off by less than a snap step), and an
+    off-grid `dx`/`dy` in move_node is not counted as a free segment."""
     out: list[Node] = []
     index = 0
     for subpath, c in enumerate(_parse(shape)):
@@ -411,10 +416,26 @@ def delete_node(shape: Shape, index: int) -> Shape:
 _HALF = 100000.0  # far beyond the canvas: a half-plane for cut()
 
 
+def _on_grid(x: float, y: float, angle: float) -> bool:
+    """Whether a line through (x, y) at `angle` degrees is one a snapped primitive could draw: the point on the grid
+    `_v` snaps to and the angle a multiple of the step `_a` snaps to."""
+    return all(math.isclose(snap(v), v, abs_tol=1e-6) for v in (x, y)) and math.isclose(snap_angle(angle), angle, abs_tol=1e-6)
+
+
 def cut(shape: Shape, x1: float, y1: float, x2: float, y2: float) -> tuple[Shape, Shape]:
     """`shape` split along the line through (x1, y1) and (x2, y2): (left, right), left being the side to the left when
-    travelling from the first point to the second. A line that misses leaves one side whole and the other empty."""
+    travelling from the first point to the second. A line that misses leaves one side whole and the other empty. A
+    non-empty half counts `shape`'s free segments plus one (its cut edge) unless the line is on the grid; an empty half
+    counts none."""
+    if math.isclose(x1, x2, abs_tol=1e-9) and math.isclose(y1, y2, abs_tol=1e-9):
+        raise ValueError("cut needs two distinct points")
     angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
     left_half = translate(rotate(rect(-_HALF, 0, 2 * _HALF, _HALF, free=True), angle), x1, y1)
     right_half = translate(rotate(rect(-_HALF, -_HALF, 2 * _HALF, _HALF, free=True), angle), x1, y1)
-    return intersect(shape, left_half), intersect(shape, right_half)
+    extra = 0 if _on_grid(x1, y1, angle) else 1
+
+    def half(plane: Shape) -> Shape:
+        part = intersect(shape, plane)
+        return part._with_path(part.path, 0 if part.is_empty else shape.free_segments + extra)
+
+    return half(left_half), half(right_half)
