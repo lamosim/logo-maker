@@ -413,9 +413,9 @@ def _check_concept(brand: Path, state: BrandState, current: bool = True) -> list
 
 def _check_final(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     """final/ needs concept.py, params.json, a valid tokens.json, and an audit.json that vouches for the final mark as it
-    is now (audit_problems: present, fresh, rendered and passing); once those hold, a fresh critic card and a scorecard
-    reconciled with it (final_critic_problems); once those hold, final/knockout.json with the image knock-out and the
-    WIPO image search (knockout.knockout_problems)."""
+    is now (audit_problems: present, fresh, rendered and passing); once those hold, a final/scorecard.json that records
+    its route and probe, then a fresh critic card and a scorecard reconciled with it (final_critic_problems); once those
+    hold, final/knockout.json with the image knock-out and the WIPO image search (knockout.knockout_problems)."""
     from .color import Tokens  # imported here to keep registry import-light
 
     final = brand / "final"
@@ -427,6 +427,11 @@ def _check_final(brand: Path, state: BrandState, current: bool = True) -> list[s
     problems = missing + audit_problems(paths, state.slug, final, "final/audit.json")
     if problems:
         return problems
+    card_json = final / "scorecard.json"
+    if card_json.is_file():  # a missing or malformed card is final_critic_problems' to report
+        card, error = _read_json(brand, card_json)
+        if not error and (card.get("route") is None or card.get("probe") is None):
+            return ["final/scorecard.json needs route and probe (scorecard.md)"]
     from .knockout import knockout_problems  # imported here: knockout imports registry
 
     return final_critic_problems(paths, state.slug) or knockout_problems(paths, state.slug, final, "final/knockout.json", final=True)

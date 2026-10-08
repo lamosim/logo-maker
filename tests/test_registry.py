@@ -508,3 +508,15 @@ def test_past_concepts_the_chosen_concept_s_audit_need_only_be_on_record(project
     (concept / "audit.json").unlink()  # but an audit there must be
     assert registry._check_concept(concept.parent.parent, state, current=False) == [
         "concepts/01-good/audit.json is missing (run: logomaker concept audit keystone 01-good)"]
+
+
+def test_the_final_scorecard_needs_route_and_probe(project_root):
+    final = make_final_brand(project_root)
+    card_json = final / "scorecard.json"
+    card = json.loads(card_json.read_text())
+    for strip in (("route",), ("probe",), ("route", "probe")):
+        card_json.write_text(json.dumps({k: v for k, v in card.items() if k not in strip}))
+        code, payload = run("brand", "advance", "keystone", "--to", "package")
+        assert code == 2 and "final/scorecard.json needs route and probe (scorecard.md)" in payload["missing"]
+    card_json.write_text(json.dumps(card))
+    assert run("brand", "advance", "keystone", "--to", "package")[0] == 0
