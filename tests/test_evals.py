@@ -54,7 +54,7 @@ def test_each_brief_has_thirteen_answers_and_the_conservative_section(slug):
     text = (runner.EVALS / slug / "owner.md").read_text(encoding="utf-8")
     assert len(runner.answers(text, f"{slug}/owner.md")) == 13
     assert "## Conservative answers" in text
-    assert "the critic" in text  # answer 12 chooses the survivor the critic preferred
+    assert "the critic" in runner.answers(text, f"{slug}/owner.md")[11]  # answer 12 chooses the survivor the critic preferred
 
 
 def test_readme_lists_every_brief_and_the_cycles():
@@ -74,11 +74,13 @@ def fake_brand(root: Path, slug: str = "orvane", with_critic: bool = True, phase
                  {"at": "2026-10-09T10:05:00-04:00", "phase": "strategy", "by": "user", "note": "scripted: approved"},
                  {"at": "2026-10-09T10:12:00-04:00", "phase": "concepts", "by": "user", "note": "scripted: 01-arc"}]
     (brand / "brand.json").write_text(json.dumps({"slug": slug, "name": "Orvane", "phase": phase, "concept": "01-arc",
-                                                  "decisions": decisions, "updated": "2026-10-09T10:40:00-04:00"}))
+                                                  "decisions": decisions, "created": "2026-10-09T09:58:00-04:00",
+                                                  "updated": "2026-10-09T10:40:00-04:00"}))
     scores = {c: 4 for c in ("appropriate", "distinctive", "simple", "legible", "adaptable", "timeless", "universal", "clear",
                              "congruent", "system")}
-    (brand / "concepts" / "01-arc" / "scorecard.json").write_text(json.dumps({"scores": scores, "route": "abstraction"}))
-    (brand / "concepts" / "02-dot" / "scorecard.json").write_text(json.dumps({"scores": {**scores, "distinctive": 2}, "route": "object"}))
+    (brand / "concepts" / "01-arc" / "scorecard.json").write_text(json.dumps({"scores": scores, "route": "abstraction", "kill": False}))
+    (brand / "concepts" / "02-dot" / "scorecard.json").write_text(json.dumps({"scores": {**scores, "distinctive": 2}, "route": "object",
+                                                                             "kill": True}))
     if with_critic:
         (brand / "concepts" / "01-arc" / "critic.json").write_text(json.dumps({"scores": {**scores, "distinctive": 5}, "sheet": 1,
                                                                                 "passes": 2, "fingerprint": "x"}))
@@ -108,10 +110,10 @@ def test_report_tables_the_phases_scores_and_outcome(tmp_path):
     runner = load_runner()
     brand = fake_brand(tmp_path)
     text = runner.report("orvane", brand, "opus", transcript(tmp_path / "run.jsonl"))
-    assert "| model | opus |" in text and "| turns | 3 |" in text and "| phase reached | done |" in text
-    assert "| 01-arc | abstraction | 40 | 41 (2 passes) |" in text  # designer total, critic total
-    assert "| 02-dot | object | 38 | - |" in text  # no critic card: a dash, not an error
-    assert "| strategy | 7 |" in text  # minutes from the first strategy decision to the first concepts decision
+    assert "| model | opus (-, claude code -) |" in text and "| turns | 3 |" in text and "| phase reached | done |" in text
+    assert "| 01-arc | abstraction | 40 | 41 (2 passes) | no |" in text  # designer total, critic total, killed
+    assert "| 02-dot | object | 38 | - | yes |" in text  # no critic card: a dash, not an error
+    assert "| strategy | 5 |" in text  # from the last intake decision to the last strategy decision
     assert "| package verified | yes |" in text
 
 
@@ -130,8 +132,8 @@ def test_collect_keeps_the_sheets_cards_and_report_and_refuses_a_second_run_with
     assert folder == tmp_path / "evals" / "orvane" / "baseline"
     kept = sorted(str(p.relative_to(folder)) for p in folder.rglob("*") if p.is_file())
     assert kept == ["brand.json", "concepts/01-arc/critic.json", "concepts/01-arc/scorecard.json", "concepts/02-dot/scorecard.json",
-                    "final/critic.json", "final/critique.png", "final/scorecard.json", "package/brand-sheet.pdf", "report.md", "run.jsonl",
-                    "sheets/concepts.png", "sheets/critic-1.png"]
+                    "final/critic.json", "final/critique.png", "final/scorecard.json", "package/brand-sheet.pdf", "package/verify.json",
+                    "report.md", "run.json", "run.jsonl", "sheets/concepts.png", "sheets/critic-1.png"]
     assert not (tmp_path / "scratch").exists()  # the scratch directory is deleted after collection
     fake_brand(tmp_path / "scratch")
     with pytest.raises(FileExistsError, match="baseline"):
@@ -181,14 +183,16 @@ def test_report_gives_a_dash_for_a_card_without_scores(tmp_path):
     (brand / "concepts" / "03-cut").mkdir()
     (brand / "concepts" / "03-cut" / "scorecard.json").write_text(json.dumps({"route": "letter"}))
     (brand / "concepts" / "03-cut" / "critic.json").write_text(json.dumps({"passes": 1}))
-    assert "| 03-cut | letter | - | - |" in runner.report("orvane", brand, "opus", transcript(tmp_path / "run.jsonl"))
+    assert "| 03-cut | letter | - | - | - |" in runner.report("orvane", brand, "opus", transcript(tmp_path / "run.jsonl"))
 
 
-def test_minutes_skips_a_malformed_updated_and_mixed_timezones():
+def test_minutes_skips_a_malformed_end_and_mixed_timezones():
     runner = load_runner()
     decisions = [{"at": "2026-10-09T10:00:00-04:00", "phase": "intake"}, {"at": "2026-10-09T10:05:00", "phase": "strategy"},
                  {"at": "2026-10-09T10:12:00", "phase": "concepts"}]
-    assert runner._minutes(decisions, "garbage") == [("strategy", 7)]
+    # intake has no start, strategy runs from an aware time to a naive one, concepts ends at a malformed time
+    assert runner._minutes(decisions, None, "garbage") == []
+    assert runner._minutes(decisions, None, "2026-10-09T10:20:00") == [("concepts", 15)]
 
 
 def capped_run(code: int, result: dict | None):
@@ -321,3 +325,158 @@ def test_main_seeds_the_scratch_runs_and_prints_the_cycle_folder(harness, monkey
     assert capsys.readouterr().out.strip() == str(folder) and (folder / "report.md").is_file()
     assert seen["links"] and str(tmp / "scratch") in seen["prompt"]
     assert not (tmp / "scratch").exists()
+
+
+INIT = {"type": "system", "subtype": "init", "model": "claude-opus-5-5", "claude_code_version": "2.1.294"}
+
+
+def events_file(path: Path, *events: dict) -> Path:
+    path.write_text("\n".join(json.dumps(e, separators=(",", ":")) for e in events) + "\n")
+    return path
+
+
+def test_report_sums_the_result_segments_of_a_woken_session(tmp_path):
+    runner = load_runner()
+    brand = fake_brand(tmp_path)
+    capped = {"type": "result", "subtype": "error_max_turns", "is_error": True, "num_turns": 10, "duration_ms": 120000,
+              "total_cost_usd": 1.0}
+    woken = {"type": "result", "subtype": "success", "is_error": False, "num_turns": 5, "duration_ms": 60000,
+             "total_cost_usd": 1.5}
+    path = events_file(tmp_path / "run.jsonl", INIT, {"type": "assistant"}, capped, INIT, {"type": "assistant"}, woken)
+    text = runner.report("orvane", brand, "opus", path)
+    assert "| turns | 15 |" in text and "| segments | 2 |" in text and "| result | error_max_turns |" in text
+    assert "| error | yes |" in text and "| cost usd | 1.50 |" in text  # cumulative: the last event's figure
+    assert "| wall clock minutes | 3 |" in text  # no run times given: the segments' durations summed
+    text = runner.report("orvane", brand, "opus", events_file(tmp_path / "b.jsonl", woken, {**woken, "num_turns": 1}))
+    assert "| turns | 6 |" in text and "| result | success |" in text and "| error | no |" in text
+
+
+def test_report_attributes_each_phase_up_to_its_last_decision_from_explicit_times(tmp_path):
+    runner = load_runner()
+    brand = fake_brand(tmp_path)
+    state = json.loads((brand / "brand.json").read_text())
+    state["decisions"] = [{"at": f"2026-10-09T{at}:00-04:00", "phase": phase} for at, phase in
+                          (("10:00", "intake"), ("10:05", "strategy"), ("10:08", "strategy"), ("10:12", "concepts"),
+                           ("10:20", "concepts"))]
+    (brand / "brand.json").write_text(json.dumps(state))
+    text = runner.report("orvane", brand, "opus", transcript(tmp_path / "run.jsonl"),
+                         started="2026-10-09T09:55:00-04:00", finished="2026-10-09T10:30:00-04:00")
+    assert "| intake | 5 |" in text and "| strategy | 8 |" in text  # strategy: 10:00 to its last decision at 10:08
+    assert "| concepts | 22 |" in text  # the last phase ends at the run's finish
+    assert "| wall clock minutes | 35 |" in text and "Run on 2026-10-09T09:55-04:00." in text
+
+
+def test_report_falls_back_to_the_brand_created_and_updated(tmp_path):
+    runner = load_runner()
+    brand = fake_brand(tmp_path)
+    text = runner.report("orvane", brand, "opus", transcript(tmp_path / "run.jsonl"))
+    assert "| intake | 2 |" in text and "| concepts | 35 |" in text  # from created at 09:58; to updated at 10:40
+    assert "| wall clock minutes | 42 |" in text and "Run on 2026-10-09T09:58-04:00." in text
+
+
+def test_report_tables_the_gates_and_the_final_critic(tmp_path):
+    runner = load_runner()
+    brand = fake_brand(tmp_path)
+    text = runner.report("orvane", brand, "opus", transcript(tmp_path / "run.jsonl"))
+    assert "## Gates" in text
+    assert ("| card | designer appropriate | designer simple | designer legible | critic appropriate | critic simple "
+            "| critic legible | kill |") in text
+    assert "| 01-arc | 4 | 4 | 4 | 4 | 4 | 4 | no |" in text
+    assert "| 02-dot | 4 | 4 | 4 | - | - | - | yes |" in text
+    assert "| final | 4 | 4 | 4 | 4 | 4 | 4 | - |" in text  # the final card has no kill field: a dash
+    assert "| final critic | distinctive 4, total 40 (2 passes) |" in text
+    scores = json.loads((brand / "final" / "scorecard.json").read_text())["scores"]
+    (brand / "final" / "critic.json").write_text(json.dumps({"scores": {**scores, "distinctive": 3}, "passes": 1}))
+    assert "| final critic | distinctive 3, total 39 (1 pass) |" in runner.report("orvane", brand, "opus", tmp_path / "run.jsonl")
+
+
+def test_report_without_final_cards_has_no_final_rows(tmp_path):
+    runner = load_runner()
+    brand = fake_brand(tmp_path, with_critic=False, phase="concepts")
+    for name in ("scorecard.json", "critic.json"):
+        (brand / "final" / name).unlink()
+    text = runner.report("orvane", brand, "opus", transcript(tmp_path / "run.jsonl"))
+    assert "| final |" not in text and "| final critic |" not in text
+
+
+def test_package_verified_falls_back_to_the_brand_sheet(tmp_path):
+    runner = load_runner()
+    brand = fake_brand(tmp_path)
+    (brand / "package" / "verify.json").unlink()
+    text = runner.report("orvane", brand, "opus", transcript(tmp_path / "run.jsonl"))
+    assert "| package verified | yes (brand-sheet.pdf present) |" in text
+    (brand / "package" / "brand-sheet.pdf").unlink()
+    assert "| package verified | no |" in runner.report("orvane", brand, "opus", tmp_path / "run.jsonl")
+
+
+def test_report_names_the_model_and_claude_code_version(tmp_path):
+    runner = load_runner()
+    brand = fake_brand(tmp_path)
+    path = events_file(tmp_path / "run.jsonl", INIT, {"type": "result", "subtype": "success", "num_turns": 1})
+    assert "| model | opus (claude-opus-5-5, claude code 2.1.294) |" in runner.report("orvane", brand, "opus", path)
+    assert "| model | opus (-, claude code -) |" in runner.report("orvane", brand, "opus", transcript(tmp_path / "b.jsonl"))
+
+
+def test_run_starts_claude_with_the_isolated_environment_and_pinned_flags(tmp_path, monkeypatch):
+    runner = load_runner()
+    seen = {}
+
+    def fake(cmd, **kwargs):
+        seen["cmd"], seen["kwargs"] = cmd, kwargs
+
+        class Done:
+            returncode = 0
+            stderr = ""
+        return Done()
+
+    monkeypatch.setenv("CLAUDECODE", "1")
+    monkeypatch.setattr(runner.subprocess, "run", fake)
+    runner.run("orvane", "the prompt", tmp_path, "opus", 77)
+    cmd, kwargs = seen["cmd"], seen["kwargs"]
+    env = kwargs["env"]
+    assert "CLAUDECODE" not in env and env["LOGOMAKER_ROOT"] == str(tmp_path) and env["LOGOMAKER_NO_OPEN"] == "1"
+    assert kwargs["cwd"] == runner.ROOT
+    assert cmd[:3] == ["claude", "-p", "the prompt"]
+    for flag, value in (("--model", "opus"), ("--max-turns", "77"), ("--output-format", "stream-json"), ("--add-dir", str(tmp_path))):
+        assert cmd[cmd.index(flag) + 1] == value, flag
+    assert "--strict-mcp-config" in cmd
+
+
+def test_main_refuses_when_the_repository_already_has_the_brand(harness):
+    runner, tmp, made = harness
+    (tmp / "repo" / "brands" / "orvane").mkdir()
+    assert runner.main(["orvane", "--cycle", "baseline"]) == 1 and made == []
+
+
+def test_main_records_the_run_times_for_the_report(harness, monkeypatch):
+    runner, tmp, made = harness
+
+    def ok(slug, prompt, scratch, model, max_turns):
+        fake_brand(scratch)
+        return transcript(scratch / "run.jsonl")
+
+    monkeypatch.setattr(runner, "run", ok)
+    assert runner.main(["orvane", "--cycle", "baseline"]) == 0
+    folder = tmp / "evals" / "orvane" / "baseline"
+    times = json.loads((folder / "run.json").read_text())
+    started, finished = (runner.datetime.fromisoformat(times[k]) for k in ("started", "finished"))
+    assert started.tzinfo is not None and started <= finished and times["model"] == "opus"
+    assert f"Run on {started.isoformat(timespec='minutes')}." in (folder / "report.md").read_text()
+
+
+def test_main_report_only_rewrites_the_report_from_the_cycle_folder(harness, capsys):
+    runner, tmp, made = harness
+    folder = tmp / "evals" / "orvane" / "baseline"
+    fake_brand(tmp / "kept").rename(folder)
+    (folder / "report.md").write_text("stale\n")
+    transcript(folder / "run.jsonl", turns=4)
+    assert runner.main(["orvane", "--cycle", "baseline", "--report-only"]) == 0
+    text = (folder / "report.md").read_text()
+    assert "| turns | 4 |" in text and "## Gates" in text and "Run on 2026-10-09T09:58-04:00." in text
+    assert capsys.readouterr().out.strip() == str(folder / "report.md") and made == []
+    (folder / "run.json").write_text(json.dumps({"model": "sonnet", "started": "2026-10-09T09:50:00-04:00",
+                                                 "finished": "2026-10-09T10:50:00-04:00"}))
+    assert runner.main(["orvane", "--cycle", "baseline", "--report-only"]) == 0
+    text = (folder / "report.md").read_text()
+    assert "| model | sonnet (-, claude code -) |" in text and "| wall clock minutes | 60 |" in text
+    assert runner.main(["orvane", "--cycle", "kit", "--report-only"]) == 1  # no such cycle folder
