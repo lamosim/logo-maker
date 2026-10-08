@@ -398,13 +398,14 @@ def concept_run(slug: str, concept: str, round_n: int | None, variants: str, tok
 
 @concept_group.command("critic")
 @click.argument("slug")
-@click.option("--sheet", "round_n", type=click.IntRange(min=1), required=True, help="The critic sheet whose passes to merge.")
+@click.option("--sheet", "rounds", type=click.IntRange(min=1), multiple=True, required=True,
+              help="A critic sheet whose passes to merge; repeat it to merge two sheets, e.g. --sheet 3 --sheet 4.")
 @command
-def concept_critic(slug: str, round_n: int) -> None:
-    """Merge sheets/critic-N.pass-*.json by the sheet's key into critic.json in each concept folder (final/ for a final sheet)."""
+def concept_critic(slug: str, rounds: tuple[int, ...]) -> None:
+    """Merge each --sheet's critic-N.pass-*.json, by its own key, into critic.json per concept folder (final/ for a final sheet)."""
     from . import critic as criticlib
 
-    emit(criticlib.write_cards(project(), slug, round_n))
+    emit(criticlib.write_cards(project(), slug, list(rounds)))
 
 
 @main.group("sheet")

@@ -185,7 +185,7 @@ def critic_run(project_root: Path, names: list[str], prefer: str | None = None, 
     brand = project_root / "brands" / slug
     winner = next((letter for letter, name in info["letters"].items() if name == prefer), None)
     write_pass(brand, info["round"], 1, info["letters"], prefer=winner, **scores)
-    critic.write_cards(project(), slug, info["round"])
+    critic.write_cards(project(), slug, [info["round"]])
     return info["letters"]
 
 

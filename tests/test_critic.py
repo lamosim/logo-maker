@@ -60,7 +60,8 @@ def test_pair_prefers_one_of_its_letters_or_a_tie():
 def test_merge_averages_scores_half_up_and_keeps_every_line():
     first = critic.CriticPass(cards={"A": pass_card(distinctive=3), "B": pass_card()}, pairs=both_orders("A", "B", "A"))
     second = critic.CriticPass(cards={"A": pass_card(distinctive=4, simple=5), "B": pass_card()}, pairs=both_orders("A", "B", "A"))
-    cards = critic.merge(critic.Key.model_validate(KEY), [first, second])
+    key = critic.Key.model_validate(KEY)
+    cards = critic.merge([(key, first), (key, second)])
     arch = cards["02-arch"]
     assert arch.scores["distinctive"] == 4 and arch.scores["simple"] == 5  # 3.5 rounds up, 4.5 rounds up
     assert arch.evidence["distinctive"] == ["an arch, which stock sites already sell"] * 2
@@ -72,7 +73,7 @@ def test_merge_averages_scores_half_up_and_keeps_every_line():
 def test_merge_calls_a_pair_tied_unless_every_verdict_agrees():
     pairs = both_orders("A", "B", "A")[:1] + both_orders("A", "B", "B")[1:]  # A first order, B the other
     one = critic.CriticPass(cards={"A": pass_card(), "B": pass_card()}, pairs=pairs)
-    cards = critic.merge(critic.Key.model_validate(KEY), [one])
+    cards = critic.merge([(critic.Key.model_validate(KEY), one)])
     assert cards["02-arch"].tied_with == ["01-k-jaw"] and cards["01-k-jaw"].tied_with == ["02-arch"]
     assert cards["02-arch"].passes == 1
 
@@ -80,11 +81,40 @@ def test_merge_calls_a_pair_tied_unless_every_verdict_agrees():
 def test_merge_refuses_a_pass_whose_letters_do_not_match_the_sheet():
     key = critic.Key.model_validate(KEY)
     with pytest.raises(CliError, match=r"pass 1 scores A, C; the sheet has A, B"):
-        critic.merge(key, [critic.CriticPass(cards={"A": pass_card(), "C": pass_card()})])
+        critic.merge([(key, critic.CriticPass(cards={"A": pass_card(), "C": pass_card()}))])
     with pytest.raises(CliError, match=r"pass 1 judges A and B in one order only; judge every pair in both orders"):
-        critic.merge(key, [critic.CriticPass(cards={"A": pass_card(), "B": pass_card()}, pairs=both_orders("A", "B", "A")[:1])])
+        critic.merge([(key, critic.CriticPass(cards={"A": pass_card(), "B": pass_card()}, pairs=both_orders("A", "B", "A")[:1]))])
     with pytest.raises(CliError, match="at least one pass"):
-        critic.merge(key, [])
+        critic.merge([])
+
+
+SWAPPED = {"round": 2, "seed": 2, "letters": {"A": "01-k-jaw", "B": "02-arch"}, "fingerprints": {"02-arch": "f2", "01-k-jaw": "f1"}}
+
+
+def test_merge_translates_two_sheets_with_different_letters_into_one_card_per_concept():
+    # Sheet 1 letters 02-arch A; sheet 2 letters it B. Both passes prefer 02-arch and score its distinctive 3 then 4.
+    first = critic.CriticPass(cards={"A": pass_card(distinctive=3), "B": pass_card(simple=2)}, pairs=both_orders("A", "B", "A"))
+    second = critic.CriticPass(cards={"A": pass_card(simple=3), "B": pass_card(distinctive=4)}, pairs=both_orders("A", "B", "B"))
+    cards = critic.merge([(critic.Key.model_validate(KEY), first), (critic.Key.model_validate(SWAPPED), second)])
+    arch, jaw = cards["02-arch"], cards["01-k-jaw"]
+    assert arch.scores["distinctive"] == 4 and arch.scores["simple"] == 4  # (3 + 4) / 2 rounds up; 4 and 4
+    assert jaw.scores["distinctive"] == 4 and jaw.scores["simple"] == 3  # (2 + 3) / 2 rounds up to 3
+    assert arch.passes == jaw.passes == 2 and arch.sheet == jaw.sheet == 2 and arch.fingerprint == "f2"
+    assert arch.preferred_over == ["01-k-jaw"] and jaw.tied_with == ["02-arch"]
+
+
+def test_merge_refuses_sheets_that_letter_other_concepts_or_a_changed_one():
+    one = critic.CriticPass(cards={"A": pass_card(), "B": pass_card()})
+    other = critic.Key.model_validate({**SWAPPED, "letters": {"A": "01-k-jaw", "B": "03-dots"},
+                                       "fingerprints": {"01-k-jaw": "f1", "03-dots": "f3"}})
+    with pytest.raises(CliError, match=r"sheet 2 keys different concepts from sheet 1: 01-k-jaw, 03-dots against 01-k-jaw, 02-arch"):
+        critic.merge([(critic.Key.model_validate(KEY), one), (other, one)])
+    changed = critic.Key.model_validate({**SWAPPED, "fingerprints": {"02-arch": "f2", "01-k-jaw": "f1-new"}})
+    with pytest.raises(CliError, match=r"01-k-jaw changed between sheet 1 and sheet 2; run sheet critic again"):
+        critic.merge([(critic.Key.model_validate(KEY), one), (changed, one)])
+    bad = critic.CriticPass(cards={"A": pass_card(), "C": pass_card()})
+    with pytest.raises(CliError, match=r"sheet 2 pass 1 scores A, C; the sheet has A, B"):
+        critic.merge([(critic.Key.model_validate(KEY), one), (critic.Key.model_validate(SWAPPED), bad)])
 
 
 def test_unreconciled_lists_every_criterion_two_or_more_apart_without_an_entry():
@@ -170,6 +200,38 @@ def test_concept_critic_merges_the_passes_into_each_concept_folder(project_root)
     assert good["scores"]["distinctive"] == 4 and good["preferred_over"] == ["02-dots"] and good["sheet"] == 1
     dots = json.loads((brand / "concepts" / "02-dots" / "critic.json").read_text())
     assert dots["preferred_over"] == [] and dots["tied_with"] == ["01-good"]
+
+
+def test_concept_critic_merges_two_sheets_by_their_own_keys(project_root):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    brand = project_root / "brands" / "keystone"
+    for seed, distinctive in ((1, 3), (2, 4)):
+        info = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], seed=seed, renderer=StubChrome())
+        winner = next(letter for letter, name in info["letters"].items() if name == "01-good")
+        write_pass(brand, info["round"], 1, info["letters"], prefer=winner, distinctive=distinctive)
+    code, payload = run("concept", "critic", "keystone", "--sheet", "1", "--sheet", "2")
+    assert code == 0 and payload["passes"] == 2 and payload["sheets"] == [1, 2]
+    good = json.loads((brand / "concepts" / "01-good" / "critic.json").read_text())
+    assert good["scores"]["distinctive"] == 4 and good["preferred_over"] == ["02-dots"] and good["sheet"] == 2 and good["passes"] == 2
+    code, payload = run("concept", "critic", "keystone", "--sheet", "1", "--sheet", "1")
+    assert code == 2 and payload["errors"] == ["sheet 1 is named twice; give each critic sheet once"]
+
+
+def test_concept_critic_refuses_a_sheet_without_passes_or_with_other_concepts(project_root):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    brand = project_root / "brands" / "keystone"
+    info = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], renderer=StubChrome())
+    write_pass(brand, info["round"], 1, info["letters"])
+    sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], seed=5, renderer=StubChrome())
+    code, payload = run("concept", "critic", "keystone", "--sheet", "1", "--sheet", "2")
+    assert code == 2 and payload["errors"] == ["no pass files for critic sheet 2; the critic writes sheets/critic-2.pass-1.json"]
+    info = sheets.critic_sheet(project(), "keystone", ["01-good"], renderer=StubChrome())
+    write_pass(brand, info["round"], 1, info["letters"])
+    code, payload = run("concept", "critic", "keystone", "--sheet", "1", "--sheet", "3")
+    assert code == 2 and payload["errors"] == ["sheet 3 keys different concepts from sheet 1: 01-good against 01-good, 02-dots"]
+    assert not (brand / "concepts" / "01-good" / "critic.json").exists()
 
 
 def test_concept_critic_refuses_without_passes_and_names_the_file(project_root):
@@ -279,7 +341,7 @@ def test_advance_to_refinement_and_package_build_read_the_critic(project_root):
     assert any("final/critic.json is missing" in m for m in err.value.data["missing"])
     info = sheets.critic_sheet(paths, "keystone", [], final=True, renderer=StubChrome())
     write_pass(brand, info["round"], 1, info["letters"])
-    critic.write_cards(paths, "keystone", info["round"])
+    critic.write_cards(paths, "keystone", [info["round"]])
     with pytest.raises(CliError) as err:
         registry.advance(paths, "keystone", registry.allowed_next(state))
     assert any("final/scorecard.json is missing" in m for m in err.value.data["missing"])

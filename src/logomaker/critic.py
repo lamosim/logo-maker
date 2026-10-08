@@ -71,44 +71,70 @@ def round_half_up(value: float) -> int:
     return int(math.floor(value + 0.5))
 
 
-def _check_pass(number: int, run: CriticPass, letters: set[str]) -> None:
+def _check_pass(label: str, run: CriticPass, letters: set[str]) -> None:
     scored = set(run.cards)
     if scored != letters:
-        raise CliError(f"pass {number} scores {', '.join(sorted(scored))}; the sheet has {', '.join(sorted(letters))}")
+        raise CliError(f"{label} scores {', '.join(sorted(scored))}; the sheet has {', '.join(sorted(letters))}")
     for pair in run.pairs:
         if pair.first not in letters or pair.second not in letters:
-            raise CliError(f"pass {number} judges {pair.first} against {pair.second}; the sheet has {', '.join(sorted(letters))}")
+            raise CliError(f"{label} judges {pair.first} against {pair.second}; the sheet has {', '.join(sorted(letters))}")
     for a, b in combinations(sorted(letters), 2):
         orders = {(p.first, p.second) for p in run.pairs if {p.first, p.second} == {a, b}}
         if orders and orders != {(a, b), (b, a)}:
-            raise CliError(f"pass {number} judges {a} and {b} in one order only; judge every pair in both orders")
+            raise CliError(f"{label} judges {a} and {b} in one order only; judge every pair in both orders")
 
 
-def merge(key: Key, passes: list[CriticPass]) -> dict[str, CriticCard]:
-    """One CriticCard per concept in `key`, from every pass: mean scores rounded half up, every evidence line, and a
-    preference only where every verdict in every pass and both orders agrees. A pass that scores other letters than the
-    sheet's, or judges a pair in one order only, is a CliError naming it."""
-    if not passes:
+def _check_keys(keys: list[Key]) -> None:
+    """Every critic sheet merged together (one key each) letters the same concepts, each with the same fingerprint."""
+    first = keys[0]
+    for key in keys[1:]:
+        ours, theirs = set(first.letters.values()), set(key.letters.values())
+        if ours != theirs:
+            raise CliError(f"sheet {key.round} keys different concepts from sheet {first.round}: "
+                           f"{', '.join(sorted(theirs))} against {', '.join(sorted(ours))}")
+        for slug in sorted(ours):
+            if key.fingerprints[slug] != first.fingerprints[slug]:
+                raise CliError(f"{slug} changed between sheet {first.round} and sheet {key.round}; run sheet critic again")
+
+
+def merge(runs: list[tuple[Key, CriticPass]]) -> dict[str, CriticCard]:
+    """One CriticCard per concept, from every pass of every critic sheet in `runs` (each pass with its own sheet's key):
+    each pass is checked against its key, then translated from letters to concepts, and the passes merged: mean scores
+    rounded half up, every evidence line, and a preference only where every verdict in every pass and both orders
+    agrees. The sheets must letter the same concepts with the same fingerprints. `sheet` is the highest round merged.
+    A pass that scores other letters than its sheet's, or judges a pair in one order only, is a CliError naming it."""
+    if not runs:
         raise CliError("the merge needs at least one pass file")
-    letters = set(key.letters)
-    for number, run in enumerate(passes, start=1):
-        _check_pass(number, run, letters)
+    keys = list({key.round: key for key, _ in runs}.values())  # one per sheet, in the order given
+    _check_keys(keys)
+    several = len(keys) > 1
+    counts: dict[int, int] = {}
+    named: list[tuple[dict[str, PassCard], list[tuple[str, str, str]]]] = []  # each pass's cards and verdicts by concept
+    for key, run in runs:
+        counts[key.round] = counts.get(key.round, 0) + 1
+        label = f"sheet {key.round} pass {counts[key.round]}" if several else f"pass {counts[key.round]}"
+        _check_pass(label, run, set(key.letters))
+        to = key.letters
+        verdicts = [(to[p.first], to[p.second], "tie" if p.prefer == "tie" else to[p.prefer]) for p in run.pairs]
+        named.append(({to[letter]: card for letter, card in run.cards.items()}, verdicts))
+    first = runs[0][0]
+    sheet = max(key.round for key, _ in runs)
     cards: dict[str, CriticCard] = {}
-    for letter, slug in key.letters.items():
-        scores = {c: round_half_up(sum(run.cards[letter].scores[c] for run in passes) / len(passes)) for c in CRITERIA}
-        evidence = {c: [run.cards[letter].evidence[c] for run in passes if c in run.cards[letter].evidence] for c in CRITERIA}
+    for slug in first.letters.values():
+        scores = {c: round_half_up(sum(pass_cards[slug].scores[c] for pass_cards, _ in named) / len(named)) for c in CRITERIA}
+        evidence = {c: [pass_cards[slug].evidence[c] for pass_cards, _ in named if c in pass_cards[slug].evidence] for c in CRITERIA}
         preferred, tied = [], []
-        for other, other_slug in key.letters.items():
-            if other == letter:
+        for other in first.letters.values():
+            if other == slug:
                 continue
-            verdicts = [p.prefer for run in passes for p in run.pairs if {p.first, p.second} == {letter, other}]
-            if verdicts and all(v == letter for v in verdicts):
-                preferred.append(other_slug)
+            said = [prefer for _, verdicts in named for a, b, prefer in verdicts if {a, b} == {slug, other}]
+            if said and all(v == slug for v in said):
+                preferred.append(other)
             else:  # `tied_with` is the rest (spec §3.2), so a concept the other beat is listed here too
-                tied.append(other_slug)
+                tied.append(other)
         cards[slug] = CriticCard(scores=scores, evidence={c: lines for c, lines in evidence.items() if lines},
-                                 preferred_over=sorted(preferred), tied_with=sorted(tied), sheet=key.round, passes=len(passes),
-                                 fingerprint=key.fingerprints[slug])
+                                 preferred_over=sorted(preferred), tied_with=sorted(tied), sheet=sheet, passes=len(named),
+                                 fingerprint=first.fingerprints[slug])
     return cards
 
 
@@ -143,26 +169,35 @@ def pass_paths(brand: Path, round_n: int) -> list[Path]:
     return [p for _, p in sorted(numbered)]
 
 
-def write_cards(paths: ProjectPaths, slug: str, round_n: int) -> dict:
-    """Merge sheets/critic-N's passes by its key and write critic.json into each concept's folder (final/ for a final
-    sheet). Nothing is written until every pass has been validated."""
+def write_cards(paths: ProjectPaths, slug: str, rounds: list[int]) -> dict:
+    """Merge the passes of every critic sheet in `rounds`, each by its own key, and write critic.json into each concept's
+    folder (final/ for a final sheet). Each sheet needs a pass file, and the sheets must letter the same concepts with
+    the same fingerprints. Nothing is written until every pass has been validated."""
+    if not rounds:
+        raise CliError("give at least one critic sheet (--sheet N)")
+    twice = sorted({n for n in rounds if rounds.count(n) > 1})
+    if twice:
+        raise CliError(f"sheet {', '.join(map(str, twice))} is named twice; give each critic sheet once")
     brand = paths.brand(slug)
-    key = _load(key_path(brand, round_n), Key, f"sheets/critic-{round_n}.key.json")
-    files = pass_paths(brand, round_n)
-    if not files:
-        raise CliError(f"no pass files for critic sheet {round_n}; the critic writes sheets/critic-{round_n}.pass-1.json (and pass-2)")
-    passes = [_load(path, CriticPass, str(path.relative_to(brand))) for path in files]
-    cards = merge(key, passes)
+    runs: list[tuple[Key, CriticPass]] = []
+    for round_n in rounds:
+        key = _load(key_path(brand, round_n), Key, f"sheets/critic-{round_n}.key.json")
+        files = pass_paths(brand, round_n)
+        if not files:
+            raise CliError(f"no pass files for critic sheet {round_n}; the critic writes sheets/critic-{round_n}.pass-1.json")
+        runs += [(key, _load(path, CriticPass, str(path.relative_to(brand)))) for path in files]
+    cards = merge(runs)
+    sheets = " and ".join(map(str, rounds))
     folders = {name: brand / "final" if name == "final" else brand / "concepts" / name for name in cards}
     for folder in folders.values():
         if not folder.is_dir():
-            raise CliError(f"{folder.relative_to(brand)} is missing; critic sheet {round_n} lettered it")
+            raise CliError(f"{folder.relative_to(brand)} is missing; critic sheet {sheets} lettered it")
     written = {}
     for name, card in cards.items():
         target = folders[name] / "critic.json"
         target.write_text(json.dumps(card.model_dump(), indent=2) + "\n", encoding="utf-8")
         written[name] = str(target)
-    return {"sheet": round_n, "passes": len(passes), "cards": written}
+    return {"sheets": list(rounds), "passes": len(runs), "cards": written}
 
 
 def refresh_command(slug: str, folder: Path) -> str:
