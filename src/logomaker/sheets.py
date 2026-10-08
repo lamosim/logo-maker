@@ -6,7 +6,6 @@ import os
 import shlex
 import subprocess
 from pathlib import Path
-from statistics import median
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import ValidationError
@@ -15,7 +14,7 @@ from . import critic as criticlib
 from . import fonts as fontlib
 from . import mockups as mockuplib
 from . import registry
-from .audit import MIN_FEATURE, RHYTHM_TIGHT, RHYTHM_WIDE, concept_fingerprint, text_roles
+from .audit import MIN_FEATURE, RHYTHM_TIGHT, RHYTHM_WIDE, concept_fingerprint, rhythm_flags, text_roles
 from .color import CVD_KINDS, Tokens, check_tokens, chip_text, load_tokens, palettes_of, simulate_cvd
 from .color import info as color_info
 from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text, union
@@ -603,22 +602,17 @@ def wordmark_sheet(paths: ProjectPaths, slug: str, concept_name: str = "final", 
         raise CliError(f"{concept_name}: wordmark metrics unknown (not a TextShape); build it with text() and keep it the first operand")
     svg = outputs["full-wordmark"].to_svg("black")
     gaps = wordmark_gaps(word)
-    mid = median(g["gap"] for g in gaps) if gaps else 0.0
+    flagged, mid = rhythm_flags(gaps)
     top = max((abs(g["gap"]) for g in gaps), default=1.0) or 1.0
-    bars = []
-    for g in gaps:
-        kind = ""
-        if mid > 0 and g["gap"] > RHYTHM_WIDE * mid:
-            kind = "wide"
-        elif mid > 0 and g["gap"] < RHYTHM_TIGHT * mid:
-            kind = "tight"
-        bars.append({**g, "kind": kind, "height": max(2, round(100 * abs(g["gap"]) / top))})
+    bars = [{**g, "kind": g["flag"], "height": max(2, round(100 * abs(g["gap"]) / top))} for g in flagged]
+    first = next((b for b in bars if b["kind"]), None)
+    hint = None if first is None else {"pair": first["pair"], "kern": 20 if first["kind"] == "tight" else -20, "kind": first["kind"]}
     brand = paths.brand(slug)
     round_n = round_n or next_round(brand, "sheets/wordmark-*.html")
     html = jinja(paths).get_template("sheets/wordmark.html").render(
         brand=state.name, round_n=round_n, font=word.font, width=WORDMARK_W, header=fit_box(svg, 260, 32),
         minimum=fit_box(svg, state.min_sizes.horizontal_px, 60), min_px=state.min_sizes.horizontal_px, large=fit_box(svg, 400, 160),
-        gaps=bars, median=number(mid), wide=RHYTHM_WIDE, tight=RHYTHM_TIGHT)
+        gaps=bars, hint=hint, median=number(mid), wide=RHYTHM_WIDE, tight=RHYTHM_TIGHT)
     html_path, png_path = _write_sheet(renderer, html, brand / "sheets", f"wordmark-{round_n}", WORDMARK_W)
     warnings: list[str] = [f"{b['pair']} is {b['kind']} against the median gap" for b in bars if b["kind"]]
     open_file(html_path, open_after, warnings)

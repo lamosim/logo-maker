@@ -362,6 +362,22 @@ def test_repeat_radial_grid_and_mirror():
         repeat(petal, 1)
 
 
+def test_repeat_grid_rejects_bad_cols_step_and_n():
+    cell = rect(0, 0, 10, 10)
+    with pytest.raises(ValueError, match="cols must be a positive integer"):
+        repeat(cell, 4, mode="grid", cols=0, step=20)
+    with pytest.raises(ValueError, match="cols must be a positive integer"):
+        repeat(cell, 4, mode="grid", cols=-2, step=20)
+    with pytest.raises(ValueError, match="step must be positive"):
+        repeat(cell, 4, mode="grid", cols=2, step=0)
+    with pytest.raises(ValueError, match="step must be positive"):
+        repeat(cell, 4, mode="grid", cols=2, step=-5)
+    with pytest.raises(ValueError, match="n must be an integer"):
+        repeat(cell, 2.5, mode="grid", cols=2, step=20)
+    with pytest.raises(ValueError, match="n must be an integer"):
+        repeat(cell, 3.0)
+
+
 def test_repeat_edges():
     petal = rect(150, -20, 100, 40)
     with pytest.raises(ValueError, match="n must be at least 2"):

@@ -51,6 +51,10 @@ def test_spacing_rhythm_warns_on_a_pair_far_from_the_median(project_root):
     gappy = Mark(wordmark=text("Keystone", "Fira Code", weight=600, cap_height=200, kern={"ys": 400}), lockup="wordmark")
     rhythm = _spacing_rhythm({"full-wordmark": gappy})
     assert [f.severity for f in rhythm] == ["warn"] and "ys wide" in rhythm[0].message
+    assert "close a wide pair (negative kern)" in rhythm[0].message and "optical" in rhythm[0].message
+    tight = Mark(wordmark=text("noon", "Fira Code", weight=600, cap_height=200, kern={"oo": -80}), lockup="wordmark")
+    rhythm = _spacing_rhythm({"full-wordmark": tight})
+    assert "oo tight" in rhythm[0].message and "open a tight pair (positive kern)" in rhythm[0].message
     assert _spacing_rhythm({}) == []
 
 

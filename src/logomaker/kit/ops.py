@@ -218,13 +218,19 @@ def repeat(shape: Shape, n: int, mode: str = "radial", cx: float = 0, cy: float 
 
     Like `rotate` and `translate`, the layout does not snap and adds no free segments: each copy carries its source's
     count, so the union reports n times it. A radial angle off the 15-degree grid can still warn `near_miss_angles`."""
+    if isinstance(n, bool) or not isinstance(n, int):
+        raise ValueError(f"n must be an integer, got {n!r}")
     if n < 2:
         raise ValueError("n must be at least 2")
     if mode == "radial":
         return union(*(rotate(shape, 360 * i / n, cx, cy) for i in range(n)))
     if mode == "grid":
-        if not cols or step is None:
+        if cols is None or step is None:
             raise ValueError("grid needs cols and step")
+        if isinstance(cols, bool) or not isinstance(cols, int) or cols < 1:
+            raise ValueError(f"cols must be a positive integer, got {cols!r}")
+        if not step > 0:  # zero stacks the copies, a negative step mirrors the layout, NaN poisons it
+            raise ValueError(f"step must be positive, got {step!r}")
         laid = union(*(translate(shape, (i % cols) * step, (i // cols) * step) for i in range(n)))
         b = laid.bounds
         return translate(laid, cx - b.cx, cy - b.cy)

@@ -22,5 +22,7 @@
 </div>
 <h2>Gaps between glyphs (units; median {{ median }})</h2>
 <div class="rhythm">{% for g in gaps %}<div class="bar{% if g.kind %} {{ g.kind }}{% endif %}" style="height:{{ g.height }}px"><span>{{ g.gap }}</span><b>{{ g.pair }}</b></div>{% endfor %}</div>
-<div class="note">A bar is the space between two glyph boxes. Amber is wider than {{ wide }} times the median, red tighter than {{ tight }} of it: kern the pair with text(..., kern={"{{ gaps[0].pair if gaps else 'AV' }}": -20}) and re-run.</div>
+<div class="note">A bar is the space between two glyph boxes. Amber is wider than {{ wide }} times the median, red tighter than {{ tight }} of it.
+{% if hint %}{{ hint.pair }} is {{ hint.kind }}: {% if hint.kind == "tight" %}open it with a positive kern{% else %}close it with a negative kern{% endif %}, text(..., kern={"{{ hint.pair }}": {{ hint.kern }}}), and re-run; or leave an optical gap at a diagonal or round letter (K, V, A, O), which the box measurement overstates.
+{% else %}The rhythm is even: no pair is flagged.{% endif %}</div>
 </body></html>

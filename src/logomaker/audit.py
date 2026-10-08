@@ -208,11 +208,29 @@ def _text_legibility(outputs: dict, geometries: dict, state) -> list[Finding]:
     return out
 
 
-def _spacing_rhythm(outputs: dict) -> list[Finding]:
-    """The wordmark's glyph gaps (kit.text.wordmark_gaps) against their median: info listing them, or a warning naming
-    each pair wider than RHYTHM_WIDE times the median or tighter than RHYTHM_TIGHT of it."""
+def rhythm_flags(gaps: list[dict]) -> tuple[list[dict], float]:
+    """Each wordmark gap with its `flag` against the median: "wide" above RHYTHM_WIDE times it, "tight" below RHYTHM_TIGHT
+    of it, "" otherwise (always "" when the median is not positive), and the median. The one band rule the
+    spacing_rhythm audit and the wordmark sheet both read."""
     from statistics import median
 
+    if not gaps:
+        return [], 0.0
+    mid = median(g["gap"] for g in gaps)
+
+    def flag(gap: float) -> str:
+        if mid > 0 and gap > RHYTHM_WIDE * mid:
+            return "wide"
+        if mid > 0 and gap < RHYTHM_TIGHT * mid:
+            return "tight"
+        return ""
+
+    return [{**g, "flag": flag(g["gap"])} for g in gaps], mid
+
+
+def _spacing_rhythm(outputs: dict) -> list[Finding]:
+    """The wordmark's glyph gaps (kit.text.wordmark_gaps) against their median: info listing them, or a warning naming
+    each pair rhythm_flags marks wide or tight, with the kern direction that fixes it."""
     from .kit.text import TextShape, wordmark_gaps
 
     mark = outputs.get("full-wordmark")
@@ -222,17 +240,19 @@ def _spacing_rhythm(outputs: dict) -> list[Finding]:
     gaps = wordmark_gaps(word)
     if len(gaps) < 2:
         return []
-    mid = median(g["gap"] for g in gaps)
+    flagged, mid = rhythm_flags(gaps)
     listed = ", ".join(f"{g['pair']} {g['gap']:g}" for g in gaps)
     if mid <= 0:
         return [Finding(check="spacing_rhythm", severity="info", message=f"wordmark gaps (median {mid:g}): {listed}",
                         data={"gaps": gaps, "median": mid})]
-    wide = [g for g in gaps if g["gap"] > RHYTHM_WIDE * mid]
-    tight = [g for g in gaps if g["gap"] < RHYTHM_TIGHT * mid]
+    wide = [{"pair": g["pair"], "gap": g["gap"]} for g in flagged if g["flag"] == "wide"]
+    tight = [{"pair": g["pair"], "gap": g["gap"]} for g in flagged if g["flag"] == "tight"]
     if wide or tight:
         parts = [f"{g['pair']} wide ({g['gap']:g})" for g in wide] + [f"{g['pair']} tight ({g['gap']:g})" for g in tight]
-        return [Finding(check="spacing_rhythm", severity="warn",
-                        message=f"wordmark spacing: {', '.join(parts)} against a median gap of {mid:g}; kern the pair",
+        fixes = (["close a wide pair (negative kern)"] if wide else []) + (["open a tight pair (positive kern)"] if tight else [])
+        message = (f"wordmark spacing: {', '.join(parts)} against a median gap of {mid:g}; {' and '.join(fixes)}, "
+                   "or leave an optical gap at a diagonal or round letter (K, V, A, O), which the box measurement overstates")
+        return [Finding(check="spacing_rhythm", severity="warn", message=message,
                         data={"gaps": gaps, "median": mid, "wide": wide, "tight": tight})]
     return [Finding(check="spacing_rhythm", severity="info", message=f"wordmark gaps even (median {mid:g}): {listed}",
                     data={"gaps": gaps, "median": mid})]

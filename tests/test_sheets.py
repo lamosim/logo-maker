@@ -414,3 +414,32 @@ def test_sheet_wordmark_renders_the_keystone_example_through_chrome(project_root
     png = Image.open(brand / "sheets" / "wordmark-1.png")
     assert png.width == sheets.WORDMARK_W and png.height > 300
     assert png.convert("L").getextrema()[0] < 64  # the wordmark and its bars drew ink
+
+
+def test_wordmark_sheet_flags_the_pairs_the_audit_warns_and_hints_the_kern_direction(project_root):
+    folder = install_concept(project_root, "good", name="01-good")
+    source = (folder / "concept.py").read_text()
+    old = 'word = text("Good", family="Fira Code", weight=600, cap_height=180)'
+    for kern, flag, hint in ((-80, "tight", 'kern={"oo": 20}'), (200, "wide", 'kern={"oo": -20}')):
+        new = f'word = text("noon", family="Fira Code", weight=600, cap_height=180, kern={{"oo": {kern}}})'
+        (folder / "concept.py").write_text(source.replace(old, new))
+        info = sheets.wordmark_sheet(project(), "keystone", "01-good", renderer=StubChrome(), open_after=False)
+        outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
+        warned = auditlib._spacing_rhythm(outputs)[0].data
+        assert [g["pair"] for g in warned[flag]] == ["oo"] and not warned["tight" if flag == "wide" else "wide"]
+        assert info["warnings"] == [f"oo is {flag} against the median gap"]
+        html = htmllib.unescape(Path(info["sheet_html"]).read_text())
+        assert html.count(f'class="bar {flag}"') == 1 and hint in html and "optical gap" in html
+    (folder / "concept.py").write_text(source.replace(old, 'word = text("noon", family="Fira Code", weight=600, cap_height=180)'))
+    info = sheets.wordmark_sheet(project(), "keystone", "01-good", renderer=StubChrome(), open_after=False)
+    html = Path(info["sheet_html"]).read_text()
+    assert info["warnings"] == [] and "kern=" not in html and "rhythm is even" in html
+
+
+def test_rhythm_flags_marks_each_gap_against_the_median():
+    gaps = [{"pair": "ab", "gap": 10.0}, {"pair": "bc", "gap": 30.0}, {"pair": "cd", "gap": 4.0}, {"pair": "de", "gap": 12.0}]
+    flagged, mid = auditlib.rhythm_flags(gaps)
+    assert mid == 11.0 and [g["flag"] for g in flagged] == ["", "wide", "tight", ""]
+    assert auditlib.rhythm_flags([]) == ([], 0.0)
+    flagged, mid = auditlib.rhythm_flags([{"pair": "ab", "gap": -2.0}, {"pair": "bc", "gap": -1.0}])
+    assert [g["flag"] for g in flagged] == ["", ""]
