@@ -53,6 +53,7 @@ REQUIRED = {
     "color.md": ["Hue, saturation and lightness", "Cross-cultural notes", "Thresholds", "Building a palette in OKLCH",
                  "Designing the reverse", "tokens.json format", "Sources"],
     "deliverables.md": ["Package manifest", "Platform specs", "Clear space and minimum sizes", "BRAND.md template", "Sources"],
+    "critic.md": ["What the critic sees", "What the critic returns", "Reconciliation", "Dispatch", "Sources"],
     "kit-api.md": ["Concept module contract", "Primitives", "Operations", "Text", "Mark and lockups", "Worked examples", "Sources"],
 }
 CANONICAL = "(canonical wording; SKILL.md quotes this)"

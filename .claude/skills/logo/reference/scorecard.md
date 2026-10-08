@@ -41,6 +41,8 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
 - Gate criteria: `appropriate`, `simple` and `legible` must each be 4 or more, and `kill` must be false (`schemas.GATE`, `GATE_MIN = 4`) [code] [spec §8.2].
 - No hard audit failures: the concept's `audit.json` must be fresh, rendered (not `--no-render`) and ok [code].
 - `uv run logomaker sheet concepts <slug> --concepts <a,b,c>` refuses any concept that misses either condition and names the command that clears it; `brand advance --to refinement` checks the chosen concept the same way [code].
+- The blind critic: `sheet concepts` and `brand advance --to refinement` also refuse a concept whose `critic.json` is missing, invalid or stale (`critic.critic_problems`), or whose scorecard leaves a criterion two or more apart from the critic's card without a `reconciled` entry (`registry.vetted_scorecard`, `critic.DISAGREEMENT = 2`) [code] [spec 2026-10-08 §3.3]. The gate criteria stay your reconciled scores; the critic informs the gate, it does not own it.
+- The final mark: `brand advance --to package` and `package build` refuse without a fresh `final/critic.json` and a `final/scorecard.json` reconciled with it (`registry.require_final_critic`) [code]. How to run the critic: critic.md.
 - Fix it or kill it: at most four revise rounds per concept [spec §3.3]. A killed card sets `kill` to true, gives a `reason`, and still carries all ten scores, because the model requires them [code].
 - The other seven criteria do not block the sheet. A score of 1 or 2 on any of them goes into critique.md with its reason, and into what you tell the owner [synthesis].
 - The total out of 50 is shown beside each survivor on the concept sheet; it ranks survivors and never overrides a failed gate [code].
@@ -48,7 +50,7 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
 
 ## scorecard.json format
 
-`<concept>/scorecard.json` validates as `schemas.Scorecard` in `src/logomaker/schemas.py` [code]: `scores` holds all ten keys as whole numbers from 1 to 5, `evidence` maps criteria to a line each, `kill` is true or false, `reason` is text. A passing card:
+`<concept>/scorecard.json` validates as `schemas.Scorecard` in `src/logomaker/schemas.py` [code]: `scores` holds all ten keys as whole numbers from 1 to 5, `evidence` maps criteria to a line each, `kill` is true or false, `reason` is text, and `reconciled` maps each criterion the critic's card puts two or more away to one line saying whose score stands and why (empty by default). A passing card, reconciled with a critic who scored `distinctive` 2:
 
 ```json
 {
@@ -62,11 +64,12 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
     "clear": "description search found no socket-O mark yet; full knock-out in refinement"
   },
   "kill": false,
-  "reason": ""
+  "reason": "",
+  "reconciled": {"distinctive": "the critic read the O as a stock ring; at 16 px the square hole is what reads, so 4 stands"}
 }
 ```
 
-`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format; no gate reads it [code].
+`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format; `brand advance --to package` and `package build` read its `reconciled` entries against `final/critic.json` [code].
 
 A killed card keeps every score:
 
@@ -82,4 +85,4 @@ A killed card keeps every score:
 
 ## Sources
 
-01 §4 (Haviv's three criteria, Rand's seven questions, Bierut, Collins rule 34, Romaniuk's grid, Interbrand, the composite scorecard), §1.1 (CGH's knock-out before presenting); 05 §5.1 (the masters' tests); spec §3.3, §8.1, §8.2; code: `schemas.Scorecard`, `schemas.CRITERIA`, `schemas.GATE`, `schemas.GATE_MIN`, `registry.passing_scorecard`, `sheets.concepts_sheet`.
+01 §4 (Haviv's three criteria, Rand's seven questions, Bierut, Collins rule 34, Romaniuk's grid, Interbrand, the composite scorecard), §1.1 (CGH's knock-out before presenting); 05 §5.1 (the masters' tests); spec §3.3, §8.1, §8.2; code: `schemas.Scorecard`, `schemas.CRITERIA`, `schemas.GATE`, `schemas.GATE_MIN`, `registry.passing_scorecard`, `registry.vetted_scorecard`, `registry.require_final_critic`, `sheets.concepts_sheet`; spec 2026-10-08 §3.3.

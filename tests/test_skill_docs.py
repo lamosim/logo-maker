@@ -29,8 +29,10 @@ PHASE_READS = {
     "Strategy": ("strategy-frameworks.md", "evidence-rules.md", "logo-types.md", "cliches.md", "cautionary-tales.md", "trends.md",
                  "color.md"),
     "Territories": ("fonts.md", "color.md", "trends.md"),
-    "Concepts": ("craft.md", "kit-api.md", "scorecard.md", "evidence-rules.md", "trends.md", "cliches.md", "logo-types.md"),
-    "Refinement": ("craft.md", "kit-api.md", "color.md", "fonts.md", "deliverables.md", "cautionary-tales.md", "scorecard.md"),
+    "Concepts": ("craft.md", "kit-api.md", "scorecard.md", "evidence-rules.md", "trends.md", "cliches.md", "logo-types.md",
+                 "critic.md"),
+    "Refinement": ("craft.md", "kit-api.md", "color.md", "fonts.md", "deliverables.md", "cautionary-tales.md", "scorecard.md",
+                   "critic.md"),
     "Package": ("deliverables.md", "cautionary-tales.md"),
 }
 
