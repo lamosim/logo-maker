@@ -257,27 +257,59 @@ GATE = ("appropriate", "simple", "legible")
 GATE_MIN = 4  # the score each GATE criterion needs
 
 
+def check_scores(scores: dict[str, int]) -> None:
+    """Raise ValueError unless `scores` holds every criterion, each a whole number 1 to 5: the rule of Scorecard and CriticCard."""
+    missing = [c for c in CRITERIA if c not in scores]
+    if missing:
+        raise ValueError(f"scores missing: {', '.join(missing)}")
+    bad = {k: v for k, v in scores.items() if not 1 <= v <= 5}
+    if bad:
+        raise ValueError(f"scores must be 1..5: {bad}")
+
+
 class Scorecard(BaseModel):
-    """<concept>/scorecard.json: Claude's ten scores (spec 8.2), each 1 to 5, with evidence, and whether the concept is killed."""
+    """<concept>/scorecard.json: Claude's ten scores (spec 8.2), each 1 to 5, with evidence, whether the concept is killed,
+    and `reconciled`: for each criterion the blind critic's card disagrees on by two or more, one line saying whose score
+    stands and why (spec 2026-10-08 §3.3)."""
 
     scores: dict[str, int]
     evidence: dict[str, str] = Field(default_factory=dict)
     kill: bool = False
     reason: str = ""
+    reconciled: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def complete_and_in_range(self) -> Scorecard:
-        missing = [c for c in CRITERIA if c not in self.scores]
-        if missing:
-            raise ValueError(f"scores missing: {', '.join(missing)}")
-        bad = {k: v for k, v in self.scores.items() if not 1 <= v <= 5}
-        if bad:
-            raise ValueError(f"scores must be 1..5: {bad}")
+        check_scores(self.scores)
         return self
 
     @property
     def gate_ok(self) -> bool:
         return not self.kill and all(self.scores[c] >= GATE_MIN for c in GATE)
+
+    @property
+    def total(self) -> int:
+        return sum(self.scores[c] for c in CRITERIA)
+
+
+class CriticCard(BaseModel):
+    """<concept>/critic.json: the blind critic's merged card (spec 2026-10-08 §3.2). `scores` are the mean of the passes,
+    rounded half up; `evidence` holds every pass's line per criterion; `preferred_over` the slugs this concept beat in
+    every pass and both orders, `tied_with` the rest; `fingerprint` is audit.concept_fingerprint of the concept the
+    critic saw, so a later change makes the card stale."""
+
+    scores: dict[str, int]
+    evidence: dict[str, list[str]] = Field(default_factory=dict)
+    preferred_over: list[str] = Field(default_factory=list)
+    tied_with: list[str] = Field(default_factory=list)
+    sheet: int
+    passes: int
+    fingerprint: str
+
+    @model_validator(mode="after")
+    def complete_and_in_range(self) -> CriticCard:
+        check_scores(self.scores)
+        return self
 
     @property
     def total(self) -> int:
