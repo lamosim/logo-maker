@@ -160,6 +160,7 @@ def test_static_file_uses_os2_metrics_and_its_own_weight(project_root):
 def test_glyph_chars_follow_the_drawn_glyphs_through_ligatures_and_transforms(project_root):
     word = text("Keystone", "Fira Code", weight=600, cap_height=200)
     assert word.glyph_chars == list("Keystone")
+    # Fira Code has no fi ligature, so this checks the count only; the multi-character glyph_chars path is not exercised here.
     lig = text("fi", "Fira Code", weight=400, cap_height=200, features=("liga",))
     assert "".join(lig.glyph_chars) == "fi" and len(lig.glyph_chars) == len(lig.glyph_bounds)
     assert rotate(word, 30).glyph_chars == list("Keystone")
@@ -187,3 +188,8 @@ def test_wordmark_gaps_keep_a_combining_mark_with_its_base(project_root):
     assert [g["pair"] for g in gaps] == ["n̈o"]
     base, o = word.glyph_bounds[0], word.glyph_bounds[2]
     assert gaps[0]["gap"] > 0 and gaps[0]["gap"] <= round(o.x0 - base.x1, 2)  # the cluster's box, base and mark together
+
+
+def test_a_trailing_space_keeps_the_last_pair(project_root):
+    assert [g["pair"] for g in wordmark_gaps(text("Keystone ", "Fira Code", weight=600, cap_height=200))][-1] == "ne"
+    assert [g["pair"] for g in wordmark_gaps(text("ab ", "Fira Code", cap_height=200))] == ["ab"]

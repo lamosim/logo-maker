@@ -33,7 +33,6 @@ def test_near_miss_angles_and_free_segments(project_root):
     assert findings(result, "free_segments")[0].data["count"] == 4
 
 
-
 def test_free_segments_warn_in_a_grid_module_and_stay_info_in_a_free_one(project_root):
     target = install_concept(project_root, "near_miss", name="02-near")  # a grid module with a free=True polygon
     free = findings(audit.audit_concept(project(), "keystone", "02-near"), "free_segments")
@@ -47,12 +46,13 @@ def test_free_segments_warn_in_a_grid_module_and_stay_info_in_a_free_one(project
 def test_spacing_rhythm_warns_on_a_pair_far_from_the_median(project_root):
     # Fira Code is monospaced, so ink gaps follow glyph widths: "noon" is even, "Keystone" with a forced "ys" gap is not.
     even = Mark(wordmark=text("noon", "Fira Code", weight=600, cap_height=200), lockup="wordmark")
-    findings = _spacing_rhythm({"full-wordmark": even})
-    assert [f.severity for f in findings] == ["info"] and "no" in findings[0].message
+    rhythm = _spacing_rhythm({"full-wordmark": even})
+    assert [f.severity for f in rhythm] == ["info"] and "even" in rhythm[0].message
     gappy = Mark(wordmark=text("Keystone", "Fira Code", weight=600, cap_height=200, kern={"ys": 400}), lockup="wordmark")
-    findings = _spacing_rhythm({"full-wordmark": gappy})
-    assert [f.severity for f in findings] == ["warn"] and "ys wide" in findings[0].message
+    rhythm = _spacing_rhythm({"full-wordmark": gappy})
+    assert [f.severity for f in rhythm] == ["warn"] and "ys wide" in rhythm[0].message
     assert _spacing_rhythm({}) == []
+
 
 def test_tiny_part_warns_and_fails_in_small_tier(project_root):
     install_concept(project_root, "tiny_part", name="03-tiny")

@@ -259,7 +259,7 @@ def wordmark_gaps(word: TextShape) -> list[dict]:
             clusters.append((box, chars))
     gaps = []
     for (a, left), (b, right) in zip(clusters, clusters[1:]):
-        if any(c.isspace() for c in right):  # the inkless space went to the cluster after it: a word break
+        if right[:1].isspace():  # a word-break space leads the cluster after it (a trailing one ends the last cluster)
             continue
         gaps.append({"pair": _last_grapheme(left) + _first_grapheme(right), "gap": round(float(b.x0 - a.x1), 2)})
     return gaps
