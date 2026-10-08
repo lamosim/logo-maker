@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  body{margin:0;width:{{ width }}px;font:14px/1.4 -apple-system,Helvetica,Arial,sans-serif;background:#f3f3f3;color:#222;padding:24px;box-sizing:border-box}
+  h1{font-size:22px;margin:0 0 6px} .intro{color:#555;margin-bottom:18px;max-width:900px}
+  .concept{background:#fff;border:1px solid #ddd;border-radius:8px;padding:20px;margin-bottom:24px}
+  .concept h2{margin:0 0 12px;font-size:20px}
+  .strip{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+  .panel{background:#fff;border:1px solid #ddd;display:flex;align-items:center;justify-content:center;position:relative;margin:0;padding:16px 0 20px;box-sizing:border-box}
+  .panel.dark{background:#000} .panel figcaption{position:absolute;left:4px;bottom:2px;font-size:10px;color:#888}
+  .panel.dark figcaption{color:#aaa}
+  .mirror svg{transform:scaleX(-1)} .rotate svg{transform:rotate(90deg)}
+  .mirror,.rotate{min-height:{{ mirror_px + 16 + 20 + 2 }}px}
+  .mockups{display:grid;grid-template-columns:300px 520px 360px;gap:16px;align-items:start}
+  .mockups [data-mockup="phone-home"]{grid-column:1;grid-row:1 / span 4}
+  .mockups [data-mockup="browser-tab"]{grid-column:2;grid-row:1}
+  .mockups [data-mockup="site-header-light"]{grid-column:2;grid-row:2}
+  .mockups [data-mockup="site-header-dark"]{grid-column:2;grid-row:3}
+  .mockups [data-mockup="sign-one-colour"]{grid-column:2;grid-row:4}
+  .mockups [data-mockup="avatar"]{grid-column:3;grid-row:1 / span 2}
+  .mockups [data-mockup="card"]{grid-column:3;grid-row:3 / span 2}
+</style></head>
+<body>
+<h1>{{ brand }} &mdash; critic sheet {{ round_n }}</h1>
+<div class="intro">{{ count }} concept{{ 's' if count != 1 else '' }}, lettered in an arbitrary order. Score each on the ten criteria of scorecard.md from what is drawn here: the lockups, the ladder down to 16 px, the mirrored and rotated readings, the one-colour panels and the mockups.</div>
+{% for c in concepts %}
+<section class="concept">
+  <h2>Concept {{ c.letter }}</h2>
+  <div class="strip">
+    <figure class="panel" style="width:{{ lockup_px + 16 }}px">{{ c.strip.black|safe }}<figcaption>black</figcaption></figure>
+    <figure class="panel dark" style="width:{{ lockup_px + 16 }}px">{{ c.strip.white|safe }}<figcaption>reversed</figcaption></figure>
+    {% for step in c.strip.ladder %}<figure class="panel" style="width:{{ [step.size, 48]|max + 16 }}px">{{ step.svg|safe }}<figcaption>{{ step.size }}</figcaption></figure>{% endfor %}
+    <figure class="panel mirror" style="width:{{ mirror_px + 16 }}px">{{ c.strip.mirror|safe }}<figcaption>mirrored</figcaption></figure>
+    <figure class="panel rotate" style="width:{{ mirror_px + 16 }}px">{{ c.strip.rotate|safe }}<figcaption>rotated 90</figcaption></figure>
+    {% for step in c.one_colour %}<figure class="panel" style="width:150px">{{ step.svg|safe }}<figcaption>one colour {{ step.size }}</figcaption></figure>{% endfor %}
+  </div>
+  <div class="mockups">{% for m in c.mockups %}{{ m|safe }}{% endfor %}</div>
+</section>
+{% endfor %}
+</body></html>

@@ -443,6 +443,20 @@ def sheet_refine(slug: str, round_n: int | None, no_open: bool) -> None:
     emit(info, warnings=info.pop("warnings"))
 
 
+@sheet_group.command("critic")
+@click.argument("slug")
+@click.option("--concepts", "concepts", default=None, help="Comma-separated survivors to letter, e.g. 01-arch,03-keystone")
+@click.option("--final", is_flag=True, help="Letter the final mark alone (final/), for the critic's last pass.")
+@click.option("--seed", type=int, default=None, help="Shuffle seed (default: the sheet's round number); use another for the second pass.")
+@command
+def sheet_critic(slug: str, concepts: str | None, final: bool, seed: int | None) -> None:
+    """Render the blind critic's lettered sheet to sheets/critic-N.{html,png} and its key to critic-N.key.json; never opened."""
+    from . import sheets as sheetlib
+
+    names = [c.strip() for c in (concepts or "").split(",") if c.strip()]
+    emit(sheetlib.critic_sheet(project(), slug, names, seed=seed, final=final))
+
+
 @main.group("package")
 def package_group() -> None:
     """Build and verify the export package."""

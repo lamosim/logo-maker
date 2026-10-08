@@ -1,6 +1,7 @@
 """Sheets rendered through Chrome. Part 1: the per-concept critique sheet Claude reads; Part 2 adds owner-facing sheets."""
 from __future__ import annotations
 
+import json
 import os
 import shlex
 import subprocess
@@ -387,6 +388,57 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
     html_path, png_path = _write_sheet(renderer, html, paths.brand(slug) / "sheets", "concepts", CONCEPTS_W)
     open_file(html_path, open_after, warnings)
     return {"sheet_html": str(html_path), "sheet_png": str(png_path), "concepts": concept_names, "warnings": warnings}
+
+
+def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed: int | None = None, final: bool = False,
+                 renderer: Renderer | None = None) -> dict:
+    """Write sheets/critic-N.{html,png} for the blind critic and sheets/critic-N.key.json for the merge (spec 2026-10-08
+    §3.1). Each survivor (or final/, with `final`) shows the critique strip, the one-colour panels and the mockups under
+    a letter, in the order a Random seeded with `seed` (default N) shuffles them; no slug, idea or score is written. Every
+    survivor must be vetted (_vetted: a fresh, rendered, passing audit and a gate-passing scorecard), and final/ must
+    pass registry.require_final_audit, before Chrome starts. The key maps letters to folder names and records each
+    concept's fingerprint now."""
+    import random
+
+    from . import critic as criticlib
+
+    if final and concept_names:
+        raise CliError("--final takes no --concepts")
+    if not final and not concept_names:
+        raise CliError("give --concepts <a,b,c> for survivors, or --final for the final mark")
+    if len(concept_names) > len(criticlib.LETTERS):
+        raise CliError(f"at most {len(criticlib.LETTERS)} concepts on one critic sheet")
+    state = registry.load_state(paths, slug)
+    brand = paths.brand(slug)
+    if final:
+        registry.require_final_audit(paths, slug, "the critic sheet")
+        folders = [("final", brand / "final")]
+    else:
+        folders = [(name, _vetted(paths, slug, name)[0]) for name in concept_names]
+    round_n = next_round(brand, "sheets/critic-*.key.json")
+    seed = round_n if seed is None else seed
+    order = list(folders)
+    random.Random(seed).shuffle(order)
+    env = jinja(paths)
+    cards, letters, fingerprints = [], {}, {}
+    for letter, (name, folder) in zip(criticlib.LETTERS, order, strict=False):
+        module = conceptlib.load_concept(folder)
+        outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
+        light, dark = _palettes(folder)
+        ctx = mockup_context(state, outputs, light, dark)
+        cards.append({"letter": letter, "strip": _strip_panels(outputs, CONCEPT_LOCKUP, CONCEPT_MIRROR),
+                      "one_colour": [{"size": s, "svg": fit_box(outputs[o].to_svg("black"), s, s)}
+                                     for s, o in _one_colour_outputs(outputs)],
+                      "mockups": [mockuplib.render_mockup(env, kind, ctx) for kind in mockuplib.MOCKUPS]})
+        letters[letter] = name
+        fingerprints[name] = concept_fingerprint(paths, slug, folder)
+    html = env.get_template("sheets/critic.html").render(brand=state.name, round_n=round_n, count=len(cards), concepts=cards,
+                                                         width=CONCEPTS_W, lockup_px=CONCEPT_LOCKUP, mirror_px=CONCEPT_MIRROR)
+    html_path, png_path = _write_sheet(renderer, html, brand / "sheets", f"critic-{round_n}", CONCEPTS_W)
+    key = criticlib.Key(round=round_n, seed=seed, letters=letters, fingerprints=fingerprints, final=final)
+    key_file = criticlib.key_path(brand, round_n)
+    key_file.write_text(json.dumps(key.model_dump(), indent=2) + "\n", encoding="utf-8")
+    return {"sheet_html": str(html_path), "sheet_png": str(png_path), "key": str(key_file), "round": round_n, "letters": letters}
 
 
 def clear_space_svg(mark: Mark, x: float) -> str:

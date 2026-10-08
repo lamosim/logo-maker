@@ -1,10 +1,15 @@
+import json
+
 import pytest
+from click.testing import CliRunner
 from pydantic import ValidationError
 
-from logomaker import critic
+from logomaker import critic, sheets
+from logomaker.cli import main
 from logomaker.output import CliError
+from logomaker.paths import project
 from logomaker.schemas import CRITERIA, CriticCard, Scorecard
-from tests.conftest import scorecard
+from tests.conftest import StubChrome, install_concept, make_final_brand, scorecard, write_passing_audit
 
 
 def critic_card(**overrides) -> dict:
@@ -88,3 +93,57 @@ def test_unreconciled_lists_every_criterion_two_or_more_apart_without_an_entry()
 
 def test_round_half_up():
     assert [critic.round_half_up(v) for v in (3.0, 3.49, 3.5, 4.5)] == [3, 3, 4, 5]
+
+
+def prepare(project_root, name: str, fixture: str = "good"):
+    folder = install_concept(project_root, fixture, name=name)
+    write_passing_audit(project(), "keystone", folder)
+    (folder / "scorecard.json").write_text(json.dumps(scorecard()))
+    return folder
+
+
+def run(*args):
+    result = CliRunner().invoke(main, list(args))
+    return result.exit_code, json.loads(result.stdout)
+
+
+def test_critic_sheet_letters_the_survivors_in_a_seeded_shuffle_and_writes_the_key(project_root):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    info = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], seed=7, renderer=StubChrome())
+    assert info["round"] == 1 and set(info["letters"]) == {"A", "B"} and set(info["letters"].values()) == {"01-good", "02-dots"}
+    brand = project_root / "brands" / "keystone"
+    key = json.loads((brand / "sheets" / "critic-1.key.json").read_text())
+    assert key["letters"] == info["letters"] and key["seed"] == 7 and key["final"] is False
+    assert set(key["fingerprints"]) == {"01-good", "02-dots"}
+    html = (brand / "sheets" / "critic-1.html").read_text()
+    assert "Concept A" in html and "Concept B" in html
+    assert "01-good" not in html and "02-dots" not in html and "A ring with a gap" not in html  # no slug, no idea
+    assert "/ 50" not in html  # no scores
+    other = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], seed=8, renderer=StubChrome())
+    assert other["round"] == 2
+    assert sorted(other["letters"].values()) == sorted(info["letters"].values())
+
+
+def test_critic_sheet_refuses_an_unvetted_concept_before_chrome(project_root, no_chrome):
+    folder = prepare(project_root, "01-good")
+    (folder / "scorecard.json").unlink()
+    with pytest.raises(CliError, match="scorecard.json is missing"):
+        sheets.critic_sheet(project(), "keystone", ["01-good"])
+    assert not list((project_root / "brands" / "keystone" / "sheets").glob("critic-*"))
+
+
+def test_critic_sheet_for_final_letters_the_final_mark_alone(project_root):
+    make_final_brand(project_root)
+    info = sheets.critic_sheet(project(), "keystone", [], final=True, renderer=StubChrome())
+    assert info["letters"] == {"A": "final"}
+    key = json.loads((project_root / "brands" / "keystone" / "sheets" / "critic-1.key.json").read_text())
+    assert key["final"] is True and list(key["fingerprints"]) == ["final"]
+
+
+def test_sheet_critic_cli_needs_concepts_or_final_but_not_both(project_root):
+    make_final_brand(project_root)
+    code, payload = run("sheet", "critic", "keystone")
+    assert code == 2 and payload["errors"] == ["give --concepts <a,b,c> for survivors, or --final for the final mark"]
+    code, payload = run("sheet", "critic", "keystone", "--concepts", "01-good", "--final")
+    assert code == 2 and payload["errors"] == ["--final takes no --concepts"]
