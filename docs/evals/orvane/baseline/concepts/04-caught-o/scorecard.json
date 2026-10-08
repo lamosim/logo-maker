@@ -1,0 +1,21 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 2,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "universal": "the O with a dot inside reads as an eye or a googly eye at every size, worst in the 32 to 64 px icon",
+    "system": "wordmark only: every app icon from 96 px shows the whole word; the dot sits left of the counter's centre in the wordmark"
+  },
+  "kill": true,
+  "reason": "reads as an eye at every size, and a wordmark-only mark shows the whole word on icons from 96 px; appropriate 3",
+  "reconciled": {}
+}

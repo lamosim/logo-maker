@@ -1,0 +1,21 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 3,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 2,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "universal": "from 64 px down the big stub and narrow stub read as the video-camera icon (Zoom, Meet)",
+    "appropriate": "a ticket says events and admission, not delivery; the proof idea needs a sentence"
+  },
+  "kill": true,
+  "reason": "unintended reading inherent to the form: the video-camera icon at 16 to 64 px; appropriate 3",
+  "reconciled": {}
+}

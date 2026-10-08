@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 5,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a solid figure block sitting on a double rule reads as a ruled-off total, and the title-case book serif suits the Everyman/Sage pair; still, someone has to tell you it's a total rather than a page of text"
+    ],
+    "distinctive": [
+      "nothing like it among the five competitors and it stands out from the circles and triangles in the phone grid, but a slab over two bars is the stock 'document/text' UI glyph, so the details differ while the silhouette stays generic"
+    ],
+    "simple": [
+      "one rounded slab and two horizontal rules; you could redraw it from memory in seconds"
+    ],
+    "legible": [
+      "the slab and rules hold at 32 and 24 px; at 16 px the two rules close up into one dark bar, so the double rule is lost but the silhouette survives; 'Clear Ledger' reads in every header lockup"
+    ],
+    "adaptable": [
+      "black, reversed, one-colour 64 and 32 px, the green app tile, the avatar and the dark header all hold up with no tints; no motion logic is shown"
+    ],
+    "timeless": [
+      "no trend shapes: plain rules and a conventional book serif with no reverse stress; it would have looked the same ten years ago"
+    ],
+    "universal": [
+      "the mirrored panel matches the original; rotated 90 degrees it reads faintly as a pause sign or battery icon"
+    ],
+    "clear": [
+      "unsearched: block-over-lines marks like this are common as 'notes', 'document' and 'list' app icons; I know of no bookkeeping competitor using it, but there are similar marks in other categories"
+    ],
+    "congruent": [
+      "level, symmetric, static, dark warm ink green on paper and a title-case serif all match the targets; the slab is heavier than the light-to-medium weight the name's sound asks for, and there is no page frame"
+    ],
+    "system": [
+      "the horizontal lockup, symbol, app icon, avatar and size ladder are shown, but there's no stacked lockup, and the 16 px tier is a straight scale-down rather than its own drawing"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "4a86e3acd26803993ec520fd90d4916155f8aff1b772e8a960188f306e3ae3a9"
+}

@@ -29,3 +29,6 @@ brands/*/package.old.tmp/
 
 # Superpowers plan workspaces (ledgers, briefs, review packages)
 .superpowers/
+
+# Evaluation transcripts (7 MB of stream-json per run): kept on disk by scripts/eval_brand.py, never committed; report.md and the sheets carry the result
+docs/evals/*/*/run.jsonl

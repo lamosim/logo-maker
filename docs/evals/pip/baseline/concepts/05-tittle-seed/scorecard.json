@@ -1,0 +1,29 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the friend hides in the name as the i's dot: quiet, but it needs a sentence to read as a friend",
+    "distinctive": "the leaf-dot i is a familiar eco device; the seed shape keeps it from the plain leaf",
+    "simple": "a word and one seed; 7 anchors in the icon",
+    "legible": "Pip reads at once; the seed holds at 16 px",
+    "adaptable": "one-colour and reverse hold; icons from 96 px up show the whole wordmark",
+    "timeless": "no trend shape",
+    "universal": "mirrored reads qiP, rotated reads as type; nothing unwanted",
+    "clear": "description search found leaf accents (Beans & Barley, Reformation) but no seed tittle in the category",
+    "congruent": "round, light, small, open, warm; but no character, against the mascot route",
+    "system": "small, favicon and compact tiers draw the seed; app icons from 96 px show the wordmark, so the icon set is uneven"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {}
+}

@@ -1,0 +1,29 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the P becomes a head with one eye turned to the page: the name and the friend in one shape",
+    "distinctive": "an eye in a counter is a known device, but no reading app uses a leaning P; generic in silhouette",
+    "simple": "one letter, one dot; drawable in two strokes",
+    "legible": "the P reads at every size; the eye drops out in the favicon tier by design",
+    "adaptable": "one-colour and reverse hold; the icon is a letter, strong on a home screen",
+    "timeless": "no trend shape; a single letter in a rounded sans",
+    "universal": "mirrored reads as q, rotated reads as a tag; nothing unwanted",
+    "clear": "description search (P with eye in counter) found templates but no named mark; P monograms are crowded",
+    "congruent": "round type and a lean match; a lettermark is less of a character than the strategy asks",
+    "system": "lockups and tiers build; the favicon loses the eye"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {}
+}

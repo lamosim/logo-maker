@@ -1,0 +1,22 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 2,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a split O reads as a stencil O or as '( )', not as two sides closing",
+    "distinctive": "a stencil O is a stock glyph; a generic letter cannot be owned",
+    "clear": "stencil O marks are everywhere in stencil fonts"
+  },
+  "kill": true,
+  "reason": "a stencil O, a generic glyph that cannot be owned; appropriate 3, distinctive 3",
+  "reconciled": {}
+}

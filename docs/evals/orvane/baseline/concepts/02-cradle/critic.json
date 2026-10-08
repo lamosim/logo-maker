@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a solid ball sits inside a heavy rounded cup: 'held, nothing gets dropped' reads without a caption; the enclosing form suits Sage with Caregiver",
+      "a flat-bottomed cup holding a ball reads at once as something held and not dropped; calm and orderly"
+    ],
+    "distinctive": [
+      "a cup-and-ball rounded block owns no blue, no hook, chain, arrow or node; none of Svix, Hookdeck, Convoy, Hook0 or Webhook Relay uses anything like it",
+      "none of the five uses a holding vessel; it avoids links, hooks, arrows and nodes, and the solid cup silhouette is ownable"
+    ],
+    "simple": [
+      "one U-shaped rounded block and one dot; drawable from memory in seconds",
+      "a rounded U with a ring and a dot inside: one dominant silhouette, drawable from memory"
+    ],
+    "legible": [
+      "Orvane reads clearly in every lockup; at 16 px it holds as a dark rounded square with a light notch and dot, though the dot is a speck",
+      "the heavy closed cup and the dot still read at 16 and 24 px, and the black-on-dark tab icon holds; the wordmark is clear"
+    ],
+    "adaptable": [
+      "the black, reversed-white, one-colour 64 and 32 panels and the app-icon tile all hold without a redraw; the dark website header stays crisp",
+      "the reversed lockup, the one-colour panels, the app tile and the GitHub avatar all work without a redraw"
+    ],
+    "timeless": [
+      "a plain flat rounded form with no gradient, hexagon, sparkle or concentric ring; nothing on the avoid list",
+      "a solid geometric vessel with no trend shape; the ring and dot are inside it rather than a concentric aperture on its own"
+    ],
+    "universal": [
+      "mirrored is identical; rotated 90 it reads like a C or a webcam, but nothing unwanted in the upright panels",
+      "the U reads faintly as a letter that is not in the name (or a bucket), and rotated 90 it reads as a C"
+    ],
+    "clear": [
+      "unsearched: I know U-with-dot and cup-and-ball icons in other categories but no webhook or dev-infra mark like it",
+      "unsearched: U-shaped vessel and cup marks exist in other categories (storage, coffee); I know of no webhook or dev-tool look-alike"
+    ],
+    "congruent": [
+      "symmetric, grounded, flat-bottomed, low complexity and medium-heavy weight match; the U does not echo the round O of the name, and the wordmark looks like a neutral grotesque, not the humanist warmth targeted; hue is not shown",
+      "symmetric, flat-bottomed, grounded, medium-heavy weight and softened corners all match the targets; the warm hue is not shown"
+    ],
+    "system": [
+      "horizontal lockup, reversed, symbol, one-colour panels and a 16 to 256 ladder are all drawn; no stacked lockup or rationale visible on the sheet",
+      "horizontal lockup, all tiers down to 16 px, the app tile and both nav bars derive cleanly; the square-ish silhouette suits the avatar"
+    ]
+  },
+  "preferred_over": [
+    "01-held",
+    "06-open-o"
+  ],
+  "tied_with": [],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "27aa6473f0f4e09e00a0e21f3836d0d106aef3122105ed600c07af1ef9e16029"
+}

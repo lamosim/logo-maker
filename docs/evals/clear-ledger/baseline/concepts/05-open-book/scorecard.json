@@ -1,0 +1,8 @@
+{"scores": {"appropriate": 3, "distinctive": 2, "simple": 4, "legible": 3, "adaptable": 3, "timeless": 4, "universal": 3, "clear": 3, "congruent": 3, "system": 3},
+ "evidence": {
+  "appropriate": "two ruled tiles read as documents or a reader-mode icon, not as an open ledger",
+  "distinctive": "the literal document is the category's own picture; reads as a stock UI glyph",
+  "simple": "two tiles with cut lines",
+  "legible": "at 16 px the cuts become specks inside two black tiles",
+  "universal": "reads as a text-alignment or list icon; rotated, as stacked cards"},
+ "kill": true, "reason": "Reads as a UI document or reader-mode icon rather than an open ledger, and at 16 px the ruled cuts become specks; appropriate 3."}

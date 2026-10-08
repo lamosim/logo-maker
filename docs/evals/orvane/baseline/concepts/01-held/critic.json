@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 3,
+    "universal": 3,
+    "clear": 2,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "two rounded halves clamp a ring around a dot; it reads as a camera or lens before it reads as holding, so the idea needs explaining",
+      "two halves gripping a central O could mean proof on both sides, but that needs a sentence; at a glance it reads as a device, not as delivery"
+    ],
+    "distinctive": [
+      "the rounded square with a central ring and dot is the stock camera or screenshot icon; it looks like an app glyph, not an owned mark",
+      "a rounded square around a ring and dot is the stock camera and lens icon, so the silhouette is generic"
+    ],
+    "simple": [
+      "two notched block halves, a ring and a dot make four parts; redrawable with effort",
+      "a split rounded square, a ring and a dot; easy to redraw"
+    ],
+    "legible": [
+      "the heavy square silhouette holds at 16 px with a visible light dot; the wordmark reads in every lockup",
+      "the heaviest closed silhouette of the three; at 16 px it holds as a square with a hole, and the wordmark reads"
+    ],
+    "adaptable": [
+      "black, reversed, one-colour panels and the app-icon tile all hold; it is already icon-shaped",
+      "the reversed panel, one colour, the app tile and the dark tab all work; the square shape fits the tile"
+    ],
+    "timeless": [
+      "a ring around a dot is the concentric aperture on trends.md's avoid list",
+      "a ring and dot centred in a frame sit close to the concentric-aperture shape trends.md lists under avoid"
+    ],
+    "universal": [
+      "a camera or lens in every panel; rotated 90 it becomes a different-looking object with horizontal notches",
+      "it reads as a camera or a screenshot tool, and rotated 90 it reads as a different object with horizontal slots"
+    ],
+    "clear": [
+      "unsearched: camera, lens and Instagram-style rounded-square-and-ring icons are everywhere",
+      "unsearched: camera, lens and record-button icons look nearly the same; a close look-alike is likely"
+    ],
+    "congruent": [
+      "symmetric and grounded, but the concentric rings are on the strategy's avoid list, the square block is heavier and more angular than shape 0.55, and the wordmark is a neutral grotesque",
+      "symmetric, grounded and heavy fit the targets, but the camera cue works against the idea of holding something"
+    ],
+    "system": [
+      "horizontal lockup, reversed, symbol, one-colour panels and the 16 to 256 ladder all derive cleanly; no stacked lockup or rationale visible",
+      "every lockup, tier and mockup is drawn, and the square symbol drops into the app grid and favicon cleanly"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "02-cradle",
+    "06-open-o"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "b7f019a7d69b7c4cf1311615672499c76f67404314c7c3d6d6143e4c61c66307"
+}

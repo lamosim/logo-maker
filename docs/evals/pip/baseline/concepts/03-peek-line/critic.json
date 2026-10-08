@@ -1,0 +1,66 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a dome head with two eyes peeking over a bar reads as a character, but 'reading the line with you' needs a sentence",
+      "a dome head with two dots peeking over a bar reads as a small character, but reading together with the child needs a sentence (the bar as a line of text)"
+    ],
+    "distinctive": [
+      "a peeking dome face is a familiar motif; it avoids the category cues but its silhouette is not ownable",
+      "no competitor uses it, but the dome-over-a-line face is a stock peeker silhouette rather than an owned one"
+    ],
+    "simple": [
+      "one dome, one bar, two dots; drawable in seconds",
+      "a half-dome, a rounded bar and two dots; drawable from memory in seconds"
+    ],
+    "legible": [
+      "the dome-over-bar silhouette holds at 16 px though the eyes merge; 'Pip' reads in every lockup",
+      "dome and bar hold down to 16 px, though the eyes drop out below 24 px; Pip reads cleanly in every lockup"
+    ],
+    "adaptable": [
+      "black, reversed and one-colour panels hold; the icon reads on the phone grid, a little low and wide in the tile",
+      "black, reversed, one-colour 64 and 32 and the app tile all hold; the reversed eyes stay open"
+    ],
+    "timeless": [
+      "a flat minimal character with no trend-list shape",
+      "flat mascot, no trend shape from the avoid list"
+    ],
+    "universal": [
+      "reads as Kilroy, a helmet or a bun lid; rotated 90 it looks like the letters 'ID'",
+      "the dome on a bar can read as a bowler hat or helmet, and rotated 90 it reads as a letter D with eyes"
+    ],
+    "clear": [
+      "unsearched: peeking dome faces are common (Kilroy and many app mascots)",
+      "unsearched: echoes the Kilroy-was-here peeker and dome space-invader faces, not a known reading-app mark"
+    ],
+    "congruent": [
+      "round with a flat base and small eyes match, but it is mirror-symmetric, missing the one dosed asymmetry",
+      "round, flat-bottomed and small-eyed as targeted, but fully mirrored where the strategy asks for exactly one asymmetric feature"
+    ],
+    "system": [
+      "horizontal lockup, tiers, avatar and card all derive cleanly",
+      "horizontal lockup, icon tile, browser tab, social avatar and signature all derive from the same shape without redraws"
+    ]
+  },
+  "preferred_over": [
+    "04-p-friend",
+    "05-tittle-seed"
+  ],
+  "tied_with": [
+    "01-seed-friend"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "0d84e63eb8cdfc4d429538c12b4174208e0c60584e30928d11d0e38dfcf3e80e"
+}

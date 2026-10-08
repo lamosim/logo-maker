@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a solid block above a double rule abstracts the ruled total, but it needs a sentence to see the 'one honest number'; without it it is a slab and lines",
+      "a solid block above a double rule abstracts the ruled total, one honest figure underlined twice; the idea needs a sentence to land"
+    ],
+    "distinctive": [
+      "a rectangle over two bars is a generic silhouette: menu, document, keyboard or laptop icon",
+      "no competitor owns a ruled block, and it avoids every clich\u00e9, but the silhouette is close to a stock list or menu icon"
+    ],
+    "simple": [
+      "one block and two bars, drawable in seconds; one dominant shape",
+      "one rounded block and two rules; drawable in seconds"
+    ],
+    "legible": [
+      "the block and both rules stay separate down to 16 px; the strongest small tier on the sheet",
+      "block and rules stay separate down to 16 px and hold in one-colour 32; the serif wordmark reads in every lockup"
+    ],
+    "adaptable": [
+      "black, reversed, one-colour 64/32 and the app tile all hold without redraw; fills a square cleanly",
+      "solid black shapes survive the receipt printer, reversed panel and app tile with no redraw; no hairlines"
+    ],
+    "timeless": [
+      "plain geometric block and rules, no trend shape",
+      "no trend shape; square, app-tile-aware geometry is on the 'use' list"
+    ],
+    "universal": [
+      "rotated 90 reads as a pause symbol beside a block; at small sizes it can pass for a hamburger menu or laptop icon",
+      "at small sizes it reads as a hamburger menu or a stack-of-cards icon; rotated 90 it reads as a battery or pause glyph"
+    ],
+    "clear": [
+      "unsearched: block-and-lines glyphs are common as document, menu and invoice icons in software",
+      "unsearched: no known finance mark uses it, but it resembles generic UI list and document glyphs"
+    ],
+    "congruent": [
+      "level, horizontal, framed, static, low complexity, rounded block corners all match; a heavy block is weightier than the medium target",
+      "level, horizontal, framed and static, with one firm accent of weight; the block is heavier than the medium-weight target"
+    ],
+    "system": [
+      "every tier, tile, header and card derives cleanly; the icon carries no letter DNA from the name",
+      "symbol, horizontal lockup, reversed header, icon and favicon all derive from the same block-and-rule unit"
+    ]
+  },
+  "preferred_over": [
+    "03-level"
+  ],
+  "tied_with": [
+    "02-cl-total"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "48eccf79aa067771dc3f4045c74209580ccc8b4cce208ead1be00d521f381643"
+}

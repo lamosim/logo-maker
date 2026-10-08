@@ -1,0 +1,31 @@
+{
+ "scores": {
+  "appropriate": 4,
+  "distinctive": 3,
+  "simple": 5,
+  "legible": 5,
+  "adaptable": 5,
+  "timeless": 5,
+  "universal": 4,
+  "clear": 3,
+  "congruent": 4,
+  "system": 5
+ },
+ "evidence": {
+  "appropriate": "one figure on the bookkeeper's double rule: a finished total, plain and level, in ledger-ink green on account-book paper; Everyman with Sage",
+  "distinctive": "no competitor among FreeAgent, Xero, QuickBooks, Coconut, Pandle uses rules or a total, and the green is darker and warmer than QuickBooks'; the block alone stays generic",
+  "simple": "three shapes, 24 anchors; drawable from memory in seconds",
+  "legible": "the favicon keeps the block and one rule apart at 16 px (2.53 px thinnest); the name reads as two words at the 120 px minimum with the opened space (x-height 7.1 px)",
+  "adaptable": "colour, reverse, black, white and mono all hold; compact, small and favicon tiers drawn; one colour suits the receipt printer",
+  "timeless": "no trend shape; rules and a book serif would have read the same ten years ago",
+  "universal": "mirrored identical; rotated reads faintly as a pause sign or battery; at 24 px a faint menu-icon reading (final/knockout.md)",
+  "clear": "description searches found no matching mark; the name conflicts with the 'Clear Ledger App' on the App Store, for the attorney",
+  "congruent": "level, symmetric, low complexity, medium weight, framed by its own rules, dark low-chroma warm green, book serif in title case; a little squarer than the light name sound",
+  "system": "horizontal primary, stacked, symbol, wordmark, compact, small and favicon all derive; designed reverse; rationale written"
+ },
+ "kill": false,
+ "reason": "",
+ "reconciled": {
+  "system": "mine stands at 5: the stacked lockup is built (refine-1.png shows it), and the favicon is its own drawing, one thick square rule under a taller block, not a scale-down; the critic sheet shows neither"
+ }
+}

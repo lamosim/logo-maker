@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a seed-shaped body with a leaf sprout and two small dot eyes reads at once as a small, quiet friend named for a seed; Caregiver warmth, but nothing in the shape carries reading aloud"
+    ],
+    "distinctive": [
+      "a coral seed character with small low eyes sits apart from the category's big-eyed owls, monsters and blue tiles, though a teardrop-with-leaf silhouette is not wholly ownable"
+    ],
+    "simple": [
+      "one teardrop body, one leaf, two dots; drawable from memory in seconds"
+    ],
+    "legible": [
+      "'Pip' in bold rounded sans reads cleanly in every lockup; at 16 px the seed silhouette holds but the eyes merge into a speck and the leaf thins"
+    ],
+    "adaptable": [
+      "black, reversed white-on-black, one-colour 64 and 32, coral app tile, yellow-on-brown nav and avatar all work; no motion logic shown"
+    ],
+    "timeless": [
+      "a flat character mark (a 'use' trend where warmth is the strategy) with a rounded geometric sans that leans slightly toward the saturated rounded consumer look"
+    ],
+    "universal": [
+      "mirrored reads clean, but rotated 90 turns the body and leaf into a fish or tadpole with a tail"
+    ],
+    "clear": [
+      "unsearched: seed and drop characters with a leaf sprout are common in kids' and eco brands, and 'Pip and Tim' and Pip School already use the name in children's reading"
+    ],
+    "congruent": [
+      "round body, coral at medium chroma, one asymmetric leaf and lean, eyes about a tenth of body width, front-vowel smallness all match; the bottom is rounded rather than the flat grounded edge the ladder asks for"
+    ],
+    "system": [
+      "horizontal lockups, reversed, icon tile, favicon tab, nav bars, avatar and card all derive cleanly with the 256 to 16 ladder drawn; no stacked lockup shown"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "66a99a27f2b32b8f3bfc46523ddaf7a720d87e6b9e70c3072792e22d78fe1c03"
+}

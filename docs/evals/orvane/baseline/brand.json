@@ -1,0 +1,107 @@
+{
+  "slug": "orvane",
+  "name": "Orvane",
+  "needs_name": false,
+  "created": "2026-10-08T15:12:33-04:00",
+  "updated": "2026-10-08T15:24:29-04:00",
+  "phase": "done",
+  "industry": "webhook delivery for SaaS teams",
+  "surfaces": [
+    "website header",
+    "GitHub avatar",
+    "docs favicon"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "night-shift",
+  "concept": "02-cradle",
+  "fonts": {
+    "wordmark": {
+      "family": "Instrument Sans",
+      "weight": 600,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T15:13:00-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: brief confirmed as written, no corrections (write-back reply not scripted; most conservative option). Sage with Caregiver; sincerity 0.6, excitement 0.3, competence 0.9, sophistication 0.6, ruggedness 0.4; industry tag 'webhook delivery for SaaS teams' (saas list)."
+    },
+    {
+      "at": "2026-10-08T15:14:45-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: strategy approved as written (not scripted; conservative). One idea 'nothing gets dropped'; wordmark-led combination mark; avoid blue, purple, neon green, black, Inter-only, arrows, bolts, hexagons, nodes, links; own warmth (amber), a grounded closed silhouette and holding/receipt over speed. Names check shown with caveat: .com/.co/.io/.ai/.app and GitHub handle registered, .dev available."
+    },
+    {
+      "at": "2026-10-08T15:15:12-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "Chose Night Shift, the quieter board (script answer 12): Instrument Sans 600 wordmark with IBM Plex Mono 400; Lamp Amber #c4801f, Night #1f1b17, Log Paper #f4efe6, Brass, Ash. Signal Flare (Bricolage 800, Ember) set aside."
+    },
+    {
+      "at": "2026-10-08T15:19:12-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 03-ticket after round 1: unintended reading inherent to the form: the video-camera icon at 16 to 64 px; appropriate 3"
+    },
+    {
+      "at": "2026-10-08T15:19:12-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 04-caught-o after round 1: reads as an eye at every size, and a wordmark-only mark shows the whole word on icons from 96 px; appropriate 3"
+    },
+    {
+      "at": "2026-10-08T15:19:12-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 05-seam-o after round 1: a stencil O, a generic glyph that cannot be owned; appropriate 3, distinctive 3"
+    },
+    {
+      "at": "2026-10-08T15:20:57-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "Name knock-out shown with the caveat: orvane .com/.co/.io/.ai/.app and GitHub handle registered, .dev available; 01-held's camera-icon look-alike named. Most conservative option (scripted): keep the name and have a trademark attorney clear it before filing or spending."
+    },
+    {
+      "at": "2026-10-08T15:20:57-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: what do you like in each? No specific likes named (most conservative); no steal, no blend."
+    },
+    {
+      "at": "2026-10-08T15:20:57-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "First reaction (scripted): 'the symbol disappears in the dark header at 32 px'. Probing question: what reads wrong, at what size, in which mockup? Answer: 'the site header dark mockup'. Checked on sheets/concepts.png: the preferred 02-cradle draws there as a solid light tile with dark slot and disc, clearly visible at 32 px; the reaction does not fit it, so per the script the sheet stands as it is and nothing changes."
+    },
+    {
+      "at": "2026-10-08T15:20:57-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "Chose 02-cradle, the survivor the critic preferred (critic's order 02-cradle > 06-open-o > 01-held; designer 44 / critic 40). No steal, no blend."
+    },
+    {
+      "at": "2026-10-08T15:22:52-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "Approved after the colour round (refine sheet 1; script answer 13): 02-cradle refined with a 5% heavier floor and a 1.5% disc overshoot, favicon disc enlarged, Instrument Sans 600 tracked +12 with no quirk, horizontal primary lockup with a 225-unit gap; Lamp Amber #b8761a and Night on Log Paper, Lamp Glow #e39d44 and Log Paper on Night. Knock-out in final/knockout.md shown with the caveat (Orvane Technologies, orvane.tech, and a 2026 Tracxn 'Orvane' in software: keep the name and send the conflict to an attorney, the conservative answer)."
+    },
+    {
+      "at": "2026-10-08T15:24:28-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: package handover approved (conservative answer). brands/orvane/package (187 files, verify ok) and package/brand-sheet.pdf, read and one page. Headless eval run: folder and sheet not opened in Finder or Chrome."
+    }
+  ]
+}

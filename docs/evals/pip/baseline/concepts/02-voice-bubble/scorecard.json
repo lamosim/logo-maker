@@ -1,0 +1,24 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 2,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a talking bubble reads as chat, not as reading together",
+    "distinctive": "a speech bubble with a face is the messaging category's icon; it would vanish among chat apps on the shelf",
+    "simple": "one rounded box, one tail, three dots",
+    "legible": "holds at 16 px",
+    "clear": "speech-bubble faces are everywhere in messaging apps"
+  },
+  "kill": true,
+  "reason": "a speech bubble is the messaging category's icon: it says chat app, not a friend who reads, and cannot be made ownable without becoming something else",
+  "reconciled": {}
+}

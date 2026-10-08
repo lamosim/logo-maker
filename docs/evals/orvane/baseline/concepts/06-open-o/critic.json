@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 3,
+    "universal": 3,
+    "clear": 2,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a ball caught at the bottom of a ring that is open at the top suggests a catch, but it takes a sentence to get from that to 'nothing gets dropped'",
+      "a dot sitting low in a ring open at the top can read as a ball caught, but the idea needs a sentence and the round open ring feels more Caregiver than Sage"
+    ],
+    "distinctive": [
+      "a broken ring with a notch at the top is the generic power or standby glyph; nothing here is ownable against the category",
+      "no competitor among the five uses it, but a notched ring with a dot is a generic silhouette, close to the power-button glyph"
+    ],
+    "simple": [
+      "one open ring and one dot, easy to redraw, though the gap at the top is a second detail to remember",
+      "one notched ring and one dot; drawable in seconds"
+    ],
+    "legible": [
+      "the wordmark reads, but by 24 and 16 px the top gap nearly closes and the mark becomes a ring with a dot",
+      "the notch and dot still separate at 24 px; at 16 px the notch is a sliver but the ring-and-dot holds; Orvane reads cleanly in the header"
+    ],
+    "adaptable": [
+      "black, reversed, one-colour and the app-icon tile all work; the round form sits well in the circular avatar mockup",
+      "the reversed panel, the one-colour 64 and 32 panels, the app tile and the dark nav bar all hold without a redraw"
+    ],
+    "timeless": [
+      "a dot inside a ring sits next to the concentric and aperture shapes on the avoid list, though here the ring is broken rather than nested",
+      "ring plus centred dot is close to the concentric-aperture shape trends.md lists under avoid; the top notch only partly breaks it"
+    ],
+    "universal": [
+      "upright it reads as a power button or an eye; rotated 90 it reads as a Pac-Man or an eye looking sideways",
+      "the upright mark reads as a power button or a face; rotated 90 it becomes a C with an eye"
+    ],
+    "clear": [
+      "unsearched: power-symbol and ring-and-dot marks are common in software and electronics, so look-alikes are likely",
+      "unsearched: notched rings with a dot are common as power and standby icons and in many app marks; a look-alike is likely"
+    ],
+    "congruent": [
+      "round and symmetric, and it echoes the O of Orvane, but the thin gap and ring read as an aperture the strategy rules out; the wordmark is a neutral grotesque",
+      "round and symmetric fits the O sound and the symmetry target, but it is not flat-bottomed or grounded, and no warm hue appears on the sheet"
+    ],
+    "system": [
+      "lockups, reversed and the ladder are drawn, but the 16 px tier loses the gap that defines the mark, so the favicon tier looks undrawn",
+      "horizontal lockup, tiers from 256 to 16, app tile and mockups are all drawn, but the 16 px tier is the same drawing scaled, not a heavier favicon cut"
+    ]
+  },
+  "preferred_over": [
+    "01-held"
+  ],
+  "tied_with": [
+    "02-cradle"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "0a5eb652dab1494554c6218695047842b0853b2158822d4c7a56a7bf91cf77c4"
+}

@@ -1,0 +1,16 @@
+{
+  "scores": {"appropriate": 4, "distinctive": 4, "simple": 5, "legible": 4, "adaptable": 5, "timeless": 4, "universal": 4, "clear": 3, "congruent": 5, "system": 4},
+  "evidence": {
+    "appropriate": "a small seed leaning in on two low eyes: a friend first, Caregiver warmth with a Jester lean, no caption needed",
+    "distinctive": "coral seed character in a category of blue tiles, green owls, eggs and monsters; no competitor could claim it",
+    "simple": "one teardrop, one leaf, two eyes; 15 anchors; drawable from memory in four strokes",
+    "legible": "the redrawn small tier keeps a face at 48 and 64 px; the favicon is a clear leaning seed at 16 px; Pip reads at the 120 px horizontal minimum",
+    "adaptable": "black, white, mono, colour and the designed honey-on-cocoa reverse all hold; one-colour sticker works; the lean gives an obvious motion logic (a nod as the page turns)",
+    "timeless": "no trend shape, no gradient; a flat character",
+    "universal": "mirrored reads the same; rotated 90 a faint tadpole reading; colour-vision strip keeps the hierarchy",
+    "clear": "no look-alike mark found by description; the name has close conflicts (Pip School by Sprout Labs, Pip and Tim, PIP filings) sent to an attorney",
+    "congruent": "round, balanced but leaning, low complexity, medium weight, warm coral at medium saturation, open frame, rounded sans in title case; small and quick like the name",
+    "system": "horizontal, stacked, symbol, wordmark, compact, small and favicon all build cleanly; rationale written for the package"
+  },
+  "kill": false, "reason": "", "reconciled": {}
+}

@@ -18,3 +18,6 @@ A row per brief and cycle. Single runs are noisy: read the direction across cycl
 
 | Brief | Cycle | Critic `distinctive` (chosen) | Critic total (chosen) | Non-literal survivors | Gate regressions | Minutes |
 |---|---|---|---|---|---|---|
+| orvane | baseline | 4 | 40 | - | none | 12 |
+| clear-ledger | baseline | 3 | 39 | - | none | 13 |
+| pip | baseline | 4 | 39 | - | none | 10 |

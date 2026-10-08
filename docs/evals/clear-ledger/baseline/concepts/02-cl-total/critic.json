@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "serif CL over a double rule reads as initials on a finished, ruled total; plain and bookish, fits Everyman with Sage without a caption",
+      "a book-serif CL sitting on the bookkeeper's double rule says ledger and finished total at once; fits Everyman with Sage"
+    ],
+    "distinctive": [
+      "title-case book serif and the double rule stand apart from the five lowercase geometric marks, but a two-letter serif monogram is a common silhouette",
+      "title-case book serif and the double rule stand apart from the five lowercase geometric marks, but a serif monogram over a rule is a generic silhouette"
+    ],
+    "simple": [
+      "two letters and two rules, redrawable from memory in a few seconds; the L's sloped foot is a small extra detail",
+      "two letters on two rules, describable in one sentence; one dominant monogram"
+    ],
+    "legible": [
+      "CL with rules reads at 64 and 48 px; at 24 px the serifs clog and at 16 px the tile is a grey smudge with the rules merging",
+      "CL reads to 32 px, but at 24 and 16 px the double rule fuses into one bar and the serifs clot; the wordmark reads at every lockup size"
+    ],
+    "adaptable": [
+      "black, reversed and one-colour 64/32 panels hold; the app-tile and dark header mockups work without redraw, though the 16 px tier needs its own drawing",
+      "black, reversed and one-colour 32 px all hold; the app tile works, though the thin double rule is at risk on a 203 dpi receipt"
+    ],
+    "timeless": [
+      "a plain book serif and ledger rules, no trend shape; would have read the same ten years ago",
+      "a classic serif monogram that would have read the same ten years ago; mono-initial is a 'use carefully' item justified by the strategy's name-DNA icon"
+    ],
+    "universal": [
+      "rotated 90 reads clean; the mirrored panel reads as a reversed 'JC' over rules, a faint secondary letter reading",
+      "mirrored and rotated panels read only as a flipped monogram, nothing unintended"
+    ],
+    "clear": [
+      "unsearched: CL serif monograms are common in fashion and law firms; none known in UK bookkeeping",
+      "unsearched: serif CL and LC monograms with an underline are common among law firms, accountants and consultancies"
+    ],
+    "congruent": [
+      "title-case book serif, static, symmetric rules, low complexity match; sharp serifs and the flicked L foot pull against softened ends and no-tilt; colour not shown",
+      "book serif, title case, level rules and framed by the rule match the targets; the L's sharp spur breaks the 'no point sharper than 60 degrees' test"
+    ],
+    "system": [
+      "horizontal lockup, app tile, avatar, header and card all derive from the same CL; small tiers drawn but 16 px is weak",
+      "monogram and wordmark share one face; horizontal lockup, icon, favicon and reversed header all derive cleanly"
+    ]
+  },
+  "preferred_over": [
+    "03-level"
+  ],
+  "tied_with": [
+    "01-ruled-total"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "f8cf47b31ba3abadc2749cd46834568c209a18be85009065c7ae5740d13394ac"
+}

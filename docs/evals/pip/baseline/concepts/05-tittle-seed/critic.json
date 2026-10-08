@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 2,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a heavy 'Pip' wordmark whose i-dot is a tilted seed; no character or friend appears anywhere, so the one idea is missing",
+      "the seed replacing the i's dot tells the name's story at once, but there is no friend or character, which the strategy asks for"
+    ],
+    "distinctive": [
+      "a leaf/drop replacing an i-dot is a stock wordmark move; nothing in the silhouette a competitor could not also do",
+      "the seed tittle is a twist on a common move; the heavy geometric wordmark itself is generic"
+    ],
+    "simple": [
+      "three letters and one teardrop; drawable from memory in seconds",
+      "one wordmark with one seed shape; easy to describe in one sentence"
+    ],
+    "legible": [
+      "'Pip' reads cleanly at 128 and in the browser bar; the symbol tier shrinks to a featureless dot by 24 and 16 px",
+      "Pip reads at a glance at 128 px; the seed alone holds at 16 px as a solid teardrop"
+    ],
+    "adaptable": [
+      "black, reversed and one-colour panels all hold, but the app icon is a lone teardrop that says little on the phone grid",
+      "one colour and reversed work, but the icon and favicon fall back to a lone seed that says little on its own"
+    ],
+    "timeless": [
+      "plain bold rounded sans with a single dot quirk; no trend-list shape",
+      "a custom wordmark with one typographic quirk, a durable use-list move"
+    ],
+    "universal": [
+      "the lone seed reads as a water or oil drop in the icon; mirrored 'qiP' and rotated panels are clean otherwise",
+      "mirrored it reads qiP, an expected letter flip; no unintended picture reading in any panel"
+    ],
+    "clear": [
+      "unsearched: leaf and droplet i-dot wordmarks are very common across eco, food and kids brands",
+      "unsearched: leaf or seed dots on the i are a widespread convention in food and organic wordmarks"
+    ],
+    "congruent": [
+      "small, round and one dosed tilt match, but the heavy weight and no character miss the mascot logo-type target",
+      "warm name story and round seed fit, but the very heavy type and lack of a character miss the weight and mascot targets"
+    ],
+    "system": [
+      "lockups derive, but the symbol tier is only the i-dot and loses meaning off the wordmark",
+      "the lockups are strong, but the symbol tier is a different object from the wordmark, so the small tiers feel detached"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-seed-friend",
+    "03-peek-line",
+    "04-p-friend"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "722ef70be78ed94cf67fd2845b8110c7f6f0a52b9b3e93ae6494cfa98a3b91eb"
+}

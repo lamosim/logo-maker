@@ -1,0 +1,13 @@
+{"scores": {"appropriate": 4, "distinctive": 3, "simple": 5, "legible": 5, "adaptable": 4, "timeless": 5, "universal": 4, "clear": 3, "congruent": 4, "system": 4},
+ "evidence": {
+  "appropriate": "a figure sitting on a double rule is the bookkeeper's sign of a finished total; plain and level, Everyman with Sage, no caption needed by anyone who has kept books",
+  "distinctive": "no competitor among FreeAgent, Xero, QuickBooks, Coconut, Pandle uses rules or a total; but the block-on-bars silhouette sits near generic card and screen icons",
+  "simple": "three rectangles, 16 anchors; drawable in seconds",
+  "legible": "the favicon keeps block and one rule apart at 16 px (thinnest 2.72 px); the wordmark passes 7 px x-height at 120 px",
+  "adaptable": "identical in black, white on black and one colour; small and favicon tiers redrawn with thicker rules",
+  "timeless": "no trend shape; rectangles and rules would have read the same ten years ago",
+  "universal": "mirrored panel identical; rotated 90 reads as a card with stripes, a faint secondary reading",
+  "clear": "description search (rectangle over a double rule, total underline logo) found no matching mark; nearest are generic UI icons",
+  "congruent": "level, symmetric, low complexity, medium weight, framed by its own rules; a little heavier and squarer than the light, open name sound asks",
+  "system": "horizontal, stacked, symbol, compact, small and favicon all build without tier warnings; rationale draft in critique.md"},
+ "kill": false, "reason": "", "reconciled": {}}

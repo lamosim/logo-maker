@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 2,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 2,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a pill outline holding a bar, a dot and a D-shape reads as a toggle switch or capsule; the ledger and 'where you stand' need a paragraph",
+      "a pill with a solid disc between two bars reads as a toggle switch or a coin in a slot, not a ledger or 'see where you stand'; it needs a caption"
+    ],
+    "distinctive": [
+      "no competitor uses it, but a rounded pill with a dot is a stock UI toggle silhouette",
+      "no competitor uses a capsule, but a filled disc inside a rounded frame sits close to the category's letter-in-a-circle and the banned coin"
+    ],
+    "simple": [
+      "one capsule outline with three inner parts; drawable with effort, the inner parts compete",
+      "pill outline, disc and two flanking bars are three competing parts; redrawable with effort"
+    ],
+    "legible": [
+      "the capsule holds to 32 px; at 24 and 16 px the inner bars and dot fill in to a dark lozenge",
+      "at 24 and 16 px the mark collapses to a chain-link or infinity glyph; the serif wordmark reads well in the header"
+    ],
+    "adaptable": [
+      "works in one colour and reversed, but in the app tile it is a small wide shape floating in a square and the avatar is tiny",
+      "black, reversed and one-colour panels hold, but the wide capsule shrinks to a thin sliver inside the square app tile"
+    ],
+    "timeless": [
+      "rounded pill UI shapes are a current product-design look; not on the avoid list but dated to app-era interfaces",
+      "no trend shape from trends.md; plain geometric capsule"
+    ],
+    "universal": [
+      "rotated 90 reads as a traffic light or a pill/figure; horizontal it reads as a toggle or a chain link",
+      "rotated 90 it reads as a traffic light or medicine capsule; mirrored is unchanged"
+    ],
+    "clear": [
+      "unsearched: toggle and capsule marks are common across fintech and SaaS apps",
+      "unsearched: resembles the generic UI toggle-switch glyph and pill/capsule pharmacy marks seen widely"
+    ],
+    "congruent": [
+      "round, horizontal pill contradicts the page-like framed ledger, the softened-but-angular shape target and the front-vowel light mark; static and simple match",
+      "round, heavy and disc-centred where the targets ask for level ruled forms at medium weight; the disc echoes the forbidden coin"
+    ],
+    "system": [
+      "lockups and tiers built, but the wide aspect wastes the app tile and favicon",
+      "lockups, tiers and icon all built from the one capsule, but the icon and favicon are under-scaled and the 16 px tier is not redrawn"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-ruled-total",
+    "02-cl-total"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "40249bea4a19dd312be6fc1a22292c6d2e3a05658238fc146b48e69591ff6ef2"
+}

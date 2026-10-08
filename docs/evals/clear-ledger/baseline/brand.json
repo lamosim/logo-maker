@@ -1,0 +1,107 @@
+{
+  "slug": "clear-ledger",
+  "name": "Clear Ledger",
+  "needs_name": false,
+  "created": "2026-10-08T15:12:43-04:00",
+  "updated": "2026-10-08T15:26:08-04:00",
+  "phase": "done",
+  "industry": "bookkeeping and accounting for sole traders",
+  "surfaces": [
+    "app icon",
+    "website header",
+    "printed invoices"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "village-ledger",
+  "concept": "01-ruled-total",
+  "fonts": {
+    "wordmark": {
+      "family": "Newsreader",
+      "weight": 600,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T15:13:01-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: brief confirmed as written, no corrections (write-back reply not scripted; conservative answer). Everyman with Sage; sincerity 0.9, excitement 0.3, competence 0.8, sophistication 0.4, ruggedness 0.4; industry tag 'bookkeeping and accounting for sole traders' (fintech list)."
+    },
+    {
+      "at": "2026-10-08T15:15:28-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: name knock-out shown with the trademark caveat: 'Clear Ledger App' (App Store id6759101467) sells double-entry bookkeeping to sole traders; US firms trade as Clear Ledger; only clearledger.dev available. Most conservative option: keep the name and send the conflict to a trademark attorney before filing or spending."
+    },
+    {
+      "at": "2026-10-08T15:15:28-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: strategy approved as written (not scripted; conservative answer). One idea 'you can see where you stand'; Everyman with Sage; combination mark, wordmark-led; avoid blue, cyan, teal, navy, money green, letter in a circle, anything rising; own the bookkeeper's ruled total (single rule over, double rule under), a level page-like composition, a title-case book-face wordmark and a dark ledger-ink green."
+    },
+    {
+      "at": "2026-10-08T15:16:10-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "Chose Village Ledger, the warmer of the two boards (scripted answer 12): Newsreader 600 for the wordmark with Source Sans 3 400 beside it; Ledger Ink #384d2c on Account Paper #f4ede0, Red Rule #a63a2b as one accent, Kraft and Sepia as support. Plain Statement (Public Sans, IBM Plex Mono, slate-green on white) set aside."
+    },
+    {
+      "at": "2026-10-08T15:20:26-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 04-wordmark-total after round 3: wordmark only, so every app icon from 96 px shows the whole two-word name, against the top surface; its small tiers duplicate 02-cl-total's CL; appropriate 3."
+    },
+    {
+      "at": "2026-10-08T15:20:26-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 05-open-book after round 1: two ruled tiles read as a UI document or reader-mode icon, not an open ledger; ruled cuts become specks at 16 px; appropriate 3."
+    },
+    {
+      "at": "2026-10-08T15:21:57-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 03-level after the blind critic (appropriate 2, congruent 2 over two passes): the vial reads as a UI toggle switch or a coin in a slot, not a spirit level; appropriate lowered to 3, below the gate. Two survivors remain (01-ruled-total, 02-cl-total); presenting two rather than adding a weaker direction."
+    },
+    {
+      "at": "2026-10-08T15:22:18-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: concept sheet presented (01-ruled-total, 02-cl-total) after the Collins preface; name knock-out repeated with the trademark caveat (Clear Ledger App, App Store id6759101467); keep the name, attorney to clear it. Likes: none named (not scripted; conservative answer); no steal."
+    },
+    {
+      "at": "2026-10-08T15:22:18-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "First reaction (scripted): 'the two words run together at the invoice size'. Probing question: what reads wrong, at what size, in which mockup? Answer: 'the card mockup'. Sorted as a flaw (a failure at a named size and mockup), not unfamiliarity: Newsreader's narrow default word space closes up at card size. To fix in refinement by opening the word space; no ligature or join across it."
+    },
+    {
+      "at": "2026-10-08T15:22:19-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "Chose 01-ruled-total, the survivor the critic preferred (scripted answer 12): the critic's pairwise order ties 01 and 02, so the tie is broken on the critic's totals, 39 against 37 (designer 41 against 39). No blend, no steal from 02-cl-total."
+    },
+    {
+      "at": "2026-10-08T15:25:36-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "Approved after the colour round (refine sheet round 1, scripted answer 13): 01-ruled-total refined with rules at 92% and softened ends, compact tier without the wordmark, Newsreader 600 with the word space opened (r-space +70, space-L +40, tracking +8) for the owner's card-size flaw, horizontal primary lockup, Ledger Ink #384d2c on Account Paper #f4ede0, reverse Ledger Light #9eb791 and Account Paper on Sepia #2b2620. Knock-out in final/knockout.md shown with the trademark caveat."
+    },
+    {
+      "at": "2026-10-08T15:26:08-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: package handover approved (conservative answer): brands/clear-ledger/package (187 manifest files, verify ok) and package/brand-sheet.pdf, read and found to print on one page. Headless run: the folder and sheet were not opened in Finder or Chrome."
+    }
+  ]
+}

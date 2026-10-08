@@ -1,0 +1,95 @@
+{
+  "slug": "pip",
+  "name": "Pip",
+  "needs_name": false,
+  "created": "2026-10-08T15:12:46-04:00",
+  "updated": "2026-10-08T15:22:10-04:00",
+  "phase": "done",
+  "industry": "children's reading education",
+  "surfaces": [
+    "app icon",
+    "App Store listing",
+    "printed stickers"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "warm-lamp",
+  "concept": "01-seed-friend",
+  "fonts": {
+    "wordmark": {
+      "family": "Nunito",
+      "weight": 800,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T15:13:05-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: confirmed the brief write-back as written (conservative answer: confirm the write-back as written)"
+    },
+    {
+      "at": "2026-10-08T15:14:36-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: keep the name Pip despite the knock-out finding (Pip School by Sprout Labs; Pip and Tim apps) and send the conflict to a trademark attorney (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T15:14:36-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: approved the strategy as written (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T15:15:09-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: picked Warm Lamp, the warmer of the boards (honey, coral, cream, cocoa); wordmark family Nunito, the quieter of its two faces, to keep playful from turning loud"
+    },
+    {
+      "at": "2026-10-08T15:19:36-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: asked what the owner likes in each; named no specific likes (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T15:19:36-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: chose 01-seed-friend, the survivor the critic preferred (beat all three others in both sheets)"
+    },
+    {
+      "at": "2026-10-08T15:19:36-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted first reaction: 'the character turns into a blob at the avatar size'. Probing question asked (what reads wrong, at what size, in which mockup); answer: 'at the avatar size'. Sorted as a flaw at a named size, not unfamiliarity: the 80 px avatar draws the compact tier, where the 44-unit eyes shrink to specks and the leaning seed loses its face. Fix in refinement: redraw compact and small with larger, wider-set eyes and a shorter leaf."
+    },
+    {
+      "at": "2026-10-08T15:20:08-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: primary lockup horizontal, the lockup of the top-ranked surface that shows one (the App Store listing sets the name beside the icon); conservative answer"
+    },
+    {
+      "at": "2026-10-08T15:20:48-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: approved the refinement after the colour round (refine-1: redrawn avatar, small and favicon faces fixing the avatar-size blob; Pip Coral and cocoa on cream, honey on cocoa reversed)"
+    },
+    {
+      "at": "2026-10-08T15:22:09-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: approved the package handover (conservative answer); has the folder and the brand sheet"
+    }
+  ]
+}

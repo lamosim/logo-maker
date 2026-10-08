@@ -1,0 +1,13 @@
+{"scores": {"appropriate": 4, "distinctive": 3, "simple": 4, "legible": 4, "adaptable": 4, "timeless": 4, "universal": 4, "clear": 3, "congruent": 5, "system": 4},
+ "evidence": {
+  "appropriate": "the name's own C and L, set in the book serif and double-underlined like a total: the ledger's sign on the ledger's initials",
+  "distinctive": "nobody in the five uses a serif monogram or a rule; but CL serif monograms are a stock-library staple, so the double rule carries the difference",
+  "simple": "two letters and two rules, 55 anchors; drawable from memory",
+  "legible": "CL reads at 16 px with the favicon's emboldened letters and one thick rule (thinnest 1.41 px); the wordmark passes at 120 px at cap 450",
+  "adaptable": "works in one colour and reversed; favicon redrawn heavier with wider spacing; letters as the icon from day one",
+  "timeless": "a book serif monogram is the Sage's register, not a trend; no avoid item",
+  "universal": "mirrored reads as a backwards JC only as a mirror should; rotated shows letters on their side, no second reading",
+  "clear": "description search found stock CL serif monograms in quantity (Shutterstock, Adobe Stock), none with a double rule; the full knock-out comes in refinement",
+  "congruent": "book serif in title case, level rules, symmetric balance, medium weight and open counters match the targets and the light front-vowel name",
+  "system": "symbol and wordmark share Newsreader; every lockup and tier builds; rationale draft in critique.md"},
+ "kill": false, "reason": "", "reconciled": {}}

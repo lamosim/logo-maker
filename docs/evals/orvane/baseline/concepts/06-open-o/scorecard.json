@@ -1,0 +1,29 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the name's own O opened at the top with a disc kept at its bottom: what drops in is kept; needs a glance, not a caption",
+    "distinctive": "a letter O is common, but none of the five uses one, and the opened top with the kept disc is this mark's own detail",
+    "simple": "one O, one slot, one disc; 32 anchors",
+    "legible": "16 px favicon keeps the slot open and the disc separate, thinnest 3.22 px; wordmark x-height 10.2 px at 120 px",
+    "adaptable": "black, white and one-colour panels hold; motion: the disc drops through the mouth",
+    "timeless": "a round initial invites the AI-era circle clich\u00e9; kept away from it by the open top and the single disc (no concentric rings)",
+    "universal": "mirrored identical; rotated 90 a C with a dot; upright a faint inverted-keyhole reading",
+    "clear": "description search ('letter O logo open at top with dot inside') found only crowded letter-O stock pages (Adobe Stock 1928 results); nothing identical",
+    "congruent": "round, symmetric, medium-heavy, open, static; the O matches the name's opening vowel",
+    "system": "all lockups and tiers build; wordmark set in the same family as the symbol's O; rationale draft in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {}
+}

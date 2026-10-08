@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 5,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a seed-shaped character with a leaf and two small low eyes reads at once as a small friend, and as a pip",
+      "a seed-shaped creature with a sprouting leaf and two small eyes reads at once as a small friend named Pip"
+    ],
+    "distinctive": [
+      "a shape-first seed with tiny eyes stands apart from the owls, monsters and eggs of the category",
+      "a shape first and a face second; no owl, egg or monster, and no competitor in the audit owns a seed character"
+    ],
+    "simple": [
+      "one teardrop body, one leaf, two dots; redrawable in four strokes",
+      "a round seed body, one leaf and two dots; drawable in three or four strokes"
+    ],
+    "legible": [
+      "the seed-and-leaf silhouette holds at 24 and 16 px though the eyes drop out; 'Pip' reads beside it in every lockup",
+      "the seed-and-leaf silhouette holds at 16 px; the eyes fill in below 24 px but the shape still reads"
+    ],
+    "adaptable": [
+      "works reversed and in one colour at 64 and 32; the app icon on the phone grid is the clearest of the four",
+      "black, reversed, one-colour 64 and 32 and the app tile all work; the reversed eyes stay clear"
+    ],
+    "timeless": [
+      "a flat mascot where warmth is the strategy, a 'use' item; no avoided shape",
+      "a flat, restrained mascot where warmth is the strategy, on the use list; no trend shape"
+    ],
+    "universal": [
+      "rotated 90 it reads as a fish or tadpole, and upright it hints at a pear or avocado",
+      "it can read as a pear or avocado, and rotated 90 it reads faintly as a whale or tadpole"
+    ],
+    "clear": [
+      "unsearched: seed and sprout characters are common in kids and gardening apps, and a 'Pip' character exists in children's reading",
+      "unsearched: pear and seed faces are common in children's and food brands, though none I know in reading apps"
+    ],
+    "congruent": [
+      "round, light, small low-set eyes, one asymmetry in the leaf; the rounded bottom misses the flat-base target",
+      "round, one asymmetric feature (the leaf), small low-set eyes and a slight lean match; the bottom is round rather than flat"
+    ],
+    "system": [
+      "horizontal lockup, tiers to 16 px, icon, avatar and card all derive cleanly",
+      "lockups, tile, tab, avatar and signature derive cleanly from the same character"
+    ]
+  },
+  "preferred_over": [
+    "03-peek-line",
+    "04-p-friend",
+    "05-tittle-seed"
+  ],
+  "tied_with": [],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "bf9eabea16b92ca22ab1ba5e9cb99b94821905b141ee6b89f861adbd7bcf05e5"
+}

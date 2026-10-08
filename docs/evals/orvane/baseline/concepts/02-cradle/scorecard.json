@@ -1,0 +1,29 @@
+{
+  "scores": {
+    "appropriate": 5,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 5,
+    "universal": 4,
+    "clear": 4,
+    "congruent": 5,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a flat-bottomed cradle with a disc resting low in it: a catch nothing rolls out of, read at once; grounded and calm",
+    "distinctive": "none of the five uses a vessel or a held object; the open-topped tile is not a category container",
+    "simple": "one tile with a round-bottomed slot and one disc; 15 anchors; drawable in two strokes",
+    "legible": "16 px favicon holds the slot and the disc, thinnest 4.16 px; wordmark x-height 10.3 px at 120 px",
+    "adaptable": "holds in black, white and one colour; motion: the disc drops into the slot and settles",
+    "timeless": "no trend shape; flat, grounded geometry",
+    "universal": "mirrored identical; rotated 90 a C holding a dot (an orientation nobody sees); upright a faint u-umlaut reading",
+    "clear": "description search ('U shaped cup holding a ball, rounded square tile') found no logo like it",
+    "congruent": "shape 0.55 (square tile, round slot), symmetric, flat base, low complexity, medium-heavy, static; matches every target",
+    "system": "all lockups and tiers build with no warnings; rationale draft in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {}
+}

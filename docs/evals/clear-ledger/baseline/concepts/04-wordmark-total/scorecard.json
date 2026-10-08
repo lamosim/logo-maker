@@ -1,0 +1,12 @@
+{"scores": {"appropriate": 3, "distinctive": 2, "simple": 5, "legible": 4, "adaptable": 2, "timeless": 4, "universal": 5, "clear": 3, "congruent": 4, "system": 3},
+ "evidence": {
+  "appropriate": "the double rule under the whole name reads as a heading or a link underline more than a total",
+  "distinctive": "a serif name with an underline is generic; its small tiers duplicate 02-cl-total",
+  "simple": "the name and two rules",
+  "legible": "the name reads at 128 px; CL with one rule holds at 16 px after emboldening",
+  "adaptable": "wordmark only: every app icon from 96 px up shows the whole two-word name, against the first-ranked surface",
+  "universal": "mirrored and rotated panels read only as type",
+  "clear": "no search needed beyond 02's: same small tiers",
+  "congruent": "book serif, title case, level; matches type targets",
+  "system": "no symbol; icons from 96 px show the wordmark"},
+ "kill": true, "reason": "Wordmark only: the whole two-word name would fill every app icon from 96 px up, against the top surface, and its small tiers are 02-cl-total's CL, so it adds no new direction; appropriate 3."}

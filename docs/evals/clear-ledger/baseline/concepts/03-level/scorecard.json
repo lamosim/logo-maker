@@ -1,0 +1,32 @@
+{
+ "scores": {
+  "appropriate": 3,
+  "distinctive": 4,
+  "simple": 4,
+  "legible": 4,
+  "adaptable": 3,
+  "timeless": 5,
+  "universal": 3,
+  "clear": 3,
+  "congruent": 3,
+  "system": 4
+ },
+ "evidence": {
+  "appropriate": "lowered from 4 after the critic: on the sheet the capsule reads as a UI toggle switch or a coin in a slot before it reads as a spirit level; the idea needs a sentence",
+  "distinctive": "no competitor uses a level or any instrument; the vial-and-bubble silhouette is ownable in bookkeeping",
+  "simple": "a stadium frame, a disc, two ticks; 26 anchors",
+  "legible": "the bubble stays separate inside the vial to 16 px (thinnest 3.47 px), but the wide vial is small in the frame at 16 to 24 px",
+  "adaptable": "works in one colour and reversed; at 2.6 to 1 it sits small in a square app icon; small tiers drop the ticks",
+  "timeless": "no trend shape; a spirit level read the same a century ago",
+  "universal": "at small sizes the capsule with a dot also reads as a UI toggle switch or a pill; rotated it reads as a thermometer or a traffic light",
+  "clear": "description search found spirit levels as products and in trades branding, none in bookkeeping; similar marks in other categories",
+  "congruent": "lowered from 4: a round capsule with a disc pulls away from the level, ruled, page-like targets",
+  "system": "every lockup and tier builds; wordmark at cap 370 passes at 120 px; rationale draft in critique.md"
+ },
+ "kill": true,
+ "reason": "After the blind critic (appropriate 2, congruent 2 over two passes), appropriate falls to 3: the vial reads as a toggle switch, a coin in a slot or a chain link at small sizes, not as a spirit level, and that reading is built into a capsule with a disc.",
+ "reconciled": {
+  "appropriate": "critic's reading accepted: both passes read a toggle switch or coin slot, not a level; my score lowered from 4 to 3 and the concept killed",
+  "congruent": "critic's point accepted: the round capsule and disc contradict the ruled, page-like targets; lowered from 4 to 3"
+ }
+}

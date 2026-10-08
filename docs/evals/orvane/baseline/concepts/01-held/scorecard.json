@@ -1,0 +1,34 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "two blocks hold one disc in a shared socket: held by both sides reads without a caption; symmetric, orderly (Sage) and enclosing (Caregiver)",
+    "distinctive": "no webhook competitor uses it, but a rounded square around a ring and dot is the stock camera and lens icon",
+    "simple": "two rounded blocks, one hole, one disc; 26 anchors; drawable from memory in three moves",
+    "legible": "16 px favicon (one block, socket, disc) reads as a tile with a held dot, thinnest 3.16 px; wordmark x-height 10.5 px at 120 px",
+    "adaptable": "black and white panels both hold; one-colour 32 px keeps the disc; motion: the blocks close on the disc",
+    "timeless": "a ring around a disc sits near the concentric aperture trends.md lists under avoid; the two blocks and seam keep it from being only that",
+    "universal": "mirrored identical; rotated 90 the same construction turned; on the critic sheet shelf and tab the socket-and-disc in a square reads as a camera icon",
+    "clear": "description search found nothing identical, but camera and lens app icons share the silhouette",
+    "congruent": "shape 0.5 (rounded blocks, round socket), symmetric, low complexity, medium-heavy weight, open, static; the round O sound matches the disc",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all built; favicon closes the seam on purpose; rationale draft in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {
+    "appropriate": "lowered from 5 to 4 after the critic (3): the camera reading competes with the held reading at a glance; 4 stands because the seam and the two blocks carry holding once seen at 64 px and up",
+    "distinctive": "lowered from 4 to 3 after the critic (2): the camera-icon silhouette is generic; 3 stands because no competitor in the category uses it",
+    "timeless": "lowered from 5 to 4 after the critic (3): ring-and-dot is near the concentric aperture; the two-block construction is not on the avoid list",
+    "clear": "lowered from 4 to 3: my search by description found nothing identical, the critic (2, unsearched) points to camera icons, which my own shelf reading confirms"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 3,
+    "universal": 3,
+    "clear": 2,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a chunky tilted 'P' whose round counter hints at an eye; a friend only with a sentence of explanation",
+      "a heavy slanted P with a dot in the counter is an initial, not a small friend; the character idea is barely there"
+    ],
+    "distinctive": [
+      "away from blue tiles and owls, but a lone rounded P is generic in silhouette",
+      "a bold P monogram on a tile sits close to the category's letter-on-tile uniform (Epic's e!)"
+    ],
+    "simple": [
+      "one rounded P with a circular counter; drawable in two strokes",
+      "one slanted P with one dot; drawable in two strokes"
+    ],
+    "legible": [
+      "the P and its counter stay open down to 16 px; 'Pip' reads in every lockup",
+      "the P and its dot stay crisp at 16 px, the strongest small-size ladder on the sheet"
+    ],
+    "adaptable": [
+      "strong in black, reversed and one colour; the phone icon is bold, though the heavy weight crowds the tile",
+      "works black, reversed and one-colour; the app tile is strong, but the sticker would be just a letter"
+    ],
+    "timeless": [
+      "a mono-initial app icon, a 'use carefully' item, with no strategy reason given for it",
+      "a mono-initial doubling as the app icon is a use-carefully trend with no reason in the strategy for an initial"
+    ],
+    "universal": [
+      "mirrored reads as a 'q' or '9' and rotated as a 'd', so letter readings appear in both panels",
+      "mirrored it reads as a q or 9; rotated 90 it reads as a cup or a second letterform"
+    ],
+    "clear": [
+      "unsearched: rounded single-P monograms are abundant (Pinterest, PayPal, Product Hunt and many apps)",
+      "unsearched: heavy single-P marks are crowded (Pinterest, parking signs, PayPal's P)"
+    ],
+    "congruent": [
+      "round and one tilt match, but the heavy weight overshoots medium and there is no character for the mascot target",
+      "heavy weight, strong tilt and an angular-leaning letter contradict the medium weight, dynamism 0.4 and character targets"
+    ],
+    "system": [
+      "horizontal lockup, tiers, avatar and card derive cleanly",
+      "lockups, tiers and mockups all derive cleanly from the one letter"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-seed-friend",
+    "03-peek-line",
+    "05-tittle-seed"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "a57ac305e4266a281c8359ec18409f69bb5ffcb82a9647b0ebc3d20fdb73f878"
+}

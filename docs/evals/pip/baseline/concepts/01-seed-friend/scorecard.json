@@ -1,0 +1,29 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a small seed with a sprout leaning in on two low eyes: a friend first, a character without a story",
+    "distinctive": "no competitor uses a seed; not an owl, monster, egg or book; the leaning teardrop silhouette is its own",
+    "simple": "one teardrop, one leaf, two dots; 15 anchors; drawable in four strokes",
+    "legible": "silhouette holds at 16 px; the eyes fade below 24 px but the seed-and-leaf shape still reads; Pip reads at the 120 px lockup",
+    "adaptable": "one-colour 64 and 32 px panels hold; reverse holds; small and favicon tiers enlarge the eyes",
+    "timeless": "no trend shape; a plain character with no gradient or sparkle",
+    "universal": "mirrored panel reads the same; rotated 90 reads as a fish or tadpole, a faint secondary reading only when turned",
+    "clear": "description search (seed character with leaf and dot eyes, kids app) found no matching mark; full knock-out in refinement",
+    "congruent": "round shape, balanced but leaning, low complexity, open frame, small and light like the name's front vowel; matches every target but weight runs heavy",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all built; rationale draft in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {}
+}

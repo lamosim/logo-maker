@@ -1,0 +1,29 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a round head peeking over a line of text, eyes on the words: reading together without a book",
+    "distinctive": "no reading competitor peeks over a line, but the peeking head is a known device (Kilroy, Subtu's monkey)",
+    "simple": "a dome, a bar, two dots; 19 anchors",
+    "legible": "the bar and the head stay apart down to 16 px; eyes faint at 16 px; the line keeps it readable",
+    "adaptable": "one-colour and reverse hold; the wide format sits low in a square icon",
+    "timeless": "no trend shape",
+    "universal": "rotated 90 reads as a D with eyes; the Kilroy echo is a faint secondary reading",
+    "clear": "description search found the Kilroy graffiti and Subtu's peeking monkey; nothing in reading apps",
+    "congruent": "round, calm, low complexity, open; dynamism lower than the 0.4 target",
+    "system": "all lockups and tiers build; the wide symbol leaves empty space in the square tile"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {}
+}

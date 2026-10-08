@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 3,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a solid ball held in a U-shaped cradle cut from a rounded square reads as 'caught, held' without a caption; calm, enclosing, fits Sage with Caregiver"
+    ],
+    "distinctive": [
+      "warm amber is unique against the category's blues and greens, but a dot in a rounded square is a generic silhouette (record button, camera, user glyph) none of the five owns yet any could"
+    ],
+    "simple": [
+      "one rounded square, one U-cut, one circle; describable in a sentence and drawable in seconds"
+    ],
+    "legible": [
+      "Orvane reads cleanly in every lockup; the dot and cradle still separate at 24 px and 16 px, though the white U gap is near one pixel at 16 px"
+    ],
+    "adaptable": [
+      "black, reversed white, one-colour 64 and 32, app tile, avatar, dark-header and browser-tab mockups all hold; a ball settling into the cradle gives an obvious motion logic"
+    ],
+    "timeless": [
+      "no hexagon or gradient, but a circle over a U reads close to the 'V ball' head-and-arms figure trends.md lists under avoid, and a dot-in-ring edges toward concentric"
+    ],
+    "universal": [
+      "the mirrored panel is identical, but upright it can read as a person/user-profile icon and the rotated-90 panel reads as a C or a Pac-Man shape"
+    ],
+    "clear": [
+      "unsearched: dot-in-rounded-square marks are common in camera, recording and user-account icons; nothing in webhooks I know of (Svix, Hookdeck, Convoy, Hook0) uses it"
+    ],
+    "congruent": [
+      "amber hue, symmetry, flat grounded base, medium-heavy weight and softened corners match the targets and the round O; the wordmark is a fairly neutral geometric sans with less humanist warmth than asked"
+    ],
+    "system": [
+      "horizontal lockup, symbol, ladder 256 to 16 and one-colour tiers derive cleanly; no stacked lockup or distinct favicon redraw shown, rationale not visible on the sheet"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "e881c1dc45db41604b4687c0869b1eec27b758841ea34ade80e32e2f81634054"
+}

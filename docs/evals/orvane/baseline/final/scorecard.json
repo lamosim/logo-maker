@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "appropriate": 5,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 5,
+    "system": 5
+  },
+  "evidence": {
+    "appropriate": "a flat-bottomed cradle with a disc resting low inside: nothing rolls out, read without a caption; calm and grounded (Sage), holding (Caregiver)",
+    "distinctive": "warm amber against the category's blue, green, purple and black; no link, hook, arrow, node or hexagon; a held disc in an open slot is not a category cue",
+    "simple": "one tile with a round-bottomed slot and one disc, 15 anchors; drawable in two strokes",
+    "legible": "the 16 px favicon keeps the slot and a 6 px disc (thinnest 4.22 px); wordmark x-height 10.5 px at the 120 px minimum; Orvane has no confusable pairs",
+    "adaptable": "black, white, mono, colour and a designed reverse all hold; one colour keeps the slot and disc; motion: the disc drops in and settles",
+    "timeless": "no trend shape from trends.md; a disc in a U sits near the V-ball figure only if the disc rose above the walls, which it does not",
+    "universal": "mirrored identical; rotated 90 a C with a dot, and upright a faint u-umlaut at 24 px; nothing cultural touched",
+    "clear": "no look-alike mark found by description; the name is shared by Orvane Technologies (orvane.tech) and a 2026 Indian software startup (Tracxn): attorney to clear",
+    "congruent": "shape 0.55, symmetric, low complexity, medium-heavy weight, amber hue 68 at medium chroma and mid lightness, warm grotesque type, open, static, no descriptive cue; the round disc matches the O",
+    "system": "horizontal (primary), stacked, symbol, wordmark, compact, small and favicon built with no tier warnings; designed reverse; rationale written for the package"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {
+    "timeless": "lowered from 5 to 4 after the critic (3): the V-ball and concentric worries are noted, but the disc rests below the wall tops inside an open slot, not a head over raised arms and not a ring around a dot, so 4 stands"
+  }
+}
