@@ -1,0 +1,27 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 2,
+    "adaptable": 2,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 3,
+    "system": 2
+  },
+  "evidence": {
+    "legible": "favicon fails one_colour_merge: 2 parts become 1 at 16 px",
+    "universal": "the friend reads as a ball or a bomb"
+  },
+  "kill": true,
+  "reason": "the wide composition shrinks the friend to a speck in the small tiers and the favicon fails the one-colour merge; the friend reads as a ball or a bomb beside two bars",
+  "reconciled": {},
+  "route": "system",
+  "probe": {
+    "query": "character sitting on text line logo [firecrawl-images]",
+    "hits": 1,
+    "date": "2026-10-08"
+  }
+}

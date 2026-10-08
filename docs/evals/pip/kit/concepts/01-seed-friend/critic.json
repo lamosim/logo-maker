@@ -1,0 +1,63 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a seed or pip with a leaf sprout and one eye carries the name's seed story and a small friend, but nothing says reading; the idea needs a sentence",
+      "a round seed body with a leaf sprout and one small dot eye reads as a small friend and fits the Caregiver's round form, but nothing in it says reading; the idea needs a sentence"
+    ],
+    "distinctive": [
+      "nothing like Epic's blue tile or the animal guides, but a teardrop with a leaf is a generic seed/fruit silhouette, and it brushes the pear-and-apple territory the brief rules out",
+      "no bear, elephant, owl or blue; the seed-character is free ground, but the silhouette is a generic teardrop/pear blob that many mascots share"
+    ],
+    "simple": [
+      "one teardrop body, one leaf, one dot: drawable from memory in three strokes, a single dominant silhouette",
+      "one teardrop body, one leaf, one dot; drawable from memory in three strokes"
+    ],
+    "legible": [
+      "the closed teardrop silhouette holds at 16 and 24 px and in the browser tab; the eye vanishes below 32 px; the wordmark reads cleanly",
+      "the silhouette holds at 24 and 16 px and the heavy rounded Pip reads at a glance; the eye dot is lost by 24 px, so at 16 px it is a seed, not a character"
+    ],
+    "adaptable": [
+      "works in black, reversed and both one-colour panels; the app tile and avatar hold; the sprouting leaf suggests a growth motion",
+      "black, reversed, one colour 64 and 32, the dark app tile, tab favicon and avatar all hold; no motion logic drawn beyond the sprout"
+    ],
+    "timeless": [
+      "an organic flat character with no trend shape; a droplet-like body is close to the 'droplet' avoid list but is justified as a seed",
+      "no trend shape; a plain flat character would have read the same ten years ago"
+    ],
+    "universal": [
+      "upright the leaf tip reads like a beak or crest (a bird, which strategy rules out); rotated 90 it reads as a whale or fish",
+      "mirrored reads clean; rotated 90 turns into a whale or fish, and upright it can pass for a pear, close to the off-limits fruit cue"
+    ],
+    "clear": [
+      "unsearched: leaf-topped seed and pear marks are common in produce, garden and eco brands; I know of none in reading apps",
+      "unsearched: seed and droplet mascots with a dot eye are common in apps and food brands; nothing I know of in children's reading owns it"
+    ],
+    "congruent": [
+      "round organic body, small eye, one tilt, open and medium-heavy weight match; small and nimble as the name's sound asks; colour cannot be judged in black",
+      "round, open, unframed, small and quick to match 'Pip', one tilted element (the sprout), small eye; colour is not shown on this black sheet so the warm hue is unconfirmed"
+    ],
+    "system": [
+      "horizontal lockup, app icon, favicon, nav bars, avatar and card all derive; no stacked lockup shown and the eye drops in the small tier",
+      "horizontal lockup, reversed lockup, app icon, tab favicon, avatar and card all derive cleanly; no stacked lockup shown"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "02-p-puppet"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "857142c58fed029be25e262bae31e7ac22055ba6d8f21be03552ce9f7befe1ab"
+}

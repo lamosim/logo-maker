@@ -1,0 +1,27 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 3,
+    "adaptable": 2,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "legible": "the seed dot reads as an accent: P\u00edp",
+    "adaptable": "the icon is a lone i: no character at app-icon size, against the mascot strategy"
+  },
+  "kill": true,
+  "reason": "the tilted seed over the i reads as an acute accent, 'Pip' becomes 'P\u00edp' (the Kia test), and the icon tiers are a lone i that carries nothing at 16 px",
+  "reconciled": {},
+  "route": "type-quirk",
+  "probe": {
+    "query": "seed dot letter i logo [firecrawl-images]",
+    "hits": 2,
+    "date": "2026-10-08"
+  }
+}

@@ -1,0 +1,14 @@
+{"scores": {"appropriate": 5, "distinctive": 4, "simple": 5, "legible": 4, "adaptable": 3, "timeless": 5, "universal": 5, "clear": 4, "congruent": 5, "system": 3},
+ "evidence": {
+  "appropriate": "the name over a finished total's double rule: the ledger you can actually read, said at once",
+  "distinctive": "no competitor rules its name; probe: 2 of 20 for \"double underline wordmark logo\"",
+  "simple": "the name and two rules; describable in one sentence",
+  "legible": "Clear Ledger reads at the 128 px lockup; the CL short form holds at 16 px (thinnest 1.7 px)",
+  "adaptable": "one colour and reverse hold, but every app icon from 96 px shows the whole wordmark, small in a tile",
+  "timeless": "plain humanist type and a ruled line; would have read the same ten years ago",
+  "universal": "mirrored and rotated panels show only type and rules",
+  "clear": "description searches found no bookkeeping brand with a double-underlined wordmark",
+  "congruent": "title case humanist sans, level, symmetric, medium weight, descriptive cue: every target",
+  "system": "wordmark only: compact, small and favicon draw a CL short form, but the 96 px-plus icons fall back to the full wordmark"},
+ "kill": false, "reason": "", "reconciled": {}, "route": "type-quirk",
+ "probe": {"query": "double underline wordmark logo [firecrawl-images]", "hits": 2, "date": "2026-10-08"}}

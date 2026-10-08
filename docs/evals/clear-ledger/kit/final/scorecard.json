@@ -1,0 +1,37 @@
+{
+ "scores": {
+  "appropriate": 5,
+  "distinctive": 4,
+  "simple": 5,
+  "legible": 4,
+  "adaptable": 4,
+  "timeless": 5,
+  "universal": 5,
+  "clear": 4,
+  "congruent": 5,
+  "system": 4
+ },
+ "evidence": {
+  "appropriate": "the name over a finished total's double rule: the ledger you can actually read, said at once",
+  "distinctive": "no competitor rules its name or sets it in moss; probe: 2 of 20 for \"double underline wordmark logo\"",
+  "simple": "the name and two rules; describable in one sentence",
+  "legible": "the opened word space reads as two words at 120 px and the 32 px header; CL holds at 24 px but is small at 16 px",
+  "adaptable": "colour, reverse, black, white and mono all hold; app icons from 96 px show the whole wordmark",
+  "timeless": "plain humanist type, a ruled line and one muted green; no trend shape",
+  "universal": "mirrored and rotated panels show only type and rails; no unintended reading",
+  "clear": "no double-ruled bookkeeping wordmark found by description; Lens and WIPO image searches skipped (no Chrome extension); the name, not the mark, is shared with other bookkeepers",
+  "congruent": "title case humanist sans, level, symmetric, medium weight, dark low-chroma moss near hue 126: every target",
+  "system": "wordmark, compact, small and favicon tiers derive cleanly; designed reverse; only the 96 px-plus icons fall back to the wordmark"
+ },
+ "kill": false,
+ "reason": "",
+ "reconciled": {
+  "legible": "critic 3, mine lowered from 5 to 4 after re-reading the 16 px panel: the CL short form is small there though C, L and both rules stay apart (audit thinnest 1.72 px); 4 stands, it reads at a glance from 24 px"
+ },
+ "route": "type-quirk",
+ "probe": {
+  "query": "double underline wordmark logo [firecrawl-images]",
+  "hits": 2,
+  "date": "2026-10-08"
+ }
+}

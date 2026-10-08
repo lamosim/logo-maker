@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 2,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a pill frame holding a bar, a disc and a bar reads as a banknote/cash icon or a cassette, money rather than a readable ledger, against the brief's ban on coins",
+      "a dot between two bars inside a thick capsule reads as an eye or lens, so 'see' needs a sentence; nothing says ledger"
+    ],
+    "distinctive": [
+      "it is close to the stock 'payments' cash glyph used across finance apps, a category cue",
+      "no competitor uses a capsule, but the silhouette is a generic pill or toggle shape"
+    ],
+    "simple": [
+      "one rounded outline with three inner parts, redrawable with some effort",
+      "one capsule, two bars, one dot; redrawable, though the bars and dot compete inside the outline"
+    ],
+    "legible": [
+      "at 24 and 16 px the inner bars and dot clog into a dark lozenge; at 32 it is already strained",
+      "at 24 px the inner bars close up and at 16 px the mark is a dark blob; the wordmark itself reads fine in the header"
+    ],
+    "adaptable": [
+      "reversed and one-colour panels hold at large size, but the app tile shows a squashed horizontal capsule that needed more room",
+      "reversed and one-colour panels hold at 64, but the 32 px one-colour version fills in and the app tile looks crowded"
+    ],
+    "timeless": [
+      "no trend item, though the rounded pill container is generic UI styling",
+      "no trend shape from the avoid list; a plain rounded capsule"
+    ],
+    "universal": [
+      "the upright panel reads as a banknote or a tape and the rotated panel reads as a traffic light or a capsule",
+      "rotated 90 it reads as a traffic light or battery; flat it suggests a pill, a cassette or a camera"
+    ],
+    "clear": [
+      "unsearched: near-identical cash and banknote icons sit in every icon set and in payments apps",
+      "unsearched: capsule-eye and pill-shaped marks are common in tech and pharmacy, none I know in bookkeeping"
+    ],
+    "congruent": [
+      "symmetric and level as targeted, but a closed frame against the 'open' target, a money motif against the brief, and heavy outlines against 'not blunt'",
+      "symmetric, level and round, but the thick black outline is the heavy slab the strategy rules out and nothing carries the ruled page"
+    ],
+    "system": [
+      "lockups build, but the favicon tiers lose the inner parts and the wide mark sits small in square tiles and avatars",
+      "lockups align, but the small and favicon tiers lose the inner detail with no simplified tier drawn"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-total-l",
+    "03-total-wordmark",
+    "04-standing-dot"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "439e9146fe2572d5701458840a2ba95a00ab5f07c10e59000859cd4e95dae39d"
+}

@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a heavy U-shaped cradle holding a rounded square reads as a thing held, a slot filled: 'nothing gets dropped' without a caption",
+      "a thick U cradling a solid square reads as a thing held, close to 'nothing gets dropped' without a caption; calm and Sage-like"
+    ],
+    "distinctive": [
+      "a cradle cupping a block is unlike the five competitors' hexagon, hooks, loops and broken ring; containment instead of transit",
+      "no competitor uses a cradle-and-block, but the U cup silhouette is a fairly common shape in other lettermarks"
+    ],
+    "simple": [
+      "one thick U and one rounded square; drawable in two strokes",
+      "one U plus one rounded square; drawable in two strokes from memory"
+    ],
+    "legible": [
+      "the U and its square hold down to 24 px; at 16 px the square shrinks to a dot but the cup silhouette survives; name reads clearly",
+      "the cup and square stay separate down to 24 px; at 16 px the square nearly fills the cup but the silhouette holds; wordmark reads cleanly in the header"
+    ],
+    "adaptable": [
+      "black, reversed and one-colour panels all hold; fills the app tile and avatar well",
+      "black, reversed and both one-colour panels hold; the app tile and avatar fill well; no motion logic shown beyond the block dropping in"
+    ],
+    "timeless": [
+      "no trend shape; flat, heavy and plain geometry",
+      "no ring, hexagon or gradient; a plain geometric cup that would have read the same ten years ago"
+    ],
+    "universal": [
+      "rotated 90 reads as a C or E; upright it can read as a letter U (not in the name) or a smiling face",
+      "rotated 90 it reads as a C or an E with a block; the upright cup can read as a magnet or a smiling face"
+    ],
+    "clear": [
+      "unsearched: U-cup and cradle marks exist in storage and hosting brands, though none known among webhook services",
+      "unsearched: U-shaped cups holding a square exist as lettermarks in other categories; none known among the webhook five"
+    ],
+    "congruent": [
+      "round outside, precise square inside, symmetric, upright and medium-heavy match; no warm hue is shown and the wordmark has no owned detail",
+      "round outside, square inside, symmetric and still match the shape, symmetry and dynamism targets; but the U is not a letter of Orvane and the wordmark is a default geometric sans"
+    ],
+    "system": [
+      "horizontal, reversed, mockups and every tier derive cleanly from one symbol; the wordmark stays generic",
+      "horizontal lockup, header, avatar, card and 16 px tier all built and balanced; mark and wordmark weights agree"
+    ]
+  },
+  "preferred_over": [
+    "01-split-tally",
+    "04-paired-notch",
+    "05-sealed-envelope"
+  ],
+  "tied_with": [],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "5be3e59268980e28b403a668fec892dfdb08354204a0b5b4cf53f6a83219dc1d"
+}

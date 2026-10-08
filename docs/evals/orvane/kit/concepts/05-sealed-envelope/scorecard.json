@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 2,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a sealed envelope reads as delivery that arrives unopened at once; literal rather than Sage-precise",
+    "distinctive": "an envelope is the email and notification icon every developer already sees; probe: 6 of 20 for \"envelope wax seal logo\", capped at 3, scored 2",
+    "simple": "a rounded rectangle, a flap and a ring; drawable in seconds",
+    "legible": "the seal ring holds at 16 px (thinnest feature 2.72 px); Orvane reads at 120 px",
+    "adaptable": "works in one colour and reversed; tiers open the flap cut",
+    "timeless": "no trend shape; an envelope would have read the same ten years ago",
+    "universal": "the rotated panel reads faintly as a magnifier; the mirror is identical",
+    "clear": "stock envelope-with-seal icons found (CleanPNG, Flaticon, Icons8); image search skipped",
+    "congruent": "symmetric and still, but a literal descriptive cue against the target descriptive_cue false",
+    "system": "every lockup and tier builds cleanly; rationale drafted in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "object",
+  "probe": {
+    "query": "envelope wax seal logo [firecrawl-images]",
+    "hits": 6,
+    "date": "2026-10-08"
+  }
+}

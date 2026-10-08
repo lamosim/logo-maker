@@ -1,0 +1,28 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 2,
+    "clear": 4,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the puppet is the persona, but what reads is a snake or a goose, not a friend",
+    "universal": "snake and goose readings; the round-ended cuff reads as plumbing",
+    "legible": "at 24 px and below the head becomes a hook"
+  },
+  "kill": true,
+  "reason": "the sock-puppet profile reads as a snake or a goose (a bird, off limits) and its cuff as a pipe fitting; the silhouette is inherent to a sock in profile, so no revision fixes it",
+  "reconciled": {},
+  "route": "metaphor-2",
+  "probe": {
+    "query": "hand puppet logo [firecrawl-images]",
+    "hits": 4,
+    "date": "2026-10-08"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "slug": "orvane",
+  "name": "Orvane",
+  "needs_name": false,
+  "created": "2026-10-08T18:28:30-04:00",
+  "updated": "2026-10-08T18:43:04-04:00",
+  "phase": "done",
+  "industry": "webhook delivery software for SaaS developers",
+  "surfaces": [
+    "website header",
+    "GitHub avatar",
+    "docs favicon"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "night-shift",
+  "concept": "02-cradle",
+  "fonts": {
+    "wordmark": {
+      "family": "Instrument Sans",
+      "weight": 500,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T18:28:50-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: owner confirmed the brief write-back as written (conservative answer: confirm as written)"
+    },
+    {
+      "at": "2026-10-08T18:30:38-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: owner approved the strategy as written (conservative answer); told the name check result with the trademark caveat"
+    },
+    {
+      "at": "2026-10-08T18:31:08-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: owner chose the quieter board, Night Shift (warm near-black, one amber accent, Instrument Sans 500 with Geist Mono)"
+    },
+    {
+      "at": "2026-10-08T18:37:21-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: scripted: the reverse-image search could not run (no Claude in Chrome extension; Google Lens returned a CAPTCHA and Bing Visual Search refused automated uploads); the description searches ran; taken as the only way forward, the attorney's clearance search remains the owner's step"
+    },
+    {
+      "at": "2026-10-08T18:39:57-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: Collins rule 95 preface given; asked what the owner likes in each; owner named no specific likes (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T18:39:57-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: owner's first reaction 'the symbol disappears in the dark header at 32 px'; probing question (what, what size, which mockup) answered 'the site header dark mockup'. In that mockup the cradle draws white at about 32 px and holds its U and block, so the reaction does not fit 02-cradle; per the script the sheet is fine as it is; held as unfamiliarity, no change"
+    },
+    {
+      "at": "2026-10-08T18:39:57-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: owner chose 02-cradle, the survivor the critic preferred (critic's order 02-cradle > 01-split-tally > 05-sealed-envelope); no steals"
+    },
+    {
+      "at": "2026-10-08T18:41:30-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: owner approved refinement round 1 after the colour round (Amber #a9680c / Amber Light #e49d44 on Paper and Night, Instrument Sans 500 kerned rv +20 va +20, horizontal primary lockup)"
+    },
+    {
+      "at": "2026-10-08T18:42:33-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: scripted: Google Lens and WIPO image searches for final/ could not run (no Claude in Chrome extension; Lens CAPTCHA, Bing refused uploads); description searches done; other uses of the name Orvane found; owner keeps the name and sends the conflict to an attorney (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T18:43:04-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: owner has the package folder and the brand sheet; approved the handover (conservative answer)"
+    }
+  ]
+}

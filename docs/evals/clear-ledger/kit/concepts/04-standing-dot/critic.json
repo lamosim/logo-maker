@@ -1,0 +1,66 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 2,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a solid dot over a double rule hints at a total over the sum line, but it needs a sentence to explain; it does not say ledger or Clear Ledger on its own",
+      "a disc standing on two rules can mean 'where you stand' over a total, but it needs that sentence; first read is a figure, not a ledger"
+    ],
+    "distinctive": [
+      "a plain disc over two bars is generic in silhouette and the disc invites a coin reading, a motif the brief rules out",
+      "the silhouette is the stock user/profile glyph and a sun on a horizon, both generic"
+    ],
+    "simple": [
+      "one disc and two bars, drawable from memory in seconds",
+      "one disc over two bars, drawable in seconds"
+    ],
+    "legible": [
+      "the dot and two bars are still separate at 16 px, though the bars nearly fuse into one line at 16 and 24",
+      "the disc and both bars stay separate down to 16 px and in the 32 px one-colour panel"
+    ],
+    "adaptable": [
+      "the reversed, one-colour 64/32 and app-tile panels all hold; the tile reads cleanly white on black",
+      "black, reversed, one colour, app tile and avatar all hold with no redraw"
+    ],
+    "timeless": [
+      "no trend shape; plain geometric primitives",
+      "no avoid-list trend, but it sits close to the stick-figure person the trends page warns about"
+    ],
+    "universal": [
+      "the upright panel reads as a generic user/avatar icon (head over shoulders) or a coin on a stack, and the rotated panel reads as a pause sign beside a dot",
+      "it reads as a person icon or a setting sun; rotated 90 it becomes '||' plus a ball, a pause-play glyph"
+    ],
+    "clear": [
+      "unsearched: dot-over-lines figures are common as profile and user icons across apps; no exact finance mark comes to mind",
+      "unsearched: user-avatar icons and sun-over-horizon marks are everywhere, including finance apps"
+    ],
+    "congruent": [
+      "level, symmetric, open and medium weight as targeted, but the round disc reads as a coin and there is no ledger ruling beyond two bars",
+      "symmetric, level, static, round joins and the ledger rules; the solid disc is heavier than the light stroke target"
+    ],
+    "system": [
+      "horizontal lockup, header, card and tile all derive cleanly; the header lockup sets the name small beside the mark",
+      "symbol, lockups and tiers derive cleanly; the small header lockup sets the wordmark very small beside the mark"
+    ]
+  },
+  "preferred_over": [
+    "02-level"
+  ],
+  "tied_with": [
+    "01-total-l",
+    "03-total-wordmark"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "0b8e884091b3b42b83d69f94aa5ced6669753d36829d0aee095154b43147f331"
+}

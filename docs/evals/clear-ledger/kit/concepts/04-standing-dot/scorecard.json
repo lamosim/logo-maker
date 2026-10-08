@@ -1,0 +1,37 @@
+{
+ "scores": {
+  "appropriate": 4,
+  "distinctive": 3,
+  "simple": 5,
+  "legible": 5,
+  "adaptable": 5,
+  "timeless": 4,
+  "universal": 3,
+  "clear": 4,
+  "congruent": 4,
+  "system": 4
+ },
+ "evidence": {
+  "appropriate": "one dot standing on a total's double rule: one honest number, where you stand; needs a sentence",
+  "distinctive": "probe 0 of 20 for the construction, but a disc over bars is a generic silhouette (profile glyph, sun on a horizon)",
+  "simple": "a dot and two bars; drawable in seconds; 12 anchors",
+  "legible": "three parts stay apart at 16 px (thinnest 2.4 px); the clearest favicon of the set",
+  "adaptable": "one colour, reverse, icon and avatar all hold; motion logic is plain (the dot settles onto the line)",
+  "timeless": "primitive geometry, no trend shape; close to generic but not on any avoid list",
+  "universal": "a head over shoulders reading, like a user-profile glyph, and a faint division-sign echo",
+  "clear": "description and image searches found no dot-on-double-rule mark in finance",
+  "congruent": "symmetric, level, static, round dot on straight rules; weight a touch heavy against medium",
+  "system": "every lockup and tier built without warnings; rationale draft in critique.md"
+ },
+ "kill": false,
+ "reason": "",
+ "reconciled": {
+  "distinctive": "critic 2, mine lowered from 4 to 3: the probe found no dot-on-double-rule mark, but the critic is right that the silhouette is generic and can read as a coin or a profile glyph"
+ },
+ "route": "abstraction",
+ "probe": {
+  "query": "dot on double line logo [firecrawl-images]",
+  "hits": 0,
+  "date": "2026-10-08"
+ }
+}

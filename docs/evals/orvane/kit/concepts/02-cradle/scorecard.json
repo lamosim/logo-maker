@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a block held below the rim of a deep cradle: nothing gets dropped reads without a caption; enclosing like the Caregiver row",
+    "distinctive": "no competitor holds a block; but a U with a square is close to generic geometry; probe: 2 of 20 for \"cupped cradle holding square logo\"",
+    "simple": "one U and one square; drawable in two strokes",
+    "legible": "the block stays separate from the cradle at 16 px (thinnest feature 3.66 px); Orvane reads at 120 px",
+    "adaptable": "works in one colour and reversed; tiers thicken the wall; the block could drop in and settle as motion",
+    "timeless": "plain geometry, no trend shape",
+    "universal": "a U holding a square can read as a face with a mouth or a magnet; the rotated panel reads as a C or an E holding a block",
+    "clear": "description search found stock cradle and cupped-hand icons, no U-and-block mark in software; image search skipped",
+    "congruent": "round outside, square inside, symmetric and still; medium weight; matches the targets",
+    "system": "every lockup and tier builds cleanly; rationale drafted in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "abstraction",
+  "probe": {
+    "query": "cupped cradle holding square logo [firecrawl-images]",
+    "hits": 2,
+    "date": "2026-10-08"
+  }
+}

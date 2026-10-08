@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 5
+  },
+  "evidence": {
+    "appropriate": "a coral seed with one eye leaning toward the page reads as a small friend, and the seed is the name's story; round and warm for the Caregiver",
+    "distinctive": "no competitor among the five uses a seed or coral; probe carried forward: 6 of 20 for \"seed character logo\", so capped at 3",
+    "simple": "a teardrop, a leaf and one eye; drawable from memory in three strokes; 20 anchors",
+    "legible": "the silhouette holds at 16 px (thinnest feature 5.97 px); the compact tier's eye reads at the avatar size; Pip in Fredoka 600 reads at the 120 px minimum",
+    "adaptable": "black, white, mono, colour and a designed reverse (Coral Glow and Cream on Cocoa) all hold; compact, small and favicon tiers redrawn; the leaf gives a motion logic",
+    "timeless": "a flat, few-shape character with no trend shape; a mascot where warmth is the strategy is a use item",
+    "universal": "a faint pear reading upright and a whale when rotated 90, both recorded in knockout.md; mirrored clean; colour-vision strip keeps the hierarchy",
+    "clear": "description searches found no one-eyed seed mark; the name is shared by Pip School (a toucan) and Pip and Tim in the same category; Lens and WIPO skipped (no Chrome extension); final image knock-out (Lens, WIPO) skipped by the owner's decision, no image findings to add",
+    "congruent": "round (0.15), one tilt for 0.7 excitement, low complexity, open, medium weight; coral at hue 31, medium saturation, mid lightness; rounded type; small and quick like 'Pip'",
+    "system": "horizontal (primary), stacked, symbol, wordmark, compact, small and favicon derive cleanly; clear space one x; contrast passes in both contexts; rationale written"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "abstraction",
+  "probe": {
+    "query": "seed character logo [firecrawl-images]",
+    "hits": 6,
+    "date": "2026-10-08"
+  }
+}

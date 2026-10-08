@@ -1,0 +1,95 @@
+{
+  "slug": "clear-ledger",
+  "name": "Clear Ledger",
+  "needs_name": false,
+  "created": "2026-10-08T18:28:29-04:00",
+  "updated": "2026-10-08T18:43:02-04:00",
+  "phase": "done",
+  "industry": "accounting and bookkeeping for sole traders",
+  "surfaces": [
+    "app icon",
+    "website header",
+    "printed invoices"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "shop-counter",
+  "concept": "03-total-wordmark",
+  "fonts": {
+    "wordmark": {
+      "family": "Alegreya Sans",
+      "weight": 700,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T18:28:47-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: owner confirmed the brief write-back as written (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T18:30:26-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: owner approved the strategy as written; keeps the name Clear Ledger despite other bookkeeping firms trading under it (incl. Clear Ledger Solutions, UK) and sends the conflict to a trademark attorney (conservative answers)"
+    },
+    {
+      "at": "2026-10-08T18:30:58-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: owner chose Shop Counter, the warmer of the two boards"
+    },
+    {
+      "at": "2026-10-08T18:36:08-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: the Claude in Chrome extension is not connected, so the Google Lens image search could not run for the survivors; description searches done; scripted: most conservative option, the attorney's clearance search covers the image check"
+    },
+    {
+      "at": "2026-10-08T18:38:42-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: asked what the owner likes in each; the owner named no specific likes (conservative answer); no steals"
+    },
+    {
+      "at": "2026-10-08T18:38:42-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: owner chose 03-total-wordmark, the survivor the critic preferred (critic's order 03 > 01 > 04); told that app icons from 96 px up show the whole wordmark"
+    },
+    {
+      "at": "2026-10-08T18:38:42-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted first reaction: 'the two words run together at the invoice size'; probing question (what reads wrong, at what size, in which mockup?) answered 'the card mockup'. Sorted as a flaw at a named size and mockup, not unfamiliarity: widen the word space in refinement and check it on the card and the minimum-size ladder"
+    },
+    {
+      "at": "2026-10-08T18:40:53-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: owner approved refinement round 1 (the colour round: moss #4a5d2a on Kraft Cream, Moss Light on Ledger Ink, word space opened, CL short form opened at 16 px); primary lockup horizontal for the website header, the top-ranked surface that shows a lockup"
+    },
+    {
+      "at": "2026-10-08T18:42:03-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: the Claude in Chrome extension is not connected, so Google Lens and the WIPO image search could not run on final/; description searches done; scripted: most conservative option, the attorney's clearance search to include an image search"
+    },
+    {
+      "at": "2026-10-08T18:43:02-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: owner has the package folder and the brand sheet and approves the handover (conservative answer); told the sheet runs to two pages, the second holding only the end of the web snippet"
+    }
+  ]
+}

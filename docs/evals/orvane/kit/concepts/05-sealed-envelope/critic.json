@@ -1,0 +1,66 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 2,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a solid envelope with an O ring in the flap says email or mail, not webhook delivery; 'nothing gets dropped' needs a caption",
+      "an envelope with a ring sealing the V of the flap says 'delivery' at once, but literally and as email rather than webhooks"
+    ],
+    "distinctive": [
+      "the envelope silhouette is the stock mail icon; the O ring in the flap is a detail on a generic shape",
+      "a black envelope with a V flap is the stock mail icon; the ring in the fold is a detail, not an ownable silhouette"
+    ],
+    "simple": [
+      "one rectangle, one V flap, one ring; drawable in a few strokes",
+      "one rectangle, one V and one circle; easy to redraw"
+    ],
+    "legible": [
+      "the envelope still reads at 16 px and the ring stays open at 24 px; the plain-sans name reads in every lockup",
+      "the envelope reads at 24 px, but at 16 px the ring and flap lines close up into a dark blob with a speck"
+    ],
+    "adaptable": [
+      "black, reversed and both one-colour panels hold; the app tile and avatar work without a redraw",
+      "one-colour and reversed panels hold; the tile and avatar work; the white V lines need care on dark"
+    ],
+    "timeless": [
+      "no trend shape; a flat envelope would have read the same ten years ago",
+      "no trend shape; a flat envelope icon of a kind that has read the same for decades"
+    ],
+    "universal": [
+      "the rotated 90 panel reads as a magnifying glass / search icon over a box",
+      "rotated 90 it reads as a magnifying glass, a search icon; the whole mark reads as an email or inbox app"
+    ],
+    "clear": [
+      "unsearched: envelope-with-letter marks are everywhere in mail and messaging (Gmail-style envelopes, newsletter tools)",
+      "unsearched: envelope-with-seal and envelope-with-circle marks are everywhere in mail and messaging products"
+    ],
+    "congruent": [
+      "symmetric, static and medium-heavy match; but all black with no warm hue, an untouched Inter-like wordmark and an O drawn as a ring all contradict targets",
+      "symmetric, still and medium weight match; but it is a descriptive cue where strategy set none, and the rectangle is more angular than the 0.55 target"
+    ],
+    "system": [
+      "lockups, tiers and mockups all built; the wordmark carries no detail tying it to the symbol",
+      "lockup, header, avatar and card all built; mark and wordmark sit evenly; small tiers present"
+    ]
+  },
+  "preferred_over": [
+    "04-paired-notch"
+  ],
+  "tied_with": [
+    "01-split-tally",
+    "02-cradle"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "869b64d3cf54991da999f92081a95c7b41368989a03a80a151f6b846a48f5817"
+}

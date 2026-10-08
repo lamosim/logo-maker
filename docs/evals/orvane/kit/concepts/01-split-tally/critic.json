@@ -1,0 +1,66 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a tall bar with three notched lobes each side reads as a spool, zipper or film strip; the held-or-delivered idea needs a paragraph",
+      "two mirrored notched bars that interlock like the halves of a tally or a matched receipt; 'both sides' needs a sentence to arrive"
+    ],
+    "distinctive": [
+      "no competitor among Svix, Hookdeck, Convoy, Hook0, Inngest owns a notched vertical spine; avoids hexagon, links and rings",
+      "a tall paired, notched form; none of the five competitors uses anything like it and it avoids rings, hooks and hexagons"
+    ],
+    "simple": [
+      "one vertical form with repeated notches; describable in a sentence, though the notch count is hard to recall",
+      "two mirrored halves with three notches each; one dominant silhouette, redrawable with a little effort"
+    ],
+    "legible": [
+      "clear at 64 and 48 px, but at 16 px the notches fill in and it becomes a small dark blob; the name reads fine",
+      "a solid, closed shape that still reads at 16 px; in the header lockup the narrow mark gets small beside the word"
+    ],
+    "adaptable": [
+      "black, reversed and one-colour panels hold; the narrow upright form leaves the app tile and avatar under-filled",
+      "black, reversed and one-colour panels hold; fills the app tile well; the halves suggest a meet-and-lock motion"
+    ],
+    "timeless": [
+      "no trend shape on the avoid list",
+      "no trend shape; a flat, heavy, symmetric construction"
+    ],
+    "universal": [
+      "the rotated 90 panel reads as a zigzag or bow-tie wave, close to a jagged bolt",
+      "reads faintly as a bone, spool or vertebra; rotated 90 it turns into a crown or zigzag band"
+    ],
+    "clear": [
+      "unsearched: notched-bar and bobbin shapes appear in textile, film and fastener marks, nothing known in webhooks",
+      "unsearched: paired notched bars recall some X and I lettermarks, nothing known in webhooks"
+    ],
+    "congruent": [
+      "symmetric, static and heavy match; the angular notched outside goes against the rounded outer form, there is no warm hue, and the wordmark is generic sans",
+      "heavy, symmetric, upright and still match; but the notches are angular, nothing comes from the name's round O, and the wordmark is a default sans"
+    ],
+    "system": [
+      "all tiers built, but the tall narrow symbol looks unbalanced next to the six-letter wordmark in the header lockups",
+      "tiers built, but the tall narrow mark makes the horizontal lockup uneven and small in the header and nav"
+    ]
+  },
+  "preferred_over": [
+    "04-paired-notch",
+    "05-sealed-envelope"
+  ],
+  "tied_with": [
+    "02-cradle"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "d67f119fee14f141b2d433b5089d15ea17778f5a4887ad786b6ab09c30a7cc30"
+}

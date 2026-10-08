@@ -1,0 +1,14 @@
+{"scores": {"appropriate": 4, "distinctive": 3, "simple": 5, "legible": 4, "adaptable": 4, "timeless": 4, "universal": 4, "clear": 2, "congruent": 4, "system": 4},
+ "evidence": {
+  "appropriate": "Ledger's L standing on a total's double rule reads as bookkeeping without a story; plain Everyman form",
+  "distinctive": "no competitor uses an L or a rule, but probe: 6 of 20 for \"letter L double underline logo\" (capped at 3)",
+  "simple": "a letter and one bar; drawable in two strokes; 13 anchors",
+  "legible": "the L and its rule stay apart at 16 px (thinnest 2.2 px); the wordmark reads at 120 px",
+  "adaptable": "holds in one colour and reversed; small and favicon tiers drawn with heavier rules",
+  "timeless": "a plain letter and a rule; no trend shape",
+  "universal": "mirrored reads as a backwards L; rotated as a bracket; no unintended picture",
+  "clear": "the image probe surfaced Line Item, a green L over a double rule in the same register: a close look-alike",
+  "congruent": "level, symmetric base, medium weight, humanist sans, descriptive cue: matches the targets; the tall narrow mass is the one miss",
+  "system": "horizontal, stacked, symbol, small and favicon all built; rationale draft in critique.md"},
+ "kill": false, "reason": "", "reconciled": {}, "route": "letterform",
+ "probe": {"query": "letter L double underline logo [firecrawl-images]", "hits": 6, "date": "2026-10-08"}}

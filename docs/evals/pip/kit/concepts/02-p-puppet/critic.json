@@ -1,0 +1,63 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "the P's bowl becomes a head with an open wedge mouth and one small eye, so the letter itself is a little friend speaking a line aloud; fits Caregiver plus Jester without a caption",
+      "the P's bowl becomes a head with an open mouth and a dot eye: a letter reading aloud, which ties to the onliness of reading the line aloud and makes the name the character"
+    ],
+    "distinctive": [
+      "no bear, elephant, owl or blue tile like the five competitors, but the round bowl with a wedge mouth and dot eye echoes Pac-Man, so the silhouette is not fully ownable",
+      "no competitor among Epic, Ello, Khan Kids or Reading Eggs uses a letter-as-character, but the open wedge mouth on a round bowl is the Pac-Man silhouette"
+    ],
+    "simple": [
+      "a rounded stem, a bowl with a wedge cut and a dot: drawable in about four strokes, one dominant P silhouette",
+      "a rounded stem plus a notched bowl and a dot; redrawable in a few strokes, though stem and bowl compete slightly"
+    ],
+    "legible": [
+      "the P with its notch still reads at 16 and 24 px and in the browser tab; the eye dot drops out below 32 px; the Pip wordmark is clear in every lockup",
+      "the P and its mouth notch read down to 24 px and still read as P at 16 px; Pip wordmark reads at a glance in every lockup"
+    ],
+    "adaptable": [
+      "holds in black, reversed and the one-colour 64 and 32 panels; the dark app tile and avatar work; the open mouth gives an obvious motion logic (talking)",
+      "black, reversed, one colour 64 and 32, app tile, tab and avatar all hold; the mouth offers an obvious open-close motion"
+    ],
+    "timeless": [
+      "a mono-initial that doubles as the app icon is a 'use carefully' item and strategy.md gives the mascot reason, not the mono-initial one; otherwise flat with no trend shapes",
+      "no trend shape from the avoid list; a custom letter-character is durable"
+    ],
+    "universal": [
+      "the mirrored panel reads as a backwards P or a q; rotated 90 it becomes an odd chomping head on a bar; the Pac-Man echo is a secondary reading",
+      "mirrored reads as a q, rotated 90 reads as a Pac-Man on a bar; the Pac-Man reading is present in every upright panel"
+    ],
+    "clear": [
+      "unsearched: closest known look-alike is Pac-Man (games, not reading apps); no reading-app P-character I know of, though Pip School's toucan shares the name",
+      "unsearched: Pac-Man (Namco) is a famous registered mark with the same open-wedge-mouth round head; also letter-mascot P marks exist"
+    ],
+    "congruent": [
+      "round forms, one tilted element (the mouth) and no frame match; the stroke is heavy and chunky where the targets ask for medium and the name's light, small front-vowel sound; colour cannot be judged in black",
+      "round bowl and lowercase-friendly type fit, one note of play in the mouth; but the tall heavy stem and sharp wedge cut read heavier and harder than 'Pip' small and light, and the eye is small as required"
+    ],
+    "system": [
+      "horizontal lockup, app icon, favicon tab, nav bars, avatar and card all derive; no stacked lockup is shown and the eye is lost in the small tier",
+      "horizontal lockup, reversed, app icon, favicon tab, avatar and card all derive; P-as-icon doubles the wordmark's initial; no stacked lockup shown"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-seed-friend"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "9a806fbf78c5819b7cf9eea829d466d99569fbb69d1ec1e7923e0f36e11feac4"
+}

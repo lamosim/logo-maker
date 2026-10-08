@@ -1,0 +1,15 @@
+{"scores": {"appropriate": 3, "distinctive": 3, "simple": 3, "legible": 3, "adaptable": 3, "timeless": 3, "universal": 4, "clear": 3, "congruent": 3, "system": 3},
+ "evidence": {
+  "appropriate": "ledger rulings inside a C read as stripes first, ledger second",
+  "distinctive": "probe: 5 of 20 for \"letter C horizontal lines logo\" (capped at 3); a stock striped-letter construction",
+  "simple": "seven stripes at full size, four and three in the tiers: three drawings, not one",
+  "legible": "the three-stripe favicon reads as an E or a comb at 16 px",
+  "adaptable": "needed a redraw in round 2 to pass 32 px; holds in one colour",
+  "timeless": "striped 80s letters are on trends.md's use-carefully list",
+  "universal": "rotated reads as a striped arch; nothing worse",
+  "clear": "striped C marks are common in stock libraries",
+  "congruent": "heavy and busy against medium weight and low complexity",
+  "system": "tiers built, but each draws a different stripe count"},
+ "kill": true, "reason": "fails legible at 16 px (the favicon reads as an E) and is a stock striped-letter construction; not worth more rounds",
+ "reconciled": {}, "route": "system",
+ "probe": {"query": "letter C horizontal lines logo [firecrawl-images]", "hits": 5, "date": "2026-10-08"}}

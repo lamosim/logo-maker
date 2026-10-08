@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 4,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "the double rule under 'Clear Ledger' reads as the ledger's totalled sum with no caption; plain, level and Everyman, though 'see where you stand' is implied rather than shown"
+    ],
+    "distinctive": [
+      "no circle or tile like Xero or QuickBooks, and title case with a real word space sets it apart, but a CL monogram over a double underline is a generic silhouette any accountant could use"
+    ],
+    "simple": [
+      "one sentence: the name, or CL, set over a double rule; drawable in seconds, though the icon is two letters plus two rules rather than one shape"
+    ],
+    "legible": [
+      "the wordmark reads at a glance at 128 px and in the one-colour 64 panel; CL holds at 24 px, but at 16 px the letters are tiny and the two rules nearly merge"
+    ],
+    "adaptable": [
+      "the black, reversed and one-colour panels all hold, the moss app tile and tab favicon work unchanged, and the rules suggest a draw-on motion"
+    ],
+    "timeless": [
+      "a humanist sans in title case with a bookkeeper's double rule; no trend shape, would have read the same ten years ago"
+    ],
+    "universal": [
+      "the mirrored panel is only reversed text and the rotated panel reads clean; no secondary figure appears"
+    ],
+    "clear": [
+      "unsearched: CL monograms and double-underlined wordmarks are common among small accountancy and bookkeeping firms, and other 'Clear Ledger' firms already trade, so look-alikes are likely in the category"
+    ],
+    "congruent": [
+      "dark moss green, humanist sans in title case, two spaced words, level and symmetric, open frame, ruling as the category cue all match; the semibold weight sits slightly heavy for sincerity and the thin lower rule risks a hairline on the receipt printer"
+    ],
+    "system": [
+      "horizontal wordmark, CL symbol, app icon, favicon and the 256 to 16 ladder all derive from one rule; no stacked lockup is shown on the sheet"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "8646d905a5c45ceaf647312b56cdadea8c2a369ef574ac238f2447f65fdcf970"
+}

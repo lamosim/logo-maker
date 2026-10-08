@@ -1,0 +1,37 @@
+{
+ "scores": {
+  "appropriate": 4,
+  "distinctive": 3,
+  "simple": 4,
+  "legible": 3,
+  "adaptable": 4,
+  "timeless": 4,
+  "universal": 3,
+  "clear": 3,
+  "congruent": 4,
+  "system": 4
+ },
+ "evidence": {
+  "appropriate": "a level with its bubble centred says you can see where you stand, calm and checked; needs one sentence",
+  "distinctive": "none of the five uses a tool, but probe: 6 of 20 for \"spirit level bubble logo\" (capped at 3)",
+  "simple": "a capsule, a dot and two ticks; three parts to remember",
+  "legible": "at 16 px the wide vial is only five pixels tall and closes into a dark lozenge; the critic is right",
+  "adaptable": "one colour and reverse hold; favicon tier redrawn without ticks",
+  "timeless": "a plain tool silhouette; no trend shape",
+  "universal": "the capsule with a dot can read as a UI toggle switch or a pill; rotated it reads as a traffic signal",
+  "clear": "a 2017 DesignCrowd brief for On the Level Bookkeeping asked for a level bubble; the idea is known in the category",
+  "congruent": "level, symmetric, rounded, static: matches shape, symmetry and dynamism; the tool reads trades more than books",
+  "system": "all lockups and tiers built; the wide symbol makes the stacked lockup short; rationale draft in critique.md"
+ },
+ "kill": true,
+ "reason": "fails legible at 16 px: the wide vial shrinks to a blob; a level-bubble bookkeeping brief already exists",
+ "reconciled": {
+  "legible": "critic 2, mine lowered from 4 to 3 after re-reading the 24 and 16 px panels: the vial is too wide to keep its bubble open; killed"
+ },
+ "route": "metaphor-2",
+ "probe": {
+  "query": "spirit level bubble logo [firecrawl-images]",
+  "hits": 6,
+  "date": "2026-10-08"
+ }
+}

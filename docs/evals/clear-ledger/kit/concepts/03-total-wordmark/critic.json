@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 5,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 5,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "the name in title case sitting on a double rule, the bookkeeper's line under a total: you see where you stand, with no caption needed",
+      "the double rule under 'Clear Ledger' is the ledger's total line, so 'where you stand' reads as the bottom line without a caption"
+    ],
+    "distinctive": [
+      "no competitor uses the ledger ruling and all of them lowercase or CamelCase, but a double-underlined sans wordmark is close to a generic treatment",
+      "title case with a word space and a double total rule is unlike any of the five competitors' circles and tiles, but a double underline is a generic device"
+    ],
+    "simple": [
+      "the name plus two rules, describable in one sentence; the CL monogram adds a second form to remember",
+      "the name over two rules; describable in one sentence"
+    ],
+    "legible": [
+      "'Clear Ledger' reads instantly with a clear word space at every lockup size; the CL monogram reads at 32 but its double rule thins toward a hairline at 24 and 16",
+      "the wordmark reads at 128 and in the header; the CL monogram holds at 24 to 32 px but the rules merge at 16"
+    ],
+    "adaptable": [
+      "black, reversed and one-colour panels hold; the app tile and avatar needed a separate CL monogram rather than the wordmark",
+      "black, reversed and one-colour panels all clean; the app icon is a CL redraw rather than a crop of the lockup"
+    ],
+    "timeless": [
+      "no trend shape; a set sans name with a rule would have read the same ten years ago",
+      "a humanist sans and a ruled line; would have read the same ten years ago"
+    ],
+    "universal": [
+      "the mirrored and rotated panels only show the text turned; nothing else reads",
+      "mirrored and rotated panels show only reversed type, no secondary figure"
+    ],
+    "clear": [
+      "unsearched: underlined and double-underlined wordmarks are common for accountancy firms, though none of the five named competitors uses one",
+      "unsearched: underlined and double-ruled wordmarks are common among small accountancy firms, nothing identical I know"
+    ],
+    "congruent": [
+      "level, symmetric, open, medium-weight title-case sans with the ledger's double rule matches every strategy target and the light, even name sound",
+      "level, symmetric, medium weight, title case sans and the ledger ruling hit nearly every target; a touch heavy for 'light strokes'"
+    ],
+    "system": [
+      "wordmark, header, card, CL tile and avatar all derive from one rule; the 16 px CL favicon is cramped",
+      "wordmark, CL monogram, avatar and header all derive from one rule; the CL is a second idea added for small sizes"
+    ]
+  },
+  "preferred_over": [
+    "01-total-l",
+    "02-level",
+    "04-standing-dot"
+  ],
+  "tied_with": [],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "cff01ab261b0876731490f7e79914a8085df7cc43fb9489b3bfe19dc1b2a2fa1"
+}

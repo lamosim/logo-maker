@@ -1,0 +1,28 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 2,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "legible": "the notch vanishes at 48 px and below; at 16 px it is a plain O",
+    "appropriate": "the notch reads as damage, not a receipt mark",
+    "distinctive": "probe: 6 of 20 for \"notched letter O logo\""
+  },
+  "kill": true,
+  "reason": "the notch is invisible from 48 px down, so the icon is a plain O ring, and its idea converges with 04-paired-notch, which carries the notch better",
+  "reconciled": {},
+  "route": "letterform",
+  "probe": {
+    "query": "notched letter O logo [firecrawl-images]",
+    "hits": 6,
+    "date": "2026-10-08"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the matched notches barely register at header size; the critic read an untouched sans, so the idea does not carry without a caption",
+    "distinctive": "the wordmark is Instrument Sans plus one owned move; notched O marks exist; probe: 6 of 20 for \"notched letter O logo\", capped at 3",
+    "simple": "the name with two small V notches; nothing else",
+    "legible": "Orvane reads at a glance at 120 px; the notched O favicon reads as an O at 16 px, the notches fading to bumps",
+    "adaptable": "one colour and reversed are the same type; app icons from 96 px up show the whole wordmark, so the GitHub avatar and docs favicon rely on the compact and small notched O",
+    "timeless": "a custom wordmark with one owned quirk, a durable move in trends.md",
+    "universal": "mirrored and rotated panels read only as type; no secondary reading",
+    "clear": "no wordmark with matched notches found by description; NotchUX and stock templates show notched O letters; image search skipped",
+    "congruent": "neo-grotesque at medium weight matches, but the one owned detail is too faint to count, close to the Inter-only wordmark the strategy avoids",
+    "system": "wordmark, compact, small and favicon build; no symbol, so the stacked lockup is the wordmark and the 96 px icons show the name"
+  },
+  "kill": true,
+  "reason": "after four rounds the paired notches are too faint to carry the idea at header sizes (appropriate 3, under the gate)",
+  "reconciled": {
+    "appropriate": "the critic's 2 is nearer than my 4: both passes saw no owned detail; lowered to 3 after re-reading the 128 px header, where the notches vanish",
+    "congruent": "lowered to 3 for the same reason; the critic's 2 also counts the missing warm hue, which no black-only concept carries yet"
+  },
+  "route": "type-quirk",
+  "probe": {
+    "query": "notched letter O logo [firecrawl-images]",
+    "hits": 6,
+    "date": "2026-10-08"
+  }
+}

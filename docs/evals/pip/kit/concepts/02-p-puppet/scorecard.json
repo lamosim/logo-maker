@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the name's own p becomes a puppet on a stick, mouth open mid-word: the librarian's puppet reading aloud, no story needed",
+    "distinctive": "no competitor builds its character from its initial; probe: 5 of 20 for \"letter p face logo\" (faces set into a P), so capped at 3",
+    "simple": "one letter, one wedge and one eye; drawable from memory; 30 anchors",
+    "legible": "the p reads at every size; at 16 px the mouth notch makes the bowl read close to an F or a P, still a letter of the name; thinnest feature 4.97 px",
+    "adaptable": "one colour, reversed clean; small and favicon tiers deepen the mouth and enlarge the eye; compact built",
+    "timeless": "a mono-initial from the wordmark's own DNA is a use-carefully trend, justified by the mascot strategy; no avoid item",
+    "universal": "the open wedge carries a secondary Pac-Man reading, and in round 1 a beak; mirrored reads as a q, rotated as a creature with a dropped jaw",
+    "clear": "description search found a P with a monkey face peeking from its bowl (Scale Branding stock) and Pringles' Mr. P, neither a talking p; image search skipped (no Chrome extension)",
+    "congruent": "round, rounded humanist type from the territory, medium weight, open, a single dynamic note in the mouth; the stop-vowel-stop of Pip matches its snap",
+    "system": "every lockup and tier derives from one glyph; the symbol shares the wordmark's family; rationale drafted in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "letterform",
+  "probe": {
+    "query": "letter p face logo [firecrawl-images]",
+    "hits": 5,
+    "date": "2026-10-08"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 2,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 3,
+    "universal": 5,
+    "clear": 2,
+    "congruent": 2,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "an untouched geometric-sans 'Orvane' with no owned detail; nothing on the sheet carries 'nothing gets dropped'",
+      "a plain wordmark whose symbol is a thick O with two small notches; nothing on the sheet carries 'nothing gets dropped'"
+    ],
+    "distinctive": [
+      "the wordmark is the category's Inter-style default and the small tiers fall back to a thick O ring, the Convoy-like ring the strategy warns against",
+      "the notched ring O is the round-O ring the category already wears (Convoy's broken C), and the wordmark is a stock geometric sans"
+    ],
+    "simple": [
+      "just the name, and a single ring for the icon",
+      "one ring with two nicks; simple, but the nicks are the only idea and barely register"
+    ],
+    "legible": [
+      "the name reads cleanly at every lockup size; the O ring holds at 16 px but says nothing",
+      "the name reads best of the four at every lockup size; the O holds at 16 px but the notches vanish to a plain ring"
+    ],
+    "adaptable": [
+      "works in one colour and reversed; the avatar and app tile are a bare ring that needs a real icon",
+      "works in one colour and reversed; as an app tile and avatar it is just a ring, generic among the other circle icons"
+    ],
+    "timeless": [
+      "a thick round ring sits near the concentric-aperture / orbit look from the avoid list",
+      "a ring with cut gaps leans toward the aperture/orbit AI-era cliche in trends.md's avoid list"
+    ],
+    "universal": [
+      "mirrored and rotated panels show only the reversed and turned word; no other reading",
+      "mirror and rotation show only the reversed or turned word; nothing unintended reads"
+    ],
+    "clear": [
+      "unsearched: plain O-ring icons and geometric-sans wordmarks are common across developer tools",
+      "unsearched: notched or broken O rings are common, Convoy's broken C ring is near in this very category"
+    ],
+    "congruent": [
+      "contradicts the one-owned-detail target, the warm hue, the no-Inter-only wordmark and the no-O-as-ring rule",
+      "Inter-style geometric sans and a ring O are both named as things to avoid in strategy; no owned detail visible"
+    ],
+    "system": [
+      "no symbol beyond the ring, no stacked lockup shown, and the favicon is not derived from any owned detail",
+      "wordmark lockups strong, but the symbol tier is an unrelated ring and there is no stacked logic shown"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-split-tally",
+    "02-cradle",
+    "05-sealed-envelope"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "a42ecf9719c3a88016cc8cd342842915326dd2d89a60d4de4372f814804774d7"
+}

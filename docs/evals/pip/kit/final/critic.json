@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a seed-shaped body with a leaf tuft and one small eye reads as a small, soft, Caregiver friend and fits the name's seed story, but nothing in it says reading; the 'reads with you' half needs a sentence"
+    ],
+    "distinctive": [
+      "coral seed-creature with a sprout sits apart from the category's blue tiles and big-eyed bears, elephants and owls; the teardrop-plus-leaf silhouette is still close to generic fruit and seed icons"
+    ],
+    "simple": [
+      "one teardrop body, one leaf, one dot eye; drawable from memory in three strokes"
+    ],
+    "legible": [
+      "the 'Pip' wordmark reads at once in every lockup; the silhouette holds down to 16 px, though the eye closes from 24 px and the leaf becomes a nub at 16 px"
+    ],
+    "adaptable": [
+      "holds in black, reversed and one colour at 64 and 32; the coral app tile and the browser tab work without a redraw; no motion logic shown"
+    ],
+    "timeless": [
+      "a flat mascot with no gradient, sparkle or 3D; the heavy bold sans 'Pip' leans a little toward the rounded consumer style but is not a trend shape"
+    ],
+    "universal": [
+      "the mirrored panel reads as a chick or bird head with a crest, and rotated 90 reads as a whale or tadpole; a faint secondary creature reading, and a bird is a category guide the strategy avoids"
+    ],
+    "clear": [
+      "unsearched: seed, pear and droplet characters with a leaf are common in kids' and food apps, and Pip School's guide already carries the name; similar marks likely exist, no direct copy known"
+    ],
+    "congruent": [
+      "round, warm coral within 20 to 85 degrees, one tilted element (the leaf), a small eye well under a sixth of the head, open and unframed; the solid black mass is heavier than the medium, small-and-light target the front-vowel name asks for"
+    ],
+    "system": [
+      "horizontal lockup, symbol, 16 to 256 px ladder, one-colour tiers, icon, tab, nav, avatar and card mockups all derive cleanly; no stacked lockup shown on the sheet"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "91f3a8b207f5529e7c00c9161b4f6f4eab326a31a73d39915b2e0670eb60915f"
+}

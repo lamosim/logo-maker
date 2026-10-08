@@ -1,0 +1,37 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a block held below the rim of a deep cradle: nothing gets dropped reads without a caption; quiet and enclosing, Sage with Caregiver",
+    "distinctive": "no competitor holds a block (Svix hexagon, Hookdeck hooks, Convoy broken C, Hook0 knot); U-and-square geometry sits near stock initial-U templates; probe: 2 of 20 for \"cupped cradle holding square logo\"",
+    "simple": "one U and one square; drawable in two strokes; 18 anchors",
+    "legible": "the block stays clear of the cradle at 16 px (thinnest 3.66 px); Orvane reads at 120 px with rv and va opened to an even rhythm",
+    "adaptable": "one colour, black, white and the designed amber-on-Night reverse all hold; compact, small and favicon tiers thicken the wall; the block can drop in and settle as motion",
+    "timeless": "no trend shape; warm amber on near-black, no gradient or glow",
+    "universal": "mirror identical; rotated reads as a C holding a block; upright, a faint face (U as smile, block as nose) at small sizes",
+    "clear": "description search found stock initial-U-with-square templates (Vecteezy 57777789) and other uses of the name Orvane, no registered cradle mark in the category; image search skipped; final image searches (Lens, WIPO) skipped by the owner's decision, so the attorney's clearance search carries the weight",
+    "congruent": "round outside, square inside (shape 0.55), symmetric, still, medium weight, warm amber at hue about 70, neo-grotesque title case: matches every target",
+    "system": "horizontal, stacked, symbol, wordmark, compact, small and favicon all derive cleanly; designed reverse; rationale drafted in concepts/02-cradle/critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {
+    "system": "lowered from 5 to 4: the critic's sheet showed no stacked lockup and a plain wordmark; the stacked lockup builds (refine-1 shows it), so 4 stands over the critic's 3"
+  },
+  "route": "abstraction",
+  "probe": {
+    "query": "cupped cradle holding square logo [firecrawl-images]",
+    "hits": 2,
+    "date": "2026-10-08"
+  }
+}

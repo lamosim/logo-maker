@@ -1,0 +1,27 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "reading aloud and growth read at once, but there is no friend; the strategy is a mascot",
+    "clear": "Seeds Pediatric Speech Therapy puts a sprout over a speech bubble; speech-therapy stock uses the same device"
+  },
+  "kill": true,
+  "reason": "it carries reading aloud and growth but not the one idea, a small friend: no character, against the mascot strategy; and a sprout in a speech bubble is a stock speech-therapy device (Seeds Pediatric Speech Therapy)",
+  "reconciled": {},
+  "route": "negative-space",
+  "probe": {
+    "query": "speech bubble seed logo [firecrawl-images]",
+    "hits": 2,
+    "date": "2026-10-08"
+  }
+}

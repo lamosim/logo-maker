@@ -1,0 +1,119 @@
+{
+  "slug": "pip",
+  "name": "Pip",
+  "needs_name": false,
+  "created": "2026-10-08T18:28:38-04:00",
+  "updated": "2026-10-08T18:43:44-04:00",
+  "phase": "done",
+  "industry": "early reading education for children",
+  "surfaces": [
+    "app icon",
+    "App Store listing",
+    "printed stickers"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "sunny-seed",
+  "concept": "01-seed-friend",
+  "fonts": {
+    "wordmark": {
+      "family": "Fredoka",
+      "weight": 600,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T18:28:59-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: brief confirmed as written, no corrections (write-back reply not scripted; most conservative option): Caregiver with Jester; sincerity 0.9, excitement 0.7, competence 0.6, sophistication 0.3, ruggedness 0.2; industry tag 'early reading education for children' (education list)."
+    },
+    {
+      "at": "2026-10-08T18:30:33-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: strategy approved as written (reply not scripted; most conservative option): one idea 'a small friend who reads with you'; mascot inside a combination lockup; avoid blue, rainbows, big-eyed animal guides (bear, elephant, owl, birds), open books; own a warm coral or marigold and a few-shape non-animal character. Name check shown with the trademark caveat: Pip School by Sprout Labs (toucan named Pip) and Pip and Tim apps exist; keep the name and send the conflict to a trademark attorney."
+    },
+    {
+      "at": "2026-10-08T18:31:01-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: chose Sunny Seed, the warmer of the two boards: Fredoka 600 for the wordmark with Nunito 400 beside it; Coral #e8604c and Marigold #f4b23a on Cream #fff5e6 with Cocoa #3b2a24 ink, Peach support; round, soft, few-shape forms. Quiet Shelf (Alegreya Sans, Fraunces, butter and plum) set aside."
+    },
+    {
+      "at": "2026-10-08T18:38:45-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: scripted (not in the owner's script; most conservative option): no Chrome extension in this headless session, so the Google Lens image search of 01-seed-friend and 02-p-puppet was not run; the description searches stand, and the image search goes to the trademark attorney with the clearance search."
+    },
+    {
+      "at": "2026-10-08T18:40:15-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 03-sock-puppet after round 1: the sock profile reads as a snake or a goose and its cuff as a pipe fitting; inherent to the silhouette."
+    },
+    {
+      "at": "2026-10-08T18:40:15-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 04-pip-wordmark after round 1: the seed-dot reads as an acute accent (P\u00edp) and the icon is a lone i with no character."
+    },
+    {
+      "at": "2026-10-08T18:40:15-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 05-bubble-seed after round 3: carries reading aloud and growth but no friend (appropriate 3, under the gate); a sprout in a speech bubble is a speech-therapy convention."
+    },
+    {
+      "at": "2026-10-08T18:40:15-04:00",
+      "phase": "concepts",
+      "by": "claude",
+      "note": "Killed 06-line-friend after round 1: favicon fails one_colour_merge, the friend shrinks to a speck in small tiers and reads as a ball or bomb. Two survivors presented (01-seed-friend, 02-p-puppet) and the owner told why fewer than three: six directions tried, four killed."
+    },
+    {
+      "at": "2026-10-08T18:40:15-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: Collins rule 95 preface said word for word; concept sheet shown (two survivors) with the trademark caveat; 'what do you like in each?' asked first: no specific likes named (conservative answer), so no steal and nothing carried over."
+    },
+    {
+      "at": "2026-10-08T18:40:15-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: first reaction 'the character turns into a blob at the avatar size'. Probing question: what reads wrong, at what size, in which mockup? Answer: 'at the avatar size'. Sorted as a flaw at a named size, not unfamiliarity: 01-seed-friend's avatar (compact tier) loses its eye and leaf into a silhouette. To fix in refinement by redrawing the compact tier (bigger eye, a fuller leaf, a tighter crop), not by changing the concept."
+    },
+    {
+      "at": "2026-10-08T18:40:15-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: chose 01-seed-friend, the survivor the critic preferred: the critic's two passes split one each on the pair (merged order a tie), and its totals put 01-seed-friend first (38 against 36); no blend, no steal from 02-p-puppet."
+    },
+    {
+      "at": "2026-10-08T18:43:07-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: approved after the colour round (refine sheet round 1): 01-seed-friend refined, centred by mass, the eye sized to the ladder's one-sixth rule at full size and opened for the compact (avatar), small and favicon tiers to answer 'a blob at the avatar size'; Fredoka 600 with no quirk and no kerning needed; horizontal primary lockup (the App Store listing, the top-ranked surface that shows a lockup; conservative answer) with a 200-unit gap; Coral #e8604c and Cocoa #3b2a24 on Cream #fff5e6, Coral Glow #ff8672 and Cream on Cocoa for dark. Knock-out in final/knockout.md shown with the trademark caveat."
+    },
+    {
+      "at": "2026-10-08T18:43:07-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: scripted (most conservative option): no Chrome extension in this headless session, so the Google Lens and WIPO Global Brand Database image searches of final/ were not run; the description searches in final/knockout.md stand and both image searches go to the trademark attorney with the clearance search."
+    },
+    {
+      "at": "2026-10-08T18:43:43-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: package handover approved (conservative answer): brands/pip/package (186 files, verify ok) opened in Finder and brand-sheet.pdf opened in Chrome; the sheet was read and prints on one page."
+    }
+  ]
+}

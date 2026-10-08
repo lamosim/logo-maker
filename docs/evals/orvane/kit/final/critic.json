@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a heavy U-cradle holding a solid rounded square reads as 'a thing held, nothing dropped' with a sentence; calm, upright and enclosing suits Sage with Caregiver"
+    ],
+    "distinctive": [
+      "free of hexagons, links and loops, but the thick open arc sits near Convoy's thick broken-ring C, and a U-with-block is a generic lettermark silhouette"
+    ],
+    "simple": [
+      "one thick U arc plus one rounded square; drawable from memory in two strokes"
+    ],
+    "legible": [
+      "the square stays separate from the arc down to 24 px and is still a dot-in-cup at 16 px, though the gap is tight; 'Orvane' reads cleanly in every lockup"
+    ],
+    "adaptable": [
+      "holds in black, reversed white-on-black, one colour at 64 and 32, the amber app tile, the browser tab and the dark header bar"
+    ],
+    "timeless": [
+      "plain geometric arc and square, no gradient or trend shape; the soft rounded-square block is the only touch of current app-icon styling"
+    ],
+    "universal": [
+      "mirrored is identical, but rotated 90 reads as a C or E clasping a block, and upright the mark can read as the letter U, which is not the name's initial, or as a cup or smiling face"
+    ],
+    "clear": [
+      "unsearched: U-cup lettermarks with a dot or block inside are common across app icons and SaaS marks, and the rotated form recalls Convoy's thick C; nothing identical comes to mind"
+    ],
+    "congruent": [
+      "warm amber on warm near-black, symmetric, static, medium-heavy weight, round outside and square inside, all on target; the wordmark is a plain geometric sans in title case with no owned detail"
+    ],
+    "system": [
+      "the horizontal lockup, reversed, tier ladder from 256 to 16 and mockups all derive cleanly; no stacked lockup is shown, and the wordmark has no detail that ties it to the symbol"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "a576737bea2ab4f221a22553151084f07d0b8964949f68e445078d1c7e09143a"
+}

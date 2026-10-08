@@ -1,0 +1,66 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a heavy L standing on a detached rule makes the L's foot and the bar a double rule under a sum: ledger at a glance once seen, a letter of the name",
+      "an L over a second rule makes a double total line from the Ledger initial; the idea needs a sentence"
+    ],
+    "distinctive": [
+      "the separated second rule is an owned detail, but a bold sans L monogram is generic in silhouette",
+      "the extra rule under the L's foot is a small owned move, but an L lettermark is a generic silhouette"
+    ],
+    "simple": [
+      "one L and one bar; drawable in two strokes",
+      "one heavy L and one bar; drawable in two strokes"
+    ],
+    "legible": [
+      "the L and its rule stay distinct down to 16 px and in the one-colour 32 panel",
+      "the L and its rule stay apart at 16 px; the wordmark in the header and avatar lockups is set too small to read comfortably"
+    ],
+    "adaptable": [
+      "reversed, one colour and the app tile all work; the tile L is crisp, though the mark sits narrow and left-heavy in square containers",
+      "works in one colour, reversed and as an app tile; the icon is the mark as drawn"
+    ],
+    "timeless": [
+      "no trend item; a mono-initial built from the name sits under 'use carefully' and is justified by the app icon being the first surface",
+      "no trend shape; a plain slab initial"
+    ],
+    "universal": [
+      "the mirrored panel reads as a J over a bar and the rotated panel as a bracket or gate; faint secondary readings",
+      "mirrored it reads as a J over a bar; rotated 90 it reads as a \u0393 or a table"
+    ],
+    "clear": [
+      "unsearched: underlined single-L monograms are common across categories, including legal and lettings firms",
+      "unsearched: L monograms with underlines are common across categories, including accountancy firms"
+    ],
+    "congruent": [
+      "straight level skeleton, firm weight and title-case sans match, but the slab-heavy L leans toward 'blunt' and is asymmetric against the 0.85 symmetry target",
+      "symmetric and level but the heavy slab and square corners contradict the 'no heavy black slab' and round-join targets"
+    ],
+    "system": [
+      "the website header and dark header lockups set 'Clear Ledger' tiny beside the L, so the wordmark does not lead where the strategy says it should",
+      "tiers derive cleanly, but the lockups are uneven: the wordmark shrinks to a caption beside the L in the header"
+    ]
+  },
+  "preferred_over": [
+    "02-level",
+    "04-standing-dot"
+  ],
+  "tied_with": [
+    "03-total-wordmark"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "2896a8d279af5a8f49c772027654c9a4ed55b8aacb0927020f233f6ca876e9df"
+}

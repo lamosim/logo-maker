@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a seed with one eye leaning toward the page reads as a small friend at once, and Pip's name story is a seed; round and soft fits the Caregiver row",
+    "distinctive": "no competitor among the five uses a seed or a plant; probe: 6 of 20 for \"seed character logo\" (seed mascots with leaves and faces), so capped at 3",
+    "simple": "three parts, a teardrop, a leaf and one eye; drawable from memory in three strokes; 20 anchors",
+    "legible": "the silhouette holds at 16 px (thinnest feature 6.22 px), but the eye closes to a speck from 24 px down; Fredoka 600 Pip reads at 120 px (x-height 17.3 px)",
+    "adaptable": "one closed silhouette in one colour, reversed cleanly; small and favicon tiers enlarge the eye and leaf; compact built for avatars",
+    "timeless": "no trend shape; mascots where warmth is the strategy are on trends.md's use list",
+    "universal": "the teardrop with a leaf has a faint pear reading, near the forbidden apple; rotated 90 it reads as a whale; mirrored clean",
+    "clear": "description search found seed and sprout mascots with full cartoon faces (Veg Stars, stock seed mascots) but no one-eyed bare seed; image search skipped (no Chrome extension)",
+    "congruent": "round (shape 0.15), a dose of lean for 0.7 excitement, low complexity, open, medium weight; small and quick like the name's front vowel",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all built without tier warnings; rationale drafted in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "abstraction",
+  "probe": {
+    "query": "seed character logo [firecrawl-images]",
+    "hits": 6,
+    "date": "2026-10-08"
+  }
+}

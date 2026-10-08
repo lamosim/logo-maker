@@ -44,3 +44,6 @@ A row per brief and cycle. Single runs are noisy: read the direction across cycl
 | pip | ideation | 3 | 42 | 2 | none | 14 |
 
 Cycle order as run: `baseline`, then `ideation` (after the routes, the probe and the image knock-out landed), then `kit` (after the kit vocabulary), then `final`. The spec's sequence table named `kit` before `ideation`; the plans ran in the other order on one branch, so `ideation` minus `baseline` measures the routes, probe and knock-out work, and `kit` minus `ideation` measures the kit work. The `ideation` rows ran with `--strict-mcp-config`, in parallel, on claude-opus-5-5 with Claude Code 2.1.294.
+| orvane | kit | 4 | 39 | 2 | none | 15 |
+| clear-ledger | kit | 3 | 43 | 3 | none | 15 |
+| pip | kit | 3 | 38 | 2 | none | 16 |

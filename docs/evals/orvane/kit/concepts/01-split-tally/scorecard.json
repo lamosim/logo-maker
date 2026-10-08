@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "two matched halves with the same notches read as a pair that agrees, both sides holding the same proof; the Sage's precise, orderly form",
+    "distinctive": "no competitor among Svix, Hookdeck, Convoy, Hook0 or Inngest uses a split, notched bar; probe: 0 of 20 for \"split tally stick logo\"",
+    "simple": "two bars, two V notches each, mirrored; drawable from memory in four strokes",
+    "legible": "the split and the notches hold at 16 px (thinnest feature 3.03 px); Orvane reads at 120 px wide",
+    "adaptable": "one colour and white on black keep the same silhouette; small and favicon tiers widen the split; the halves could slide together as a motion logic",
+    "timeless": "no trend shape: no hexagon, ring, gradient or glow",
+    "universal": "the mirrored panel is identical; the rotated panel reads faintly as a zigzag of teeth, a jaws reading reduced from three notches to two",
+    "clear": "description search by construction found no notched split-bar mark; image search skipped",
+    "congruent": "angular and precise (shape 0.55 with rounded ends), symmetric, static, medium-heavy weight; matches the targets and OR-vain's balance",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all build without tier warnings; rationale drafted in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "metaphor-2",
+  "probe": {
+    "query": "split tally stick logo [firecrawl-images]",
+    "hits": 0,
+    "date": "2026-10-08"
+  }
+}
