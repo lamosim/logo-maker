@@ -110,7 +110,8 @@ def test_scorecard_route_and_probe():
         Scorecard.model_validate({**scorecard(), "route": "Negative_space", "probe": probe})
     with pytest.raises(ValidationError, match="hits"):
         Scorecard.model_validate({**scorecard(), "route": "object", "probe": {**probe, "hits": 21}})
-    assert Scorecard.model_validate(scorecard()).route is None  # legacy cards still load; the gate decides
+    legacy = {k: v for k, v in scorecard().items() if k not in ("route", "probe")}
+    assert Scorecard.model_validate(legacy).route is None  # legacy cards still load; the gate decides
     assert len(ROUTES) == 7
 
 
@@ -367,3 +368,28 @@ def test_concepts_sheet_cli(project_root):
     payload = json.loads(result.stdout)
     assert result.exit_code == 0 and payload["concepts"] == ["01-good", "02-good-colour"], payload
     assert (project_root / "brands" / "keystone" / "sheets" / "concepts.png").stat().st_size > 20_000
+
+
+def test_the_gate_needs_a_route_and_a_probe(project_root):
+    folder = prepare(project_root, "01-good")
+    legacy = scorecard()
+    del legacy["route"], legacy["probe"]
+    (folder / "scorecard.json").write_text(json.dumps(legacy))
+    with pytest.raises(CliError, match=r"01-good/scorecard.json needs route and probe \(scorecard.md\)"):
+        registry.passing_scorecard(folder, "01-good/scorecard.json")
+    (folder / "scorecard.json").write_text(json.dumps({**scorecard(), "probe": None}))
+    with pytest.raises(CliError, match="needs route and probe"):
+        registry.passing_scorecard(folder, "01-good/scorecard.json")
+
+
+def test_the_sheet_needs_one_non_literal_survivor(project_root, no_chrome):
+    for name, fixture in (("01-good", "good"), ("02-dots", "two_dots")):
+        folder = prepare(project_root, name, fixture)  # Plan 1's prepare already runs the critic; the card is not fingerprinted
+        (folder / "scorecard.json").write_text(json.dumps({**scorecard(), "route": "object"}))
+    assert refusal("01-good", "02-dots") == ("every survivor takes the object route; the sheet needs at least one non-literal "
+                                             "survivor (routes in scorecard.md)")
+    assert no_sheet(project_root)
+    folder = project_root / "brands" / "keystone" / "concepts" / "02-dots"
+    (folder / "scorecard.json").write_text(json.dumps({**scorecard(), "route": "letterform"}))
+    with pytest.raises(AssertionError, match="Chrome started"):  # the rule passes; the render is the next step
+        sheets.concepts_sheet(project(), "keystone", ["01-good", "02-dots"], open_after=False)

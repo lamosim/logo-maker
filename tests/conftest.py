@@ -146,7 +146,8 @@ def scorecard(**overrides: int) -> dict:
 
     scores = {c: 4 for c in CRITERIA}
     scores.update(overrides)
-    return {"scores": scores, "evidence": {"appropriate": "arch = holds the invoice together"}}
+    return {"scores": scores, "evidence": {"appropriate": "arch = holds the invoice together"}, "route": "abstraction",
+            "probe": {"query": "ring gap logo", "hits": 0, "date": "2026-10-09"}}
 
 
 def pass_card(**overrides: int) -> dict:

@@ -303,6 +303,9 @@ def test_the_concept_gate_needs_a_scorecard_that_passes_the_gate(project_root):
     card.write_text(json.dumps({"scores": {"appropriate": 5}}))
     [problem] = registry._check_concept(brand, state)
     assert problem.startswith("01-good/scorecard.json is invalid: root: Value error, scores missing: distinctive, simple")
+    legacy = {k: v for k, v in scorecard().items() if k not in ("route", "probe")}
+    card.write_text(json.dumps(legacy))  # a card from before routes: the gate asks for both
+    assert registry._check_concept(brand, state) == ["01-good/scorecard.json needs route and probe (scorecard.md)"]
     card.write_text(json.dumps(scorecard(distinctive=2)))  # only appropriate, simple and legible gate
     assert registry._check_concept(brand, state) == [
         "01-good/critic.json is missing (run: logomaker sheet critic keystone --concepts 01-good, dispatch the critic, then "

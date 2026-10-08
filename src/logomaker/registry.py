@@ -325,8 +325,11 @@ def require_final_audit(paths: ProjectPaths, slug: str, needs: str) -> None:
 
 
 def passing_scorecard(folder: Path, label: str) -> Scorecard:
-    """<folder>/scorecard.json if it validates and passes the gate (Scorecard.gate_ok); else a CliError calling it `label`."""
+    """<folder>/scorecard.json if it validates, records its route and probe, and passes the gate (Scorecard.gate_ok); else a
+    CliError calling it `label`."""
     card = load_model(folder / "scorecard.json", Scorecard, label)
+    if card.route is None or card.probe is None:
+        raise CliError(f"{label} needs route and probe (scorecard.md)")
     if not card.gate_ok:
         criteria = f"{', '.join(GATE[:-1])} and {GATE[-1]}"
         raise CliError(f"{label} fails the gate ({criteria} must be {GATE_MIN} or more, and not killed)")

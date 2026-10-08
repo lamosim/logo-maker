@@ -25,7 +25,7 @@ from .knockout import knockout_problems
 from .output import EXIT_EXTERNAL, CliError
 from .paths import ProjectPaths
 from .render import Renderer, fit_box
-from .schemas import AuditResult, BrandState, Scorecard, TerritoriesSpec, TerritoryShapes
+from .schemas import LITERAL_ROUTE, AuditResult, BrandState, Scorecard, TerritoriesSpec, TerritoryShapes
 
 SHEET_W, SHEET_H = 2000, 1400
 LADDER = (256, 128, 64, 48, 32, 24, 16)
@@ -368,9 +368,10 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
     sheets) sits under the preface.
 
     Every named concept is vetted (_vetted, then registry.vetted_scorecard: a fresh critic card that the scorecard is
-    reconciled with, then knockout.knockout_problems: the image knock-out recorded) before any is built, and the PNG is
-    rendered before the folder and both files are written, so a refusal or a failed render leaves no sheet. `warnings`
-    holds each concept's mockup warnings, prefixed with its name, then any failure to open the sheet.
+    reconciled with, then knockout.knockout_problems: the image knock-out recorded), and at least one takes a route other than
+    LITERAL_ROUTE, before any is built; the PNG is rendered before the folder and both files are written, so a refusal or a
+    failed render leaves no sheet. `warnings` holds each concept's mockup warnings, prefixed with its name, then any failure
+    to open the sheet.
     """
     if not concept_names:
         raise CliError("at least one concept is needed (--concepts 01-arch,03-keystone)")
@@ -385,6 +386,8 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
         problems = knockout_problems(paths, slug, folder)
         if problems:
             raise CliError(f"concept {name}: {'; '.join(problems)}")
+    if all(card.route == LITERAL_ROUTE for _, _, card in vetted):
+        raise CliError("every survivor takes the object route; the sheet needs at least one non-literal survivor (routes in scorecard.md)")
     env = jinja(paths)
     cards: list[dict] = []
     warnings: list[str] = []
