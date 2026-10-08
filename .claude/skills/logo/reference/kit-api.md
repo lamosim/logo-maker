@@ -9,7 +9,7 @@ Written from the code [code]; where spec §6 differs, the code wins [spec §6]. 
 `brands/<slug>/concepts/NN-slug/concept.py` (two digits, a hyphen, a slug) or `brands/<slug>/final/concept.py`:
 
 - `from logomaker.kit import *` first.
-- `META`, a `Meta(slug, idea, logo_type, motifs=[], territory=None, allow_complex=False, complex_reason="", snap="grid")`: `idea`, one sentence without "represents"; `motifs`, plain nouns the cliché check reads; `snap="free"` builds every tier as if each primitive had `free=True` (anything else but `"grid"` is a ValueError).
+- `META`, a `Meta(slug, idea, logo_type, motifs=[], territory=None, allow_complex=False, complex_reason="", snap="grid")`: `idea`, one sentence without "represents"; `motifs`, plain nouns the cliché check reads; `snap="free"` makes every primitive in the module behave as `free=True` (the audit lists them as `free_segments`, info only; under `"grid"` they warn; any other value is a ValueError).
 - `PARAMS`, a `Params(stroke=90, gap=None, ...)`: named values read as `p.stroke`.
 - `TIERS`: keys `full` (required), `compact`, `small`, `favicon`; each value overrides `PARAMS` for that tier; `"wordmark": False` drops the wordmark (a symbol is then required).
 - `def build(p): ... return Mark(...)`, called once per tier; deterministic, since the audit builds twice and fails on any difference.
@@ -33,9 +33,8 @@ Every primitive returns a `Shape` and takes `free=False`.
 | `line(x1, y1, x2, y2, width, cap="butt")` | a stroked segment |
 | `polyline(points, width, cap="butt", join="miter")` | a stroked open path; joins `miter`, `round`, `bevel` |
 | `bezier(points, width=None, closed=False)` | a cubic chain p0, c1, c2, p1, ... (1 + 3k points): filled when `width` is None, else stroked with round joins |
-| `brush(points, widths, cap="round")` | a variable-width stroke along a `bezier` chain; `widths` per on-curve node, or one |
-| `spline(points, tension=0.5, closed=True, width=None)` | a smooth Catmull-Rom curve through three or more points; `tension` 0 rounds most, 1 is straight chords; filled when `width` is None, else stroked |
-| `catmull_rom(points, tension, closed)` | the `bezier` chain `spline` draws, to edit or hand to `brush` |
+| `brush(points, widths, cap="round")` | a stroke whose width varies: `points` a cubic chain as `bezier` takes, `widths` one per on-curve node (or one number), interpolated by arc length; caps `round`, `square`, `butt`; the sides are fitted back to cubics, so a five-node brush keeps about twenty anchors |
+| `spline(points, tension=0.5, closed=True, width=None)` | a Catmull-Rom curve through the points (`catmull_rom(points, tension, closed)` gives the chain); tension 0 is the loosest curve, 1 the polygon; filled, or stroked with `width` |
 
 `snap(value, step=0.25)` and `snap_angle(angle, step=15)` do the snapping.
 
@@ -46,9 +45,9 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 - Booleans: `union(*shapes)`, `subtract(a, b)`, `intersect(a, b)`, `xor(a, b)`.
 - `stroke(shape, width, cap="butt", join="miter", miter_limit=4)` turns an outline or open path into a filled band; `offset(shape, distance)` grows it (round corners) or, negative, shrinks it.
 - Transforms, which do not snap: `translate(shape, dx, dy)`, `rotate(shape, degrees, cx=0, cy=0)`, `scale(shape, sx, sy=None, cx=0, cy=0)`, `mirror_x(shape, axis=0)` (across the vertical line x = axis), `mirror_y(shape, axis=0)`.
-- `repeat(shape, n, mode="radial", cx=0, cy=0, cols=None, step=None, axis=None)`: `n` copies as one union: `radial` about (cx, cy); `grid` in `cols` columns at `step`, centred on (cx, cy); `mirror` across `axis` `"x"` (the line x = cx), `"y"` (y = cy) or `"xy"`, with n 2, 2 or 4. Like the transforms it does not snap; each copy carries its source's free segments.
+- `repeat(shape, n, mode="radial", cx=0, cy=0, cols=None, step=None, axis=None)`: `n` copies as one union: `radial` about (cx, cy); `grid` in `cols` columns at `step`, centred on (cx, cy); `mirror` across `axis` `"x"`, `"y"` or `"xy"`. Like the transforms it does not snap and adds no free segments (each copy carries its source's); a radial angle off 15 degrees can warn `near_miss_angles`.
 - Placing: `align(shape, to, edge)` to a shape or `Box`, edge `left`, `right`, `top`, `bottom`, `center` (x) or `middle` (y); `center(shape, cx=0, cy=0, optical=False)` by box or, optical, by area centroid; `fit(shape, w, h, cx=0, cy=0)` scales to fit and centres.
-- Node editing: `nodes(shape)` lists the on-curve nodes in path order as `Node(index, x, y, subpath, smooth)` (one cubic per curve, so a circle has 4); `move_node(shape, index, dx, dy)` moves a node with its two handles; `delete_node(shape, index)` joins its neighbours (a closed contour keeps at least three nodes, an open contour's endpoint cannot go; a bad index is a ValueError); `cut(shape, x1, y1, x2, y2)` splits along the line through the two points and returns `(left, right)`, left of the direction of travel (a line that misses leaves one side empty; an off-grid line, not through a 0.25 grid point at a multiple of 15 degrees, adds one free segment). Editing turns every conic in the shape into one cubic (off by less than a snap step), and an off-grid `dx`/`dy` is not counted as free.
+- Node editing: `nodes(shape)` lists the on-curve nodes as `Node(index, x, y, subpath, smooth)` in path order; `move_node(shape, index, dx, dy)` moves one with the two handles attached to it; `delete_node(shape, index)` joins its neighbours with one segment (a line when both were lines, else a cubic keeping the outer handles; an open contour's endpoints cannot go, a contour keeps three nodes, and a bad index is a ValueError); `cut(shape, x1, y1, x2, y2)` returns `(left, right)` along the line, left when travelling from the first point to the second. All keep a `TextShape`'s metrics, so a glyph can be edited under craft.md's wordmark rules. Editing turns every conic into one cubic (off by under a snap step; a circle has 4 nodes); a `cut` line off the grid (not through a 0.25 grid point at a multiple of 15 degrees) adds one free segment to each non-empty half; an off-grid `dx` or `dy` is not counted.
 - Optical helpers (craft.md): `overshoot(shape, amount=0.015)`; `compensate_stroke(base_width, horizontal_factor=0.92, curve_factor=1.05)` returns `StrokeWidths(vertical, horizontal, curve)`; `optical_center(shape)` returns the area centroid.
 - Queries on a `Shape`: `bounds` (a `Box` with `x0`, `y0`, `x1`, `y1`, `w`, `h`, `cx`, `cy`; `Box.union(boxes)`), `area`, `centroid`, `is_empty`, `anchor_count()`, `segment_count()`, `subpaths()` (each contour as its own filled shape: a glyph's counter is one), `straight_segments()`, `free_segments`.
 - Plumbing: `normalize_winding(path)` re-winds a raw `skia.Path` (every op already does); `fmt(value)` formats SVG numbers.
@@ -56,7 +55,7 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 ### Limits and audit interactions
 
 - `paper` is not a part role: knock shapes out with `subtract()` [code].
-- `free=True` counts every segment the primitive draws, curves included (a free circle counts 4); the audit reports them as `free_segments`.
+- `free=True` counts every segment the primitive draws, curves included (a free circle counts 4); the audit's `free_segments` line warns under `snap="grid"` and is info under `snap="free"`.
 - `FREE_ALL` (a `ContextVar[bool]`) and `with free_snapping(enabled=True):` in `logomaker.kit.primitives` make every primitive in the block free, `brush` and `spline` included; `Meta(snap="free")` is that block around each tier's `build`. An explicit `free=True` inside it is counted once.
 - A `regular_polygon` with n of 5, 7, 10, 11, 13, 14 or 15 (and most n over 16) warns `near_miss_angles` at every snapped rotation; 3, 4, 6, 8, 9, 12 and 16 never do. Glyph outlines used as a symbol can warn too (Fira Code's t at weights 500 to 700): that is the type designer's angle, so justify it.
 - Rotating by anything but a multiple of 15 degrees can create near-miss edges.
@@ -68,8 +67,8 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 
 - `text(string, family, weight=400, cap_height=200, tracking=0, kern=None, features=("kern", "liga"), italic=False)` returns a `TextShape`: shaped by HarfBuzz, outlined by fontTools, baseline at y = 0, starting at x = 0, capitals `cap_height` tall.
 - `glyph(char, family, weight=400, cap_height=200, italic=False)` is one letter, with no OpenType features.
-- `TextShape` adds `advance`, `cap_height`, `x_height`, `glyph_bounds` (one `Box` per drawn glyph, in order; a space has none), `glyph_chars` (the characters each drawn glyph covers: a ligature's several, "" for a mark drawn apart from its base, a space folded into the next glyph), `font` (such as "Fira Code 600") and `baseline`; transforms rescale them.
-- `wordmark_gaps(word)` lists the gap between each adjacent pair of drawn glyphs, `[{"pair": "Ke", "gap": 12.5}, ...]`, in units and negative where boxes overlap, between clusters within a word (a base and its combining marks measure as one; nothing is measured across a space): what the audit's `spacing_rhythm` reads against the median gap.
+- `TextShape` adds `advance`, `cap_height`, `x_height`, `glyph_bounds` (one `Box` per drawn glyph, in order; a space has none), `TextShape.glyph_chars` (the characters each drawn glyph covers: a ligature's several, "" for a mark drawn apart from its base, a space folded into the next glyph), `font` (such as "Fira Code 600") and `baseline`; transforms rescale them.
+- `wordmark_gaps(word)`: the gap per adjacent pair as `{"pair": "Ke", "gap": units}`, negative where boxes overlap, what `sheet wordmark` draws and the `spacing_rhythm` audit reads. Pairs are adjacent clusters within a word: none across a space, and a base with its combining marks is one cluster.
 - `tracking` and `kern` are in 1/1000 em, applied between clusters only; `kern={"AV": -40}` adds to the font's own kerning for that pair.
 - `features` is the exact set applied: HarfBuzz's default kern, liga, calt and clig are off unless listed, and a stylistic set can be listed (Fira Code has `ss01` to `ss10`).
 - A variable font draws any weight in its range, clamping outside it (Fira Code: 300 to 700); a static family uses its nearest weight file. A missing character exits 2, an uncached family 3 [code].
@@ -86,7 +85,7 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 
 ## Worked examples
 
-Each builds with only Fira Code cached and passes the audit; `tests/test_knowledge.py` runs all four [code].
+Each builds with only Fira Code cached and passes the audit; `tests/test_knowledge.py` runs all six [code].
 
 1. A monogram cut from a glyph counter: the O's counter places and sizes a square drive; the letter reads as a socket.
 
@@ -188,6 +187,54 @@ def build(p):
     bridge = rect(first.cx, word.x_height - p.bar, second.cx - first.cx, p.bar)
     joined = union(word, bridge)  # the TextShape first, so the wordmark keeps its metrics
     return Mark(symbol=joined) if p.icon else Mark(wordmark=joined)
+```
+
+5. A pictorial mark drawn free: one brushed stroke swells into a leaf on a thinner brushed stem. `snap="free"` frees every primitive, so the audit's `free_segments` line is info, not a warning. Expect one `spacing_rhythm` warning: the V's diagonal leaves "Ve" tight box to box, an optical gap judged on the wordmark sheet.
+
+```python
+from logomaker.kit import *
+
+META = Meta(slug="verdant-leaf", idea="One brushed stroke swells into a leaf: Verdant grows from a single line",
+            logo_type="pictorial", motifs=["leaf", "stroke"], snap="free")
+PARAMS = Params(thin=40, thick=170, stem=120)
+TIERS = {
+    "full": {},
+    "small": {"thin": 90, "thick": 220, "wordmark": False},
+    "favicon": {"thin": 140, "thick": 260, "stem": 60, "wordmark": False},
+}
+
+
+def build(p):
+    spine = [(-300, -320), (-200, -100), (-60, 180), (120, 360)]  # one cubic, two nodes
+    leaf = brush(spine, [p.thin, p.thick], cap="round")
+    stem = brush([(-300, -320), (-330, -380), (-350, -420), (-360, -320 - p.stem)], [p.thin, p.thin * 0.6], cap="round")
+    symbol = center(union(leaf, stem))
+    word = text("Verdant", "Fira Code", weight=600, cap_height=180)
+    return Mark(symbol=symbol, wordmark=word, lockup="horizontal")
+```
+
+6. A lettermark cut once: `cut` splits the H across its bar and the halves move apart; the favicon widens the gap so it stays open at 16 px.
+
+```python
+from logomaker.kit import *
+
+META = Meta(slug="halden-cut", idea="Halden's H cut once across the bar and the two halves pulled apart: a bridge with a gap",
+            logo_type="lettermark", motifs=["letter H", "gap"])
+PARAMS = Params(weight=700, gap=40, lift=30)
+TIERS = {
+    "full": {},
+    "small": {"gap": 60, "wordmark": False},
+    "favicon": {"gap": 90, "lift": 0, "wordmark": False},
+}
+
+
+def build(p):
+    h = glyph("H", "Fira Code", weight=p.weight, cap_height=700)
+    y = h.bounds.cy
+    top, bottom = cut(h, -1000, y, 1000, y)
+    symbol = center(union(translate(top, 0, p.gap / 2 + p.lift), translate(bottom, 0, -p.gap / 2)))
+    word = text("Halden", "Fira Code", weight=600, cap_height=180)
+    return Mark(symbol=symbol, wordmark=word, lockup="horizontal")
 ```
 
 ## Sources

@@ -58,8 +58,9 @@ REQUIRED = {
     "kit-api.md": ["Concept module contract", "Primitives", "Operations", "Text", "Mark and lockups", "Worked examples", "Sources"],
 }
 CANONICAL = "(canonical wording; SKILL.md quotes this)"
-# The audit warnings each worked example gives, in order: none, but example 4's two from the cut atop Fira Code's t.
-EXAMPLE_WARNINGS = [[], [], [], ["near_miss_angles", "near_miss_angles"]]
+# The audit warnings each worked example gives, in order: none, but example 4's two from the cut atop Fira Code's t and
+# example 5's "Ve" pair, tight by its boxes under the V's diagonal (an optical gap, judged on the wordmark sheet).
+EXAMPLE_WARNINGS = [[], [], [], ["near_miss_angles", "near_miss_angles"], ["spacing_rhythm"], []]
 
 COMMANDS = dict(cli_main.commands)  # group (or command) name -> click object
 # A CLI mention in code: an optional "logomaker", a group name standing as a word, and the word after it (its command).
@@ -198,7 +199,8 @@ def test_every_file_tags_its_sources():
         text = read(name)
         tags = re.findall(r"\[(0[1-5]|spec|code)(?:[ :§][^\]]*)?\]", text)
         assert len(tags) >= 3, f"{name}: only {len(tags)} source tags"
-        stray = [t for t in re.findall(r"\[(\d\d)\b", text) if t not in ("01", "02", "03", "04", "05")]
+        prose = "\n".join(prose_lines(text))  # a list literal in code, such as brush widths [30, 110, 50], is no tag
+        stray = [t for t in re.findall(r"\[(\d\d)\b", prose) if t not in ("01", "02", "03", "04", "05")]
         assert not stray, f"{name}: unknown report tags {stray}"
 
 
@@ -241,7 +243,7 @@ def audit_worked_examples(project_root: Path, renderer=None) -> list:
     """Each of kit-api.md's worked examples written as a concept of a throwaway brand, built and audited (the raster
     checks only with a `renderer`); the audits, in order, once each has passed with the warnings EXAMPLE_WARNINGS gives."""
     blocks = code_blocks(section(read("kit-api.md"), "Worked examples"), "python")
-    assert len(blocks) == 4
+    assert len(blocks) == 6
     paths = project()
     registry.new_brand(paths, "Examples", slug="examples")
     types, results = [], []
@@ -258,7 +260,7 @@ def audit_worked_examples(project_root: Path, renderer=None) -> list:
         assert [f.check for f in result.warnings] == EXAMPLE_WARNINGS[i - 1], (i, [f.message for f in result.warnings])
         types.append(module.meta.logo_type)
         results.append(result)
-    assert types == ["lettermark", "pictorial", "abstract", "wordmark"]
+    assert types == ["lettermark", "pictorial", "abstract", "wordmark", "pictorial", "lettermark"]
     return results
 
 
