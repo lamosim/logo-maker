@@ -45,7 +45,7 @@ from .primitives import (  # noqa: F401
     wedge,
 )
 from .shape import Box, Shape, fmt, normalize_winding  # noqa: F401
-from .text import TextShape, glyph, text  # noqa: F401
+from .text import TextShape, glyph, text, wordmark_gaps  # noqa: F401
 
 __all__ = [
     "Box", "Shape", "fmt", "normalize_winding",
@@ -55,6 +55,6 @@ __all__ = [
     "translate", "union", "xor",
     "Node", "nodes", "move_node", "delete_node", "cut",
     "StrokeWidths", "compensate_stroke", "optical_center", "overshoot",
-    "TextShape", "glyph", "text",
+    "TextShape", "glyph", "text", "wordmark_gaps",
     "Composite", "Mark", "Placed", "Meta", "Params",
 ]

@@ -4,7 +4,10 @@ import pytest
 from click.testing import CliRunner
 
 from logomaker import audit, registry
+from logomaker.audit import _spacing_rhythm
 from logomaker.cli import main
+from logomaker.kit.mark import Mark
+from logomaker.kit.text import text
 from logomaker.output import CliError
 from logomaker.paths import project
 from tests.conftest import install_concept, requires_chrome
@@ -29,6 +32,27 @@ def test_near_miss_angles_and_free_segments(project_root):
     assert near and near[0].severity == "warn" and near[0].data["count"] >= 1
     assert findings(result, "free_segments")[0].data["count"] == 4
 
+
+
+def test_free_segments_warn_in_a_grid_module_and_stay_info_in_a_free_one(project_root):
+    target = install_concept(project_root, "near_miss", name="02-near")  # a grid module with a free=True polygon
+    free = findings(audit.audit_concept(project(), "keystone", "02-near"), "free_segments")
+    assert [f.severity for f in free] == ["warn"] and free[0].message == "full-symbol: 4 segment(s) built with free=True"
+    concept = target / "concept.py"
+    concept.write_text(concept.read_text().replace('motifs=["block"])', 'motifs=["block"], snap="free")'))
+    free = findings(audit.audit_concept(project(), "keystone", "02-near"), "free_segments")
+    assert [f.severity for f in free] == ["info"] and free[0].message == "full-symbol: 4 segment(s) built with free=True"
+
+
+def test_spacing_rhythm_warns_on_a_pair_far_from_the_median(project_root):
+    # Fira Code is monospaced, so ink gaps follow glyph widths: "noon" is even, "Keystone" with a forced "ys" gap is not.
+    even = Mark(wordmark=text("noon", "Fira Code", weight=600, cap_height=200), lockup="wordmark")
+    findings = _spacing_rhythm({"full-wordmark": even})
+    assert [f.severity for f in findings] == ["info"] and "no" in findings[0].message
+    gappy = Mark(wordmark=text("Keystone", "Fira Code", weight=600, cap_height=200, kern={"ys": 400}), lockup="wordmark")
+    findings = _spacing_rhythm({"full-wordmark": gappy})
+    assert [f.severity for f in findings] == ["warn"] and "ys wide" in findings[0].message
+    assert _spacing_rhythm({}) == []
 
 def test_tiny_part_warns_and_fails_in_small_tier(project_root):
     install_concept(project_root, "tiny_part", name="03-tiny")

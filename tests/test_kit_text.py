@@ -6,7 +6,7 @@ import skia
 
 from logomaker.kit.ops import intersect, mirror_x, offset, rotate, scale, stroke, subtract, translate, union, xor
 from logomaker.kit.primitives import rect
-from logomaker.kit.text import TextShape, glyph, text
+from logomaker.kit.text import TextShape, glyph, text, wordmark_gaps
 from logomaker.output import CliError
 
 FIRA_CAP = 1374  # OS/2 sCapHeight of the fixture font
@@ -155,3 +155,19 @@ def test_static_file_uses_os2_metrics_and_its_own_weight(project_root):
     shutil.copy(fonts / "firacode" / "FiraCode[wght].ttf", fonts / "fakestatic" / "FakeStatic-Bold.ttf")
     h = text("H", "Fake Static", weight=650)
     assert h.font == "Fake Static 700" and math.isclose(h.bounds.h, 200, abs_tol=1.0)
+
+
+def test_glyph_chars_follow_the_drawn_glyphs_through_ligatures_and_transforms(project_root):
+    word = text("Keystone", "Fira Code", weight=600, cap_height=200)
+    assert word.glyph_chars == list("Keystone")
+    lig = text("fi", "Fira Code", weight=400, cap_height=200, features=("liga",))
+    assert "".join(lig.glyph_chars) == "fi" and len(lig.glyph_chars) == len(lig.glyph_bounds)
+    assert rotate(word, 30).glyph_chars == list("Keystone")
+
+
+def test_wordmark_gaps_name_each_pair(project_root):
+    word = text("Keystone", "Fira Code", weight=600, cap_height=200)
+    gaps = wordmark_gaps(word)
+    assert [g["pair"] for g in gaps] == ["Ke", "ey", "ys", "st", "to", "on", "ne"]
+    assert all(isinstance(g["gap"], float) for g in gaps)
+    assert wordmark_gaps(text("K", "Fira Code", cap_height=200)) == []

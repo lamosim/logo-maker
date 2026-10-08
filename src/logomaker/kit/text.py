@@ -101,21 +101,23 @@ class TextShape(Shape):
     keeps that operand's metrics (a notch does not change the x-height).
     """
 
-    __slots__ = ("advance", "cap_height", "x_height", "glyph_bounds", "font", "baseline")
+    __slots__ = ("advance", "cap_height", "x_height", "glyph_bounds", "glyph_chars", "font", "baseline")
 
     def __init__(self, path: skia.Path, *, advance: float, cap_height: float, x_height: float, glyph_bounds: list[Box], font: str,
-                 free_segments: int = 0, baseline: tuple[float, float] = (1.0, 0.0)):
+                 free_segments: int = 0, baseline: tuple[float, float] = (1.0, 0.0), glyph_chars: list[str] | None = None):
         super().__init__(path, free_segments)
         self.advance = advance
         self.cap_height = cap_height
         self.x_height = x_height
         self.glyph_bounds = glyph_bounds
+        self.glyph_chars = list(glyph_chars or [])  # the characters each drawn glyph covers, in glyph_bounds order
         self.font = font
         self.baseline = baseline
 
     def _with_path(self, path: skia.Path, free_segments: int) -> TextShape:
         return TextShape(path, advance=self.advance, cap_height=self.cap_height, x_height=self.x_height,
-                         glyph_bounds=list(self.glyph_bounds), font=self.font, free_segments=free_segments, baseline=self.baseline)
+                         glyph_bounds=list(self.glyph_bounds), font=self.font, free_segments=free_segments, baseline=self.baseline,
+                         glyph_chars=list(self.glyph_chars))
 
     def transformed(self, matrix: skia.Matrix) -> TextShape:
         """The text moved, turned, resized or slanted. With M the matrix and u the baseline: the advance scales by
@@ -131,7 +133,7 @@ class TextShape(Shape):
         boxes = [matrix.mapRect(skia.Rect.MakeLTRB(b.x0, b.y0, b.x1, b.y1)) for b in self.glyph_bounds]
         return TextShape(dst, advance=self.advance * kx, cap_height=self.cap_height * ky, x_height=self.x_height * ky,
                          glyph_bounds=[Box(r.left(), r.top(), r.right(), r.bottom()) for r in boxes], font=self.font,
-                         free_segments=self.free_segments, baseline=baseline)
+                         free_segments=self.free_segments, baseline=baseline, glyph_chars=list(self.glyph_chars))
 
 
 def text(
@@ -174,6 +176,7 @@ def text(
 
     path = skia.Path()
     bounds: list[Box] = []
+    chars: list[str] = []  # beside bounds: the characters of each drawn glyph's cluster
     x = 0.0
     infos, positions = buf.glyph_infos, buf.glyph_positions or []  # uharfbuzz gives None positions for an empty buffer
     missing = list(dict.fromkeys(string[info.cluster] for info in infos if info.codepoint == 0))  # glyph 0 is .notdef
@@ -189,6 +192,8 @@ def text(
             r = pen.path.computeTightBounds()
             bounds.append(Box(r.left(), r.top(), r.right(), r.bottom()))
             path.addPath(pen.path)
+            nxt = infos[i + 1].cluster if i + 1 < len(infos) else len(string)
+            chars.append(string[info.cluster:nxt] if nxt > info.cluster else string[info.cluster])
         advance = float(pos.x_advance)
         if i + 1 < len(infos) and infos[i + 1].cluster != info.cluster:  # between clusters, never inside one
             nxt = infos[i + 1].cluster
@@ -206,8 +211,21 @@ def text(
         cap_height=cap_height,
         x_height=metrics.x_height * scale,
         glyph_bounds=bounds,
+        glyph_chars=chars,
         font=f"{family} {drawn_weight:g}{' italic' if ff.italic else ''}",
     )
+
+
+def wordmark_gaps(word: TextShape) -> list[dict]:
+    """The gap between each adjacent pair of drawn glyphs, in units, named by the characters either side ("Ke"): what
+    the wordmark sheet draws and the spacing_rhythm audit reads. Negative when kerned boxes overlap."""
+    gaps = []
+    for i in range(len(word.glyph_bounds) - 1):
+        a, b = word.glyph_bounds[i], word.glyph_bounds[i + 1]
+        left = word.glyph_chars[i][-1] if i < len(word.glyph_chars) else str(i + 1)
+        right = word.glyph_chars[i + 1][0] if i + 1 < len(word.glyph_chars) else str(i + 2)
+        gaps.append({"pair": left + right, "gap": round(float(b.x0 - a.x1), 2)})
+    return gaps
 
 
 def glyph(char: str, family: str, weight: int = 400, cap_height: float = 200.0, italic: bool = False) -> TextShape:

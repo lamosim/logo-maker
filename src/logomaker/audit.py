@@ -25,6 +25,7 @@ MIN_FEATURE = {"favicon": (16, 1.0), "small": (32, 1.5), "full-symbol": (64, 1.5
 X_HEIGHT_MIN_PX = 7.0
 MAX_ROLES = 3
 GENERIC_ASPECT = (0.72, 0.82)
+RHYTHM_WIDE, RHYTHM_TIGHT = 1.8, 0.5  # a gap this many times the median, or this fraction of it, breaks the rhythm
 
 
 def concept_fingerprint(paths: ProjectPaths, slug: str, folder: Path, tokens_path: str | Path | None = None) -> str:
@@ -150,9 +151,9 @@ def _geometry_findings(name: str, geo: dict, meta: conceptlib.Meta) -> list[Find
                            message=f"{name}: {len(near)} straight segment(s) are 0.3-3 degrees off a 15-degree angle",
                            data={"output": name, "count": len(near), "segments": near[:5]}))
     free = sum(p["free_segments"] for p in parts)
-    if free:
-        out.append(Finding(check="free_segments", severity="info", message=f"{name}: {free} segment(s) built with free=True",
-                           data={"output": name, "count": free}))
+    if free:  # off the grid by request in a free module; in a grid module a free=True shape is worth a second look
+        out.append(Finding(check="free_segments", severity="info" if meta.snap == "free" else "warn",
+                           message=f"{name}: {free} segment(s) built with free=True", data={"output": name, "count": free}))
     b = geo["bounds"]
     aspect = b["h"] / b["w"] if b["w"] else 0
     cx, cy = (sum(p["centroid"][0] * p["area"] for p in parts) / max(sum(p["area"] for p in parts), 1e-9),
@@ -205,6 +206,36 @@ def _text_legibility(outputs: dict, geometries: dict, state) -> list[Finding]:
             out.append(Finding(check="text_legibility", severity="info", message=f"{name}: wordmark x-height {px:.1f} px at {min_px} px",
                                data={"output": name, "x_height_px": round(px, 2)}))
     return out
+
+
+def _spacing_rhythm(outputs: dict) -> list[Finding]:
+    """The wordmark's glyph gaps (kit.text.wordmark_gaps) against their median: info listing them, or a warning naming
+    each pair wider than RHYTHM_WIDE times the median or tighter than RHYTHM_TIGHT of it."""
+    from statistics import median
+
+    from .kit.text import TextShape, wordmark_gaps
+
+    mark = outputs.get("full-wordmark")
+    word = mark.wordmark if mark is not None else None
+    if not isinstance(word, TextShape):
+        return []
+    gaps = wordmark_gaps(word)
+    if len(gaps) < 2:
+        return []
+    mid = median(g["gap"] for g in gaps)
+    listed = ", ".join(f"{g['pair']} {g['gap']:g}" for g in gaps)
+    if mid <= 0:
+        return [Finding(check="spacing_rhythm", severity="info", message=f"wordmark gaps (median {mid:g}): {listed}",
+                        data={"gaps": gaps, "median": mid})]
+    wide = [g for g in gaps if g["gap"] > RHYTHM_WIDE * mid]
+    tight = [g for g in gaps if g["gap"] < RHYTHM_TIGHT * mid]
+    if wide or tight:
+        parts = [f"{g['pair']} wide ({g['gap']:g})" for g in wide] + [f"{g['pair']} tight ({g['gap']:g})" for g in tight]
+        return [Finding(check="spacing_rhythm", severity="warn",
+                        message=f"wordmark spacing: {', '.join(parts)} against a median gap of {mid:g}; kern the pair",
+                        data={"gaps": gaps, "median": mid, "wide": wide, "tight": tight})]
+    return [Finding(check="spacing_rhythm", severity="info", message=f"wordmark gaps even (median {mid:g}): {listed}",
+                    data={"gaps": gaps, "median": mid})]
 
 
 def _box_size(svg: str, box: int) -> tuple[int, int]:
@@ -321,6 +352,7 @@ def audit_concept(paths: ProjectPaths, slug: str, concept_name: str, renderer: R
         findings.append(Finding(check="colour_count", severity="warn", message=f"{len(roles)} colour roles in use (more than {MAX_ROLES})",
                                 data={"roles": roles}))
     findings += _text_legibility(outputs, geometries, state)
+    findings += _spacing_rhythm(outputs)
     cliches = load_cliches(paths)
     industry, found_in = _industry(paths, state)
     industries = resolve_industries(cliches, industry)
