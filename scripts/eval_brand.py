@@ -55,21 +55,56 @@ def answers(text: str, name: str) -> list[str]:
     return [answer for _, answer in found]
 
 
-def build_prompt(slug: str, script: str) -> str:
-    return PROMPT.format(slug=slug, script=script.strip())
+SCRATCH_LINE = """
+The project root for this run is {scratch}: every brand file lives under {scratch}/brands/{slug}/ and the CLI prints
+those paths; never write under the repository's own brands/ folder.
+"""
+
+
+def build_prompt(slug: str, script: str, scratch: Path | None = None) -> str:
+    prompt = PROMPT.format(slug=slug, script=script.strip())
+    return prompt + SCRATCH_LINE.format(scratch=scratch, slug=slug) if scratch else prompt
+
+
+def seed(scratch: Path) -> None:
+    """Link the repo's templates/ and assets/ into the scratch root, which the CLI resolves them under; the font cache
+    under assets/fonts/*/ is gitignored, so fetches through the link share it."""
+    for name in ("templates", "assets"):
+        (scratch / name).symlink_to(ROOT / name, target_is_directory=True)
+
+
+def _events(transcript: Path) -> list[dict]:
+    """The transcript's JSON events; a line that does not parse is skipped."""
+    events = []
+    for line in transcript.read_text(encoding="utf-8").splitlines():
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(event, dict):
+            events.append(event)
+    return events
+
+
+def _result(events: list[dict]) -> dict | None:
+    return next((e for e in reversed(events) if e.get("type") == "result"), None)
 
 
 def run(slug: str, prompt: str, scratch: Path, model: str, max_turns: int) -> Path:
-    """Start the nested claude and return the JSONL transcript it wrote; RuntimeError with the exit code and the last
-    stderr line when it fails."""
+    """Start the nested claude and return the JSONL transcript it wrote. RuntimeError when claude is missing, or when it
+    exits non-zero without a result event (with the exit code and the last stderr line)."""
     transcript = scratch / "run.jsonl"
     env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
     env.update({"LOGOMAKER_ROOT": str(scratch), "LOGOMAKER_NO_OPEN": "1"})
     cmd = ["claude", "-p", prompt, "--model", model, "--max-turns", str(max_turns), "--output-format", "stream-json", "--verbose",
            "--dangerously-skip-permissions", "--add-dir", str(scratch)]
-    with transcript.open("w", encoding="utf-8") as out:
-        done = subprocess.run(cmd, cwd=ROOT, env=env, stdout=out, stderr=subprocess.PIPE, text=True)
-    if done.returncode != 0:
+    try:
+        with transcript.open("w", encoding="utf-8") as out:
+            done = subprocess.run(cmd, cwd=ROOT, env=env, stdout=out, stderr=subprocess.PIPE, text=True)
+    except FileNotFoundError as err:
+        raise RuntimeError("claude not found on PATH") from err
+    # A run that ended with a result event (turn cap, error) still gets collected and reported.
+    if done.returncode != 0 and _result(_events(transcript)) is None:
         last = (done.stderr or "").strip().splitlines()
         raise RuntimeError(f"claude exited {done.returncode}: {last[-1] if last else 'no stderr'}")
     return transcript
@@ -82,29 +117,41 @@ def _read_json(path: Path) -> dict | None:
         return None
 
 
+def _when(value: object) -> datetime | None:
+    try:
+        return datetime.fromisoformat(value) if isinstance(value, str) else None
+    except ValueError:
+        return None
+
+
 def _minutes(decisions: list[dict], updated: str | None) -> list[tuple[str, int]]:
-    """Minutes per phase: from the first decision of each phase to the first of the next, the last to `updated`."""
+    """Minutes per phase: from the first decision of each phase to the first of the next, the last to `updated`. A phase
+    whose end is missing, malformed or not comparable (naive against aware) is left out."""
     starts: dict[str, datetime] = {}
     for d in decisions:
-        if d.get("phase") in PHASES and d.get("phase") not in starts:
-            try:
-                starts[d["phase"]] = datetime.fromisoformat(d["at"])
-            except (KeyError, ValueError):
-                continue
+        when = _when(d.get("at"))
+        if d.get("phase") in PHASES and d.get("phase") not in starts and when:
+            starts[d["phase"]] = when
     ordered = [(phase, starts[phase]) for phase in PHASES if phase in starts]
     out = []
     for i, (phase, start) in enumerate(ordered):
-        end = ordered[i + 1][1] if i + 1 < len(ordered) else (datetime.fromisoformat(updated) if updated else None)
-        out.append((phase, round((end - start).total_seconds() / 60) if end else 0))
+        end = ordered[i + 1][1] if i + 1 < len(ordered) else _when(updated)
+        try:
+            out.append((phase, round((end - start).total_seconds() / 60)))
+        except TypeError:
+            continue
     return out
 
 
 def report(slug: str, brand: Path, model: str, transcript: Path) -> str:
     state = _read_json(brand / "brand.json") or {}
-    turns = sum(1 for line in transcript.read_text(encoding="utf-8").splitlines() if '"type": "assistant"' in line)
+    events = _events(transcript)
+    result = _result(events) or {}
+    turns = result.get("num_turns", sum(1 for e in events if e.get("type") == "assistant"))
     verify = _read_json(brand / "package" / "verify.json") or {}
     lines = [f"# {slug}: evaluation run", "", f"Run on {datetime.now(UTC).astimezone().isoformat(timespec='minutes')}.", "",
-             "| | |", "|---|---|", f"| model | {model} |", f"| turns | {turns} |", f"| phase reached | {state.get('phase', '?')} |",
+             "| | |", "|---|---|", f"| model | {model} |", f"| turns | {turns} |", f"| result | {result.get('subtype') or '-'} |",
+             f"| error | {'yes' if result.get('is_error') else 'no'} |", f"| phase reached | {state.get('phase', '?')} |",
              f"| chosen concept | {state.get('concept') or '-'} |", f"| package verified | {'yes' if verify.get('ok') else 'no'} |", "",
              "## Minutes per phase", "", "| phase | minutes |", "|---|---|"]
     lines += [f"| {phase} | {minutes} |" for phase, minutes in _minutes(state.get("decisions", []), state.get("updated"))]
@@ -113,14 +160,15 @@ def report(slug: str, brand: Path, model: str, transcript: Path) -> str:
         card = _read_json(folder / "scorecard.json")
         if not card:
             continue
-        critic = _read_json(folder / "critic.json")
-        designer = sum(card["scores"].values())
-        critic_cell = f"{sum(critic['scores'].values())} ({critic.get('passes', '?')} passes)" if critic else "-"
+        critic = _read_json(folder / "critic.json") or {}
+        designer = sum(card["scores"].values()) if card.get("scores") else "-"
+        critic_cell = f"{sum(critic['scores'].values())} ({critic.get('passes', '?')} passes)" if critic.get("scores") else "-"
         lines.append(f"| {folder.name} | {card.get('route') or '-'} | {designer} | {critic_cell} |")
     return "\n".join(lines) + "\n"
 
 
 KEEP_GLOBS = ("sheets/concepts.png", "sheets/critic-*.png", "concepts/*/scorecard.json", "concepts/*/critic.json",
+              "final/scorecard.json", "final/critic.json",
               "package/brand-sheet.pdf", "brand.json")
 
 
@@ -160,13 +208,33 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     script = (EVALS / args.slug / "owner.md").read_text(encoding="utf-8")
     answers(script, f"{args.slug}/owner.md")  # refuse a bad script before anything starts
+    folder = EVALS / args.slug / args.cycle
+    if folder.exists() and not args.force:  # refuse before the run, not after it
+        print(f"{folder} exists; pass --force to replace the {args.cycle} run", file=sys.stderr)
+        return 1
+    leak = ROOT / "brands" / args.slug
+    if leak.exists():
+        print(f"{leak} exists; the run could not tell its own files from it", file=sys.stderr)
+        return 1
     scratch = Path(tempfile.mkdtemp(prefix=f"logomaker-eval-{args.slug}-"))
+    seed(scratch)
     try:
-        transcript = run(args.slug, build_prompt(args.slug, script), scratch, args.model, args.max_turns)
+        transcript = run(args.slug, build_prompt(args.slug, script, scratch), scratch, args.model, args.max_turns)
     except RuntimeError as err:
         print(f"{err}; scratch kept at {scratch}", file=sys.stderr)
         return 1
-    folder = collect(args.slug, scratch, args.cycle, args.model, transcript, args.force)
+    if leak.exists():
+        print(f"the run wrote {leak} in the repository instead of the scratch; nothing collected, scratch kept at {scratch}",
+              file=sys.stderr)
+        return 1
+    try:
+        folder = collect(args.slug, scratch, args.cycle, args.model, transcript, args.force)
+    except FileExistsError as err:
+        print(f"{err}; scratch kept at {scratch}", file=sys.stderr)
+        return 1
+    except Exception:
+        print(f"collection failed; scratch kept at {scratch}", file=sys.stderr)
+        raise
     print(folder)
     return 0
 
