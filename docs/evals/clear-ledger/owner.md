@@ -15,7 +15,7 @@ Two words, both category cues, in a category whose blacklist strikes the first t
 9. Colours: wants a green that is not money green; forbids navy; the category has claimed blue, green and teal.
 10. Off limits: coins, piggy banks, shields, upward charts, calculators. No cultural constraints; English only.
 11. Name: Clear Ledger, written "Clear Ledger" as two words, no tagline; story: the ledger you can actually read.
-12. Territory choice: the warmer of the boards. Concept choice: the survivor the critic preferred. First reaction to the concept sheet: "the two words run together at the invoice size"; expect the probing question and answer "the card mockup".
+12. Territory choice: the warmer of the boards. Concept choice: the survivor the critic preferred. First reaction to the concept sheet: "the two words run together at the invoice size"; expect the probing question and answer "the card mockup". If that reaction does not fit the concept the critic preferred, the sheet is fine as it is.
 13. Refinement approval after the colour round. Any extra question: answer with the most conservative option.
 
 ## Conservative answers

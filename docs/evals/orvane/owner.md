@@ -15,7 +15,7 @@ A coined name with no metaphor and no obvious letter quirk, in a category whose 
 9. Colours: wants something warm against the category; forbids neon green; the category has claimed purple, black and electric blue.
 10. Off limits: arrows, lightning bolts, hexagons, nodes and edges. No cultural constraints; English only.
 11. Name: Orvane, written "Orvane", said OR-vain; a coined word with no story; no tagline.
-12. Territory choice: the quieter of the boards. Concept choice: the survivor the critic preferred (the concept sheet's critic's order). First reaction to the concept sheet: "the symbol disappears in the dark header at 32 px"; expect the probing question and answer "the site header dark mockup".
+12. Territory choice: the quieter of the boards. Concept choice: the survivor the critic preferred (the concept sheet's critic's order). First reaction to the concept sheet: "the symbol disappears in the dark header at 32 px"; expect the probing question and answer "the site header dark mockup". If that reaction does not fit the concept the critic preferred, the sheet is fine as it is.
 13. Refinement approval after the colour round. Any extra question: answer with the most conservative option.
 
 ## Conservative answers

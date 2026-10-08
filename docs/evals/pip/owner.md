@@ -15,7 +15,7 @@ A warm consumer brand that wants a character: the organic vocabulary and the mas
 9. Colours: wants a warm yellow or coral; forbids primary-colour rainbows; the category has claimed bright blue and rainbow.
 10. Off limits: open books, owls, apples, lightbulbs. No cultural constraints; English only.
 11. Name: Pip, written "Pip", said as spelled; story: a seed, and a small sound; no tagline.
-12. Territory choice: the warmer of the boards. Concept choice: the survivor the critic preferred. First reaction to the concept sheet: "the character turns into a blob at the avatar size"; expect the probing question and answer "at the avatar size".
+12. Territory choice: the warmer of the boards. Concept choice: the survivor the critic preferred. First reaction to the concept sheet: "the character turns into a blob at the avatar size"; expect the probing question and answer "at the avatar size". If that reaction does not fit the concept the critic preferred, the sheet is fine as it is.
 13. Refinement approval after the colour round. Any extra question: answer with the most conservative option.
 
 ## Conservative answers
