@@ -44,7 +44,7 @@ Read the inputs from `names analyze`: `length`, the `initial` flags, `double_let
 
 ## Checks
 
-`uv run logomaker names analyze <name>` runs offline and costs nothing, so run it for every candidate [code]:
+`uv run logomaker names analyze <name>` runs offline; run it for every candidate [code]:
 
 ```json
 {"ok": true, "errors": [], "warnings": [], "name": "Keystone", "letters": "keystone", "length": 8, "syllables": 2,
@@ -55,7 +55,7 @@ Read the inputs from `names analyze`: `length`, the `initial` flags, `double_let
 
 Syllables are vowel groups, less a silent final e. `pronounceable` means at least one vowel and no run of more than three consonants. Accented letters count as their plain letters. The initial's letter sets: round o, c, g, s, q; diagonal a, v, w, k, x, z; closed counter a, b, d, o, p, q, r [code].
 
-`uv run logomaker names check <name>` uses the network; the defaults are `--tlds com,co,io,ai,app,dev` and `--handles github` (`--handles ""` skips GitHub). The shape, abridged to two of the six domains [code]:
+`uv run logomaker names check <name>` uses the network; the defaults are `--tlds com,co,io,ai,app,dev` and `--handles github` (`--handles ""` skips GitHub). Its shape, two of the six domains shown [code]:
 
 ```json
 {"ok": true, "errors": [], "warnings": ["keystone.app: RDAP 429 from rdap.org and whois gave nothing"],
@@ -70,7 +70,7 @@ Syllables are vowel groups, less a silent final e. `pronounceable` means at leas
 - GitHub users and organisations share one login namespace: when the user lookup answers 200, the organisation is `registered` too. The organisation endpoint is asked only when no user holds the login, and an unknown user leaves the organisation unknown [code].
 - Deadline: no lookup starts after 45 s; each request or whois waits at most 10 s, and none past 55 s. Lookups left undone come back `unknown`, with one warning naming them [code].
 - Rate limits: rdap.org starts answering 429 after about ten quick requests; .app and .dev have no whois fallback, so they turn `unknown` once RDAP refuses; .co, .io and .ai have no RDAP server known to rdap.org and always go to whois. GitHub allows 60 unauthenticated requests an hour, shared with `fonts fetch`; a 403 or 429 is `unknown` with "rate limited" [code].
-- So: analyze every candidate, but check only the shortlist (the top five), one name at a time. Report `unknown` as unknown, never as available, and re-run those later.
+- So: check only the shortlist (the top five), one name at a time. Report `unknown` as unknown, never as available, and re-run those later.
 - An unknown handle service or a malformed TLD exits 2 before any lookup [code].
 
 ## Knock-out by image
@@ -81,11 +81,11 @@ A description search finds marks that are named like yours; a reverse-image sear
 2. Search the web by description (where: "Trademark caveat" below; for `final/`, the searches already in `final/knockout.md` count) and record each query as `{"query", "date", "findings"}` in `knockout.json`'s `description_queries`. Every `date` in the file is ISO `YYYY-MM-DD`.
 3. Load the Chrome tools in one ToolSearch call (`mcp__claude-in-chrome__tabs_context_mcp`, `navigate`, `tabs_create_mcp`, `file_upload`, `get_page_text`, `find`, `tabs_close_mcp`), open a new tab at `https://lens.google.com/` (it redirects to google.com with an upload dialog, "Drag an image here or upload a file"), upload `mark-512.png`, and read the "Visual matches" tab, which lists look-alikes (often icon packs) beside "Exact matches". Record the ten nearest in `knockout.json` under `image_matches.matches` as `{"url", "owner", "note"}`, the note saying what matches (silhouette, construction, both), with `searched: true` and the date. Close the tab.
 4. For `final/` only, open `https://branddb.wipo.int/`, choose the image search, upload the same PNG, and fill `wipo` (it starts as `null`) the same way: `{"tool": "wipo", "searched": true, "date", "matches"}`, each note naming the Nice class and the status shown.
-5. For `final/`, write the prose into `final/knockout.md` with the caveat below word for word. For a survivor, put the finding alone into `clear` in its `scorecard.json`, one line without the caveat. Either way, copy the caveat into `knockout.json`'s `caveat` and say it to the owner with the result. After the final knock-out, update `clear`'s evidence in `final/scorecard.json` with the image findings; if the `clear` score then differs from the critic's by two or more, add a `reconciled` entry as `critic.md` says. The scorecard is outside the fingerprint, so this edit leaves the critic's record fresh [code].
+5. For `final/`, write the prose into `final/knockout.md` with the caveat below word for word. For a survivor, put the finding alone into `clear` in its `scorecard.json`, one line without the caveat. Either way, copy the caveat into `knockout.json`'s `caveat` and say it to the owner with the result. If the final knock-out finds a close look-alike or a registered conflict, tell the owner, record it in `knockout.json`'s `matches` and the caveat, and reopen refinement for a new round if the owner wants the mark changed (the round cap still applies); never advance to package on a known conflict without the owner's decision recorded with `brand decide ... --note`. After the final knock-out, update `clear`'s evidence in `final/scorecard.json` with the image findings; if the `clear` score then differs from the critic's by two or more, add a `reconciled` entry as `critic.md` says. The scorecard is outside the fingerprint, so this edit leaves the critic's record fresh [code].
 
 When the Chrome extension is unavailable, record the search as skipped with the reason, `"skipped": "<reason>"` in place of `searched` (for WIPO, `"wipo": {"tool": "wipo", "skipped": "<reason>"}`), and tell the owner: the gate accepts a skipped search only after the owner records `uv run logomaker brand decide <slug> --phase <phase> --by user --note "knock-out skipped: <reason>"`, and the note counts only in the phase the refusal names, `concepts` for a survivor and `refinement` for `final/` [code].
 
-`knockout.json` carries the concept's fingerprint, the one the audit and the critic use: `concept.py`, `params.json`, `tokens.json`, the brand's industry and minimum sizes, and `assets/cliches.json` [code]. A change to any of them, a colour-only edit to `tokens.json` included, makes the record stale, which is why the final knock-out runs after the last change. Each `concept knockout` run stamps the current fingerprint; when it differs from the recorded one, it resets each search's `searched`, `matches` and `date`, Lens and WIPO alike (a skip reason, the description queries and the caveat stay), and reports `"reset": true`, so search again. Until then the gates refuse the record: "is stale (the mark changed since the search); re-run: logomaker concept knockout <slug> <NN-slug|final>" [code]. `final/knockout.json` is also in the package fingerprint, so a new search after `package build` makes the package out of date [code].
+`knockout.json` carries the concept's fingerprint, the one the audit and the critic use: `concept.py`, `params.json`, `tokens.json`, the brand's industry (in brand.json and the brief) and minimum sizes, and `assets/cliches.json` [code]. Any change to them, a colour-only edit included, makes the record stale, so the final knock-out runs after the last change. Each `concept knockout` run stamps the current fingerprint; when it differs from the recorded one, it resets each search's `searched`, `matches` and `date`, Lens and WIPO alike (a skip reason, the description queries and the caveat stay), and reports `"reset": true`, so search again. Until then the gates refuse the record: "is stale (the mark changed since the search); re-run: logomaker concept knockout <slug> <NN-slug|final>" [code]. `final/knockout.json` is also in the package fingerprint, so a new search after `package build` makes the package out of date [code].
 
 ## Trademark caveat
 

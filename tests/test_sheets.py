@@ -429,7 +429,8 @@ def test_wordmark_sheet_flags_the_pairs_the_audit_warns_and_hints_the_kern_direc
         assert [g["pair"] for g in warned[flag]] == ["oo"] and not warned["tight" if flag == "wide" else "wide"]
         assert info["warnings"] == [f"oo is {flag} against the median gap"]
         html = htmllib.unescape(Path(info["sheet_html"]).read_text())
-        assert html.count(f'class="bar {flag}"') == 1 and hint in html and "optical gap" in html
+        assert html.count(f'class="bar {flag}"') == 1 and hint in html
+        assert ("shows tighter than it looks" in html) == (flag == "tight")
     (folder / "concept.py").write_text(source.replace(old, 'word = text("noon", family="Fira Code", weight=600, cap_height=180)'))
     info = sheets.wordmark_sheet(project(), "keystone", "01-good", renderer=StubChrome(), open_after=False)
     html = Path(info["sheet_html"]).read_text()

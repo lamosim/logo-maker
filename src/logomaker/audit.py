@@ -228,6 +228,11 @@ def rhythm_flags(gaps: list[dict]) -> tuple[list[dict], float]:
     return [{**g, "flag": flag(g["gap"])} for g in gaps], mid
 
 
+# Said after the kern fix only when a pair is tight: a diagonal or round letter's box sits off its ink, so the gap reads
+# tighter box to box than it looks. The wordmark sheet's note says the same.
+OPTICAL_CAVEAT = "or leave an optical gap at a diagonal or round letter (K, V, A, O), which the box measurement shows tighter than it looks"
+
+
 def _spacing_rhythm(outputs: dict) -> list[Finding]:
     """The wordmark's glyph gaps (kit.text.wordmark_gaps) against their median: info listing them, or a warning naming
     each pair rhythm_flags marks wide or tight, with the kern direction that fixes it."""
@@ -250,8 +255,8 @@ def _spacing_rhythm(outputs: dict) -> list[Finding]:
     if wide or tight:
         parts = [f"{g['pair']} wide ({g['gap']:g})" for g in wide] + [f"{g['pair']} tight ({g['gap']:g})" for g in tight]
         fixes = (["close a wide pair (negative kern)"] if wide else []) + (["open a tight pair (positive kern)"] if tight else [])
-        message = (f"wordmark spacing: {', '.join(parts)} against a median gap of {mid:g}; {' and '.join(fixes)}, "
-                   "or leave an optical gap at a diagonal or round letter (K, V, A, O), which the box measurement overstates")
+        message = (f"wordmark spacing: {', '.join(parts)} against a median gap of {mid:g}; {' and '.join(fixes)}"
+                   + (f", {OPTICAL_CAVEAT}" if tight else ""))
         return [Finding(check="spacing_rhythm", severity="warn", message=message,
                         data={"gaps": gaps, "median": mid, "wide": wide, "tight": tight})]
     return [Finding(check="spacing_rhythm", severity="info", message=f"wordmark gaps even (median {mid:g}): {listed}",

@@ -66,7 +66,7 @@ Every card records both: `sheet concepts` and `brand advance --to refinement` re
              "timeless": 4, "universal": 5, "clear": 3, "congruent": 4, "system": 4},
   "evidence": {
     "appropriate": "the O reads as a socket at once; Ostrom makes tools",
-    "distinctive": "no competitor among the five uses a letter as the tool end; probe: 1 of 20 for \"socket O logo\"",
+    "distinctive": "no competitor among the five uses a letter as the tool end; probe: 1 of 20 for \"socket O logo [firecrawl-images]\"",
     "simple": "one oval, one square hole; drawable in two strokes",
     "legible": "the square stays open at 16 px; Ostrom reads at 120 px wide",
     "clear": "description search found no socket-O mark yet; full knock-out in refinement"
@@ -79,7 +79,7 @@ Every card records both: `sheet concepts` and `brand advance --to refinement` re
 }
 ```
 
-`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format, with the chosen concept's `route` and `probe` carried forward (a fresh probe if the construction changed); `brand advance --to package` and `package build` refuse it without both, and they and `package build` read its `reconciled` entries against `final/critic.json` [code].
+`final/scorecard.json`, the re-score of the final mark after the last refinement round and before `package build`, takes the same format, with the chosen concept's `route` and `probe` carried forward (a fresh probe if the construction changed); `brand advance --to package` and `package build` refuse it without both, and both read its `reconciled` entries against `final/critic.json` [code].
 
 A killed card keeps every score:
 

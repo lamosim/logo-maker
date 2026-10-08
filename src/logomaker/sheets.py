@@ -14,7 +14,7 @@ from . import critic as criticlib
 from . import fonts as fontlib
 from . import mockups as mockuplib
 from . import registry
-from .audit import MIN_FEATURE, RHYTHM_TIGHT, RHYTHM_WIDE, concept_fingerprint, rhythm_flags, text_roles
+from .audit import MIN_FEATURE, OPTICAL_CAVEAT, RHYTHM_TIGHT, RHYTHM_WIDE, concept_fingerprint, rhythm_flags, text_roles
 from .color import CVD_KINDS, Tokens, check_tokens, chip_text, load_tokens, palettes_of, simulate_cvd
 from .color import info as color_info
 from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text, union
@@ -612,7 +612,8 @@ def wordmark_sheet(paths: ProjectPaths, slug: str, concept_name: str = "final", 
     html = jinja(paths).get_template("sheets/wordmark.html").render(
         brand=state.name, round_n=round_n, font=word.font, width=WORDMARK_W, header=fit_box(svg, 260, 32),
         minimum=fit_box(svg, state.min_sizes.horizontal_px, 60), min_px=state.min_sizes.horizontal_px, large=fit_box(svg, 400, 160),
-        gaps=bars, hint=hint, median=number(mid), wide=RHYTHM_WIDE, tight=RHYTHM_TIGHT)
+        gaps=bars, hint=hint, median=number(mid), wide=RHYTHM_WIDE, tight=RHYTHM_TIGHT,
+        optical=OPTICAL_CAVEAT if any(b["kind"] == "tight" for b in bars) else None)
     html_path, png_path = _write_sheet(renderer, html, brand / "sheets", f"wordmark-{round_n}", WORDMARK_W)
     warnings: list[str] = [f"{b['pair']} is {b['kind']} against the median gap" for b in bars if b["kind"]]
     open_file(html_path, open_after, warnings)
