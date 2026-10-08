@@ -459,7 +459,9 @@ def sheet_refine(slug: str, round_n: int | None, no_open: bool) -> None:
 @click.argument("slug")
 @click.option("--concepts", "concepts", default=None, help="Comma-separated survivors to letter, e.g. 01-arch,03-keystone")
 @click.option("--final", is_flag=True, help="Letter the final mark alone (final/), for the critic's last pass.")
-@click.option("--seed", type=int, default=None, help="Shuffle seed (default: the sheet's round number); use another for the second pass.")
+@click.option("--seed", type=int, default=None,
+              help="Shuffle seed, to reproduce an earlier sheet (default: the round number, re-shuffled until the lettering "
+                   "differs from the last sheet of the same concepts); leave it out for a critic pass.")
 @command
 def sheet_critic(slug: str, concepts: str | None, final: bool, seed: int | None) -> None:
     """Render the blind critic's lettered sheet to sheets/critic-N.{html,png} and its key to critic-N.key.json; never opened."""

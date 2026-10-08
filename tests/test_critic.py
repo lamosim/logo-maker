@@ -78,6 +78,16 @@ def test_merge_calls_a_pair_tied_unless_every_verdict_agrees():
     assert cards["02-arch"].passes == 1
 
 
+def test_merge_calls_a_pair_tied_when_one_pass_leaves_it_out():
+    silent = critic.CriticPass(cards={"A": pass_card(), "B": pass_card()})
+    sure = critic.CriticPass(cards={"A": pass_card(), "B": pass_card()}, pairs=both_orders("A", "B", "A"))
+    key = critic.Key.model_validate(KEY)
+    for runs in ([(key, silent), (key, sure)], [(key, sure), (key, silent)]):
+        cards = critic.merge(runs)
+        assert cards["02-arch"].preferred_over == [] and cards["02-arch"].tied_with == ["01-k-jaw"]
+        assert cards["01-k-jaw"].tied_with == ["02-arch"]
+
+
 def test_merge_refuses_a_pass_whose_letters_do_not_match_the_sheet():
     key = critic.Key.model_validate(KEY)
     with pytest.raises(CliError, match=r"pass 1 scores A, C; the sheet has A, B"):
@@ -187,6 +197,16 @@ def test_critic_sheet_refuses_an_unvetted_concept_before_chrome(project_root, no
     (folder / "scorecard.json").unlink()
     with pytest.raises(CliError, match="scorecard.json is missing"):
         sheets.critic_sheet(project(), "keystone", ["01-good"])
+    assert not list((project_root / "brands" / "keystone" / "sheets").glob("critic-*"))
+
+
+def test_critic_sheet_refuses_a_concept_named_twice_before_chrome(project_root, no_chrome):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    with pytest.raises(CliError, match="01-good is named twice; give each concept once"):
+        sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots", "01-good"])
+    code, payload = run("sheet", "critic", "keystone", "--concepts", "02-dots,01-good,02-dots")
+    assert code == 2 and payload["errors"] == ["02-dots is named twice; give each concept once"]
     assert not list((project_root / "brands" / "keystone" / "sheets").glob("critic-*"))
 
 
@@ -305,6 +325,21 @@ def test_critic_problems_name_what_is_missing_stale_or_invalid(project_root):
     assert critic.critic_problems(paths, "keystone", folder)[0].startswith("01-good/critic.json is not valid JSON")
 
 
+def test_a_stale_card_names_every_concept_of_its_critic_sheet_and_two_sheets(project_root):
+    folder = prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    letters = critic_run(project_root, ["01-good", "02-dots"])
+    (folder / "concept.py").write_text((folder / "concept.py").read_text() + "\n# changed\n")
+    names = ",".join(letters.values())
+    assert critic.critic_problems(project(), "keystone", folder) == [
+        f"01-good/critic.json is stale (the concept changed since the critic saw it); re-run: logomaker sheet critic keystone "
+        f"--concepts {names} twice, dispatch a critic on each, then logomaker concept critic keystone --sheet N --sheet M"]
+    (project_root / "brands" / "keystone" / "sheets" / "critic-1.key.json").unlink()  # no key: the one-concept command
+    assert critic.critic_problems(project(), "keystone", folder)[0].endswith(
+        "re-run: logomaker sheet critic keystone --concepts 01-good, dispatch the critic, then logomaker concept critic "
+        "keystone --sheet N")
+
+
 def test_vetted_scorecard_needs_a_fresh_critic_and_every_disagreement_reconciled(project_root):
     folder = prepare(project_root, "01-good")
     paths = project()
@@ -345,6 +380,13 @@ def test_preference_line_groups_by_wins():
     assert critic.preference_line(cards, "keystone") == "a > b = c"  # one critic sheet: the slug is not needed
 
 
+def test_preference_line_counts_only_wins_over_concepts_on_the_sheet():
+    # The critic sheet lettered a, b, c and d; only a and b are shown. a beat c and d, b beat a.
+    cards = {"a": CriticCard.model_validate({**critic_card(), "preferred_over": ["c", "d"], "tied_with": ["b"]}),
+             "b": CriticCard.model_validate({**critic_card(), "preferred_over": ["a"], "tied_with": ["c", "d"]})}
+    assert critic.preference_line(cards) == "b > a"
+
+
 def test_preference_line_refuses_to_order_cards_from_different_sheets():
     cards = {"02-arch": CriticCard.model_validate({**critic_card(), "preferred_over": ["01-k-jaw"], "sheet": 1}),
              "01-k-jaw": CriticCard.model_validate({**critic_card(), "preferred_over": [], "sheet": 2})}
@@ -380,3 +422,10 @@ def test_advance_to_refinement_and_package_build_read_the_critic(project_root):
     assert any("final/scorecard.json is missing" in m for m in err.value.data["missing"])
     (final / "scorecard.json").write_text(json.dumps(scorecard()))
     assert registry.advance(paths, "keystone", registry.allowed_next(state)).phase.value == "package"
+
+
+def test_sheet_critic_seed_help_says_an_explicit_seed_reproduces_a_sheet():
+    result = CliRunner().invoke(main, ["sheet", "critic", "--help"])
+    text = " ".join(result.output.split())
+    assert "Shuffle seed, to reproduce an earlier sheet" in text and "leave it out for a critic pass" in text
+    assert "use another for the second pass" not in text

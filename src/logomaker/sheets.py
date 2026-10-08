@@ -418,6 +418,9 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
         raise CliError("--final takes no --concepts")
     if not final and not concept_names:
         raise CliError("give --concepts <a,b,c> for survivors, or --final for the final mark")
+    twice = sorted({name for name in concept_names if concept_names.count(name) > 1})
+    if twice:
+        raise CliError(f"{', '.join(twice)} is named twice; give each concept once")
     if len(concept_names) > len(criticlib.LETTERS):
         raise CliError(f"at most {len(criticlib.LETTERS)} concepts on one critic sheet")
     state = registry.load_state(paths, slug)

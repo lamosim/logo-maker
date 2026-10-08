@@ -100,8 +100,9 @@ def _check_keys(keys: list[Key]) -> None:
 def merge(runs: list[tuple[Key, CriticPass]]) -> dict[str, CriticCard]:
     """One CriticCard per concept, from every pass of every critic sheet in `runs` (each pass with its own sheet's key):
     each pass is checked against its key, then translated from letters to concepts, and the passes merged: mean scores
-    rounded half up, every evidence line, and a preference only where every verdict in every pass and both orders
-    agrees. The sheets must letter the same concepts with the same fingerprints. `sheet` is the highest round merged.
+    rounded half up, every evidence line, and a preference only where every pass judged the pair (a pass that left it
+    out makes it a tie) and every verdict in every pass and both orders agrees. The sheets must letter the same concepts
+    with the same fingerprints. `sheet` is the highest round merged.
     A pass that scores other letters than its sheet's, or judges a pair in one order only, is a CliError naming it."""
     if not runs:
         raise CliError("the merge needs at least one pass file")
@@ -127,8 +128,9 @@ def merge(runs: list[tuple[Key, CriticPass]]) -> dict[str, CriticCard]:
         for other in first.letters.values():
             if other == slug:
                 continue
-            said = [prefer for _, verdicts in named for a, b, prefer in verdicts if {a, b} == {slug, other}]
-            if said and all(v == slug for v in said):
+            # Each pass's verdicts on the pair: a pass that left it out has none, and that makes the pair a tie.
+            said = [[prefer for a, b, prefer in verdicts if {a, b} == {slug, other}] for _, verdicts in named]
+            if all(said) and all(v == slug for per_pass in said for v in per_pass):
                 preferred.append(other)
             else:  # `tied_with` is the rest (spec §3.2), so a concept the other beat is listed here too
                 tied.append(other)
@@ -200,8 +202,12 @@ def write_cards(paths: ProjectPaths, slug: str, rounds: list[int]) -> dict:
     return {"sheets": list(rounds), "passes": len(runs), "cards": written}
 
 
-def refresh_command(slug: str, folder: Path) -> str:
-    """How to give `folder` a fresh critic card: its critic sheet, the critic run, and the merge."""
+def refresh_command(slug: str, folder: Path, concepts: list[str] | None = None) -> str:
+    """How to give `folder` a fresh critic card: its critic sheet, the critic run, and the merge. With `concepts`, the
+    concepts its last critic sheet lettered, it names two sheets over all of them, so the critic's order stays comparable."""
+    if folder.name != "final" and concepts and len(concepts) > 1:
+        return (f"logomaker sheet critic {slug} --concepts {','.join(concepts)} twice, dispatch a critic on each, then "
+                f"logomaker concept critic {slug} --sheet N --sheet M")
     target = "--final" if folder.name == "final" else f"--concepts {folder.name}"
     return f"logomaker sheet critic {slug} {target}, dispatch the critic, then logomaker concept critic {slug} --sheet N"
 
@@ -221,6 +227,11 @@ def critic_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | N
     except CliError as err:
         return [f"{err} (run: {how})"]
     if card.fingerprint != concept_fingerprint(paths, slug, folder):
+        try:  # the stale card's own critic sheet names the survivors to refresh with it
+            key = _load(key_path(paths.brand(slug), card.sheet), Key, "the key")
+            how = refresh_command(slug, folder, list(key.letters.values()))
+        except CliError:
+            pass
         return [f"{label} is stale (the concept changed since the critic saw it); re-run: {how}"]
     return []
 
@@ -234,5 +245,5 @@ def preference_line(cards: dict[str, CriticCard], slug: str = "<slug>") -> str:
                 f"--concepts {','.join(cards)})")
     groups: dict[int, list[str]] = {}
     for name, card in cards.items():
-        groups.setdefault(len(card.preferred_over), []).append(name)
+        groups.setdefault(len(set(card.preferred_over) & set(cards)), []).append(name)  # wins over concepts shown only
     return " > ".join(" = ".join(sorted(groups[wins])) for wins in sorted(groups, reverse=True))
