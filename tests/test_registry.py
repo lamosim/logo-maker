@@ -13,6 +13,8 @@ from tests.conftest import FIXTURES, critic_run, install_concept, make_final_bra
 
 CRITIC_STALE = ("01-good/critic.json is stale (the concept changed since the critic saw it); re-run: logomaker sheet critic "
                 "keystone --concepts 01-good, dispatch the critic, then logomaker concept critic keystone --sheet N")
+KNOCKOUT_STALE = ("01-good/knockout.json is stale (the mark changed since the search); re-run: logomaker concept knockout "
+                  "keystone 01-good")
 
 
 def run(*args):
@@ -214,9 +216,11 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
              ("concept.py", (folder / "concept.py").read_text() + "# edited\n"))
     for name, content in edits:
         (folder / name).write_text(content)
-        assert registry._check_concept(brand, state) == [stale, CRITIC_STALE], name  # the critic saw the concept before too
+        # the critic and the image search saw the concept before too
+        assert registry._check_concept(brand, state) == [stale, CRITIC_STALE, KNOCKOUT_STALE], name
         audited(rendered=True)
         critic_run(project_root, ["01-good"])
+        recorded(folder)
         assert registry._check_concept(brand, state) == [], name
     saved = json.loads((folder / "audit.json").read_text())
     (folder / "audit.json").write_text(json.dumps({**saved, "ok": False}))
@@ -280,8 +284,8 @@ def test_the_concept_gate_follows_only_the_brand_settings_the_audit_reads(projec
     assert registry._check_concept(brand, registry.load_state(project(), "keystone")) == []
     assert run("brand", "set", "keystone", "--industry", "AI tooling")[0] == 0  # the cliché check reads the industry
     stale = registry._check_concept(brand, registry.load_state(project(), "keystone"))
-    assert len(stale) == 2 and stale[0].startswith("01-good/audit.json is stale") and "industry" in stale[0]
-    assert stale[1] == CRITIC_STALE  # the critic's card carries the same fingerprint
+    assert len(stale) == 3 and stale[0].startswith("01-good/audit.json is stale") and "industry" in stale[0]
+    assert stale[1:] == [CRITIC_STALE, KNOCKOUT_STALE]  # the critic's card and the knock-out carry the same fingerprint
 
 
 def test_the_concept_gate_needs_a_scorecard_that_passes_the_gate(project_root):
@@ -466,6 +470,10 @@ def test_the_final_gate_needs_a_current_rendered_passing_audit_of_the_final_mark
         "--final, dispatch the critic, then logomaker concept critic keystone --sheet N"]
     critic_run(project_root, [], final=True)
     code, payload = run("brand", "advance", "keystone", "--to", "package")
+    assert code == 2 and payload["missing"] == [  # and so did the image searches
+        "final/knockout.json is stale (the mark changed since the search); re-run: logomaker concept knockout keystone final"]
+    recorded(final, wipo=True)
+    code, payload = run("brand", "advance", "keystone", "--to", "package")
     assert code == 0 and payload["brand"]["phase"] == "package"
 
 
@@ -477,9 +485,11 @@ def test_past_concepts_the_chosen_concept_s_audit_need_only_be_on_record(project
     concept = project_root / "brands" / "keystone" / "concepts" / "01-good"
     (concept / "params.json").write_text('{"stroke": 80}')  # the chosen concept changed after its audit
     code, payload = run("brand", "advance", "keystone", "--to", "refinement")
-    assert code == 2 and [m.split(" (")[0] for m in payload["missing"]] == ["01-good/audit.json is stale", "01-good/critic.json is stale"]
+    assert code == 2 and [m.split(" (")[0] for m in payload["missing"]] == ["01-good/audit.json is stale", "01-good/critic.json is stale",
+                                                                          "01-good/knockout.json is stale"]
     write_passing_audit(project(), "keystone", concept)
     critic_run(project_root, ["01-good"])
+    recorded(concept, wipo=True)
     assert run("brand", "advance", "keystone", "--to", "refinement")[0] == 0
     (concept / "params.json").write_text('{"stroke": 90}')  # stale again, but final/ is what ships now
     code, payload = run("brand", "advance", "keystone", "--to", "package")

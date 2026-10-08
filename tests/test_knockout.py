@@ -125,3 +125,83 @@ def test_a_concept_needs_its_knockout_only_while_the_brand_leaves_concepts(proje
     final = make_final_brand(project_root)
     (final.parent / "concepts" / "01-good" / "knockout.json").unlink()  # past concepts, final/ is what ships
     assert registry.advance(project(), "keystone", registry.Phase.package).phase == registry.Phase.package
+
+
+def stale(name: str) -> str:
+    return (f"{name}/knockout.json is stale (the mark changed since the search); re-run: logomaker concept knockout "
+            f"keystone {name}")
+
+
+def test_a_changed_concept_makes_the_knockout_stale(project_root):
+    folder = install_concept(project_root, "good", name="01-good")
+    paths = project()
+    recorded(folder)
+    assert knockout.knockout_problems(paths, "keystone", folder) == []
+    (folder / "params.json").write_text('{"stroke": 80}')
+    assert knockout.knockout_problems(paths, "keystone", folder) == [stale("01-good")]
+    recorded(folder, fingerprint="")  # a record that never had one is stale too
+    (folder / "params.json").unlink()
+    assert knockout.knockout_problems(paths, "keystone", folder) == [stale("01-good")]
+
+
+def test_concept_knockout_resets_the_searches_only_when_the_mark_changed(project_root):
+    from logomaker.audit import concept_fingerprint
+
+    folder = install_concept(project_root, "good", name="01-good")
+    paths = project()
+    first = knockout.write_images(paths, "keystone", "01-good", renderer=StubRenderer())
+    assert first["reset"] is True  # a seeded record has no fingerprint yet
+    assert json.loads((folder / "knockout.json").read_text())["fingerprint"] == concept_fingerprint(paths, "keystone", folder)
+    recorded(folder, wipo=True)
+    data = json.loads((folder / "knockout.json").read_text())
+    data["image_matches"]["matches"] = [{"url": "https://example.com/arch", "note": "silhouette"}]
+    (folder / "knockout.json").write_text(json.dumps({**data, "owner_notes": "kept"}))
+    again = knockout.write_images(paths, "keystone", "01-good", renderer=StubRenderer())
+    assert again["reset"] is False
+    kept = json.loads((folder / "knockout.json").read_text())
+    assert kept["image_matches"]["searched"] is True and kept["image_matches"]["matches"] and kept["wipo"]["searched"] is True
+    (folder / "params.json").write_text('{"stroke": 80}')
+    changed = knockout.write_images(paths, "keystone", "01-good", renderer=StubRenderer())
+    assert changed["reset"] is True and changed["round"] == 3
+    after = json.loads((folder / "knockout.json").read_text())
+    assert after["fingerprint"] == concept_fingerprint(paths, "keystone", folder) != data["fingerprint"]
+    for search in (after["image_matches"], after["wipo"]):
+        assert (search["searched"], search["matches"], search["date"]) == (False, [], "")
+    assert after["description_queries"] == data["description_queries"] and after["caveat"] == data["caveat"]
+    assert after["owner_notes"] == "kept"
+    assert knockout.knockout_problems(paths, "keystone", folder)[0].startswith("01-good/knockout.json has no image knock-out")
+
+
+def test_a_reset_keeps_a_skipped_reason(project_root):
+    folder = install_concept(project_root, "good", name="01-good")
+    recorded(folder, skipped="no Chrome")
+    (folder / "params.json").write_text('{"stroke": 80}')
+    assert knockout.write_images(project(), "keystone", "01-good", renderer=StubRenderer())["reset"] is True
+    assert json.loads((folder / "knockout.json").read_text())["image_matches"]["skipped"] == "no Chrome"
+
+
+def test_a_concepts_skip_note_does_not_clear_the_final_wipo_skip(project_root):
+    final = make_final_brand(project_root)
+    paths = project()
+    recorded(final, wipo=True)
+    data = json.loads((final / "knockout.json").read_text())
+    data["wipo"] = {**data["wipo"], "searched": False, "skipped": "WIPO was down"}
+    (final / "knockout.json").write_text(json.dumps(data))
+    skipped = ("final/knockout.json records the WIPO search as skipped without the owner's decision (run: logomaker brand "
+               'decide keystone --phase refinement --by user --note "knock-out skipped: <reason>")')
+    assert knockout.knockout_problems(paths, "keystone", final, final=True) == [skipped]
+    registry.decide(paths, "keystone", registry.Phase.concepts, "user", "knock-out skipped: WIPO was down")
+    assert knockout.knockout_problems(paths, "keystone", final, final=True) == [skipped]
+    registry.decide(paths, "keystone", registry.Phase.refinement, "user", "knock-out skipped: WIPO was down")
+    assert knockout.knockout_problems(paths, "keystone", final, final=True) == []
+
+
+def test_no_image_knockout_without_a_round_names_the_command_first(project_root):
+    from logomaker.audit import concept_fingerprint
+
+    folder = install_concept(project_root, "good", name="01-good")
+    fingerprint = concept_fingerprint(project(), "keystone", folder)
+    (folder / "knockout.json").write_text(json.dumps({**Knockout().model_dump(), "fingerprint": fingerprint}))
+    assert knockout.knockout_problems(project(), "keystone", folder) == [
+        "01-good/knockout.json has no image knock-out (run: logomaker concept knockout keystone 01-good, then Google Lens on "
+        "the knockout/round-N/mark-512.png it writes and record the matches, or record skipped with a reason)"]

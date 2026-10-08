@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from . import registry, render
+from .audit import concept_fingerprint
 from .kit import concept as conceptlib
 from .output import CliError
 from .paths import ProjectPaths
@@ -18,7 +19,10 @@ MARK_PX, LOCKUP_PX = 512, 1024
 
 def write_images(paths: ProjectPaths, slug: str, concept_name: str, renderer=None) -> dict:
     """Render <concept>/knockout/round-N/mark-512.png (the full symbol, black on white; the full lockup when the concept
-    has no symbol, with a warning) and lockup-1024.png (the horizontal lockup), and seed knockout.json when missing."""
+    has no symbol, with a warning) and lockup-1024.png (the horizontal lockup), seed knockout.json when missing, and stamp
+    the concept's fingerprint (audit.concept_fingerprint) into it, keeping every other field. When the fingerprint differs
+    from the one recorded (or none was), the mark changed since the searches: each search's searched, matches and date
+    are reset (a skipped reason, the description queries and the caveat stay), and the result says `reset`."""
     from .sheets import next_round  # imported here: sheets imports registry, which the gates below also import
 
     folder = conceptlib.concept_folder(paths, slug, concept_name)
@@ -42,9 +46,20 @@ def write_images(paths: ProjectPaths, slug: str, concept_name: str, renderer=Non
     record = folder / "knockout.json"
     created = not record.is_file()
     if created:
-        record.write_text(json.dumps(Knockout().model_dump(), indent=2) + "\n", encoding="utf-8")
+        data = Knockout().model_dump()
+    else:
+        registry.load_model(record, Knockout, f"{folder.name}/knockout.json")  # refuses an invalid record, untouched
+        data = json.loads(record.read_text(encoding="utf-8"))  # the raw record, so fields the model does not know stay
+    fingerprint = concept_fingerprint(paths, slug, folder)
+    reset = data.get("fingerprint", "") != fingerprint
+    if reset:
+        for key in ("image_matches", "wipo"):
+            if isinstance(data.get(key), dict):
+                data[key].update(searched=False, matches=[], date="")
+    data["fingerprint"] = fingerprint
+    record.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     return {"round": round_n, "mark_png": str(target / "mark-512.png"), "lockup_png": str(target / "lockup-1024.png"),
-            "knockout_json": str(record), "created": created, "warnings": warnings}
+            "knockout_json": str(record), "created": created, "reset": reset, "warnings": warnings}
 
 
 class _already:
@@ -60,8 +75,9 @@ class _already:
         return False
 
 
-def _owner_skipped(decisions: list[Decision]) -> bool:
-    return any(d.by == "user" and d.note.strip().lower().startswith(SKIP_NOTE) for d in decisions)
+def _owner_skipped(decisions: list[Decision], phase: str) -> bool:
+    """Whether the owner recorded a `knock-out skipped:` decision in `phase` (concepts for a survivor, refinement for final/)."""
+    return any(d.by == "user" and d.phase.value == phase and d.note.strip().lower().startswith(SKIP_NOTE) for d in decisions)
 
 
 def _latest_round(folder: Path) -> str:
@@ -72,9 +88,10 @@ def _latest_round(folder: Path) -> str:
 
 
 def knockout_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | None = None, final: bool = False) -> list[str]:
-    """Why <folder>/knockout.json does not record the look-alike searches, or []: missing, invalid, no image knock-out
-    (neither searched nor skipped), skipped without the owner's `knock-out skipped:` decision, or, with `final`, no WIPO
-    search. Each message says what clears it."""
+    """Why <folder>/knockout.json does not record the look-alike searches, or []: missing, invalid, stale (its
+    fingerprint is not audit.concept_fingerprint of the concept now, as the critic's staleness check computes it), no
+    image knock-out (neither searched nor skipped), skipped without the owner's `knock-out skipped:` decision in the
+    phase (concepts; refinement with `final`), or, with `final`, no WIPO search. Each message says what clears it."""
     label = label or f"{folder.name}/knockout.json"
     path = folder / "knockout.json"
     if not path.is_file():
@@ -83,20 +100,24 @@ def knockout_problems(paths: ProjectPaths, slug: str, folder: Path, label: str |
         record = registry.load_model(path, Knockout, label)
     except CliError as err:
         return [str(err)]
-    image = f"knockout/{_latest_round(folder)}/mark-512.png"
+    rerun = f"logomaker concept knockout {slug} {folder.name}"
+    if record.fingerprint != concept_fingerprint(paths, slug, folder):
+        return [f"{label} is stale (the mark changed since the search); re-run: {rerun}"]
+    latest = _latest_round(folder)
+    image = f"knockout/{latest}/mark-512.png"
     state = registry.load_state(paths, slug)
     phase = "refinement" if final else "concepts"
     decide = f'logomaker brand decide {slug} --phase {phase} --by user --note "{SKIP_NOTE} <reason>"'
+    lens = f"run Google Lens on {image}" if latest != "round-N" else f"run: {rerun}, then Google Lens on the {image} it writes"
     problems = []
     if not record.image_done:
-        problems.append(f"{label} has no image knock-out (run Google Lens on {image} and record the matches, "
-                        "or record skipped with a reason)")
-    elif record.image_matches.skipped and not _owner_skipped(state.decisions):
+        problems.append(f"{label} has no image knock-out ({lens} and record the matches, or record skipped with a reason)")
+    elif record.image_matches.skipped and not _owner_skipped(state.decisions, phase):
         problems.append(f"{label} records the image knock-out as skipped without the owner's decision (run: {decide})")
     if final:
         if not record.wipo_done:
             problems.append(f"{label} has no WIPO image search (upload {image} to the Global Brand Database and record the matches, "
                             "or record skipped with a reason)")
-        elif record.wipo is not None and record.wipo.skipped and not _owner_skipped(state.decisions):
+        elif record.wipo is not None and record.wipo.skipped and not _owner_skipped(state.decisions, phase):
             problems.append(f"{label} records the WIPO search as skipped without the owner's decision (run: {decide})")
     return problems

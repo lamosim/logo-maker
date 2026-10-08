@@ -230,7 +230,8 @@ class DocumentGroups:
 
 def inputs_fingerprint(paths: ProjectPaths, slug: str) -> str:
     """sha256 (hex) of what a package build reads (audit.digest): the SOURCE_FILES (final/'s concept.py, params.json,
-    tokens.json and rationale.md and the brand's strategy.json), each when present, but brand.json, of which only name,
+    tokens.json and rationale.md and the brand's strategy.json) and the FINGERPRINT_EXTRA (final/knockout.json), each
+    when present, but brand.json, of which only name,
     primary_lockup, min_sizes and fonts enter, as canonical JSON (its other fields, such as phase or updated, change
     without changing the package). The manifest records it; verify and the done gate compare it with the current one."""
     state = registry.load_state(paths, slug)

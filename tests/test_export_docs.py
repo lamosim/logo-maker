@@ -16,7 +16,7 @@ from logomaker.kit import Mark, rect_centered, ring
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import Phase
-from tests.conftest import StubRenderer, critic_run, make_final_brand, requires_chrome, write_passing_audit
+from tests.conftest import StubRenderer, critic_run, make_final_brand, recorded, requires_chrome, write_passing_audit
 from tests.test_export_core import FAVICONS, build
 from tests.test_export_platforms import use_concept
 
@@ -143,6 +143,7 @@ def test_a_package_built_before_final_or_the_name_changed_is_out_of_date(project
     (final / "tokens.json").write_text(json.dumps(tokens))
     write_passing_audit(project(), "keystone", final)
     critic_run(project_root, [], final=True)
+    recorded(final, wipo=True)  # the knock-out's fingerprint covers tokens.json too
     code, payload = advance_done()  # package/verify.json still says ok, for the package of the old colour
     assert code == 2 and payload["missing"] == [stale]
     code, payload = verify_cli()

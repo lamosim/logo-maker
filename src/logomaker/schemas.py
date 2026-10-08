@@ -351,12 +351,14 @@ class DescriptionQuery(BaseModel):
 
 class Knockout(BaseModel):
     """<concept>/knockout.json (spec 2026-10-08 §7): the description searches, the Google Lens search of the rendered
-    mark, the WIPO image search (final/ only) and the trademark caveat."""
+    mark, the WIPO image search (final/ only) and the trademark caveat. `fingerprint` is audit.concept_fingerprint of the
+    concept that `concept knockout` last rendered; the gates call the record stale when the concept now differs."""
 
     description_queries: list[DescriptionQuery] = Field(default_factory=list)
     image_matches: ImageSearch = Field(default_factory=lambda: ImageSearch(tool="google-lens"))
     wipo: ImageSearch | None = None
     caveat: str = ""
+    fingerprint: str = ""
 
     @property
     def image_done(self) -> bool:

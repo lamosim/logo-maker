@@ -189,12 +189,22 @@ def critic_run(project_root: Path, names: list[str], prefer: str | None = None, 
     return info["letters"]
 
 
-def recorded(folder: Path, tool: str = "google-lens", wipo: bool = False, skipped: str | None = None) -> None:
+def recorded(folder: Path, tool: str = "google-lens", wipo: bool = False, skipped: str | None = None,
+             fingerprint: str | None = None) -> None:
     """Write <folder>/knockout.json: one description query and an image search by `tool` on 2026-10-09 that found no
-    matches, or that was `skipped` with that reason; with `wipo`, the same search by WIPO too."""
+    matches, or that was `skipped` with that reason; with `wipo`, the same search by WIPO too. It records `fingerprint`,
+    by default the concept's audit.concept_fingerprint as it stands (folder is brands/<slug>/concepts/<name> or
+    brands/<slug>/final), so write it after the concept's files."""
+    from logomaker import audit
+    from logomaker.paths import project
+
+    if fingerprint is None:
+        slug = folder.parent.parent.name if folder.parent.name == "concepts" else folder.parent.name
+        fingerprint = audit.concept_fingerprint(project(), slug, folder)
     search = {"tool": tool, "date": "2026-10-09", "searched": skipped is None, "matches": [], "skipped": skipped}
     data = {"description_queries": [{"query": "arch logo", "findings": "stock arches"}], "image_matches": search,
-            "wipo": {**search, "tool": "wipo"} if wipo else None, "caveat": "These checks are a knock-out only"}
+            "wipo": {**search, "tool": "wipo"} if wipo else None, "caveat": "These checks are a knock-out only",
+            "fingerprint": fingerprint}
     (folder / "knockout.json").write_text(json.dumps(data))
 
 
