@@ -363,7 +363,8 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
     """Write sheets/concepts.{html,png} for the owner, then open the HTML unless `open_after` is False. Each concept shows
     its idea, the designer's and the critic's totals and the designer's scores, the critique sheet's strip (lockups in
     CONCEPT_LOCKUP boxes, the true-size ladder, mirrored and rotated in CONCEPT_MIRROR boxes) and the seven mockups; the
-    critic's order of them (critic.preference_line) sits under the preface.
+    critic's order of them (critic.preference_line: "not comparable" when their cards come from different critic
+    sheets) sits under the preface.
 
     Every named concept is vetted (_vetted, then registry.vetted_scorecard: a fresh critic card that the scorecard is
     reconciled with) before any is built, and the PNG is rendered before the folder and both files are written, so a
@@ -394,7 +395,7 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
                       "strip": _strip_panels(outputs, CONCEPT_LOCKUP, CONCEPT_MIRROR), "warnings": ctx["warnings"],
                       "mockups": [mockuplib.render_mockup(env, kind, ctx) for kind in mockuplib.MOCKUPS]})
     html = env.get_template("sheets/concepts.html").render(brand=state.name, concepts=cards, width=CONCEPTS_W,
-                                                           preference=criticlib.preference_line(critics),
+                                                           preference=criticlib.preference_line(critics, slug),
                                                            lockup_px=CONCEPT_LOCKUP, mirror_px=CONCEPT_MIRROR)
     html_path, png_path = _write_sheet(renderer, html, paths.brand(slug) / "sheets", "concepts", CONCEPTS_W)
     open_file(html_path, open_after, warnings)

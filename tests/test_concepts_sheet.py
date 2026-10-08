@@ -291,7 +291,9 @@ def test_the_cli_writes_the_sheet_opens_it_and_warns_about_wordmark_fallbacks(pr
     html = (folder / "concepts.html").read_text()
     assert [html.count(f'class="mockup" data-mockup="{kind}"') for kind in mockups.MOCKUPS] == [2] * len(mockups.MOCKUPS)
     assert "designer 40 / critic 40 (1 pass)" in html and "designer 39 / critic 39 (1 pass)" in html
-    assert "no symbol in this concept" in html and "critic's order: 01-good = 02-word" in html
+    assert "no symbol in this concept" in html  # prepare critiqued each concept on its own sheet: no order between them
+    assert ("critic's order: not comparable; the cards come from different critic sheets (one order: logomaker sheet critic "
+            "keystone --concepts 01-good,02-word)") in html
     code, payload = sheet("--concepts", "01-good,02-word")
     assert code == 0 and payload["warnings"] == [fallback] and opened == [["open", str(folder / "concepts.html")]]
     monkeypatch.setattr(subprocess, "Popen", no_open_command)

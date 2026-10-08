@@ -247,6 +247,15 @@ def test_preference_line_groups_by_wins():
              "b": CriticCard.model_validate({**critic_card(), "preferred_over": [], "tied_with": ["c"]}),
              "c": CriticCard.model_validate({**critic_card(), "preferred_over": [], "tied_with": ["b"]})}
     assert critic.preference_line(cards) == "a > b = c"
+    assert critic.preference_line(cards, "keystone") == "a > b = c"  # one critic sheet: the slug is not needed
+
+
+def test_preference_line_refuses_to_order_cards_from_different_sheets():
+    cards = {"02-arch": CriticCard.model_validate({**critic_card(), "preferred_over": ["01-k-jaw"], "sheet": 1}),
+             "01-k-jaw": CriticCard.model_validate({**critic_card(), "preferred_over": [], "sheet": 2})}
+    assert critic.preference_line(cards, "keystone") == (
+        "not comparable; the cards come from different critic sheets (one order: logomaker sheet critic keystone "
+        "--concepts 02-arch,01-k-jaw)")
 
 
 def test_advance_to_refinement_and_package_build_read_the_critic(project_root):

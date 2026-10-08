@@ -190,8 +190,13 @@ def critic_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | N
     return []
 
 
-def preference_line(cards: dict[str, CriticCard]) -> str:
-    """The critic's order as one line: concepts grouped by how many they beat, best first, `>` between groups, `=` within."""
+def preference_line(cards: dict[str, CriticCard], slug: str = "<slug>") -> str:
+    """The critic's order as one line: concepts grouped by how many they beat, best first, `>` between groups, `=` within.
+    A card's wins count only the concepts on its own critic sheet, so when the cards come from different sheets there is
+    no one order: the line says so and names the critic sheet of brand `slug` that would give one."""
+    if len({card.sheet for card in cards.values()}) > 1:
+        return (f"not comparable; the cards come from different critic sheets (one order: logomaker sheet critic {slug} "
+                f"--concepts {','.join(cards)})")
     groups: dict[int, list[str]] = {}
     for name, card in cards.items():
         groups.setdefault(len(card.preferred_over), []).append(name)
