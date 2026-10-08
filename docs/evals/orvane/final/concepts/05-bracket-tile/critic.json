@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 3,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 2,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "two square brackets in a rounded tile read as 'code' and 'holding', a sentence away from 'nothing gets dropped'; ordered and still, Sage enough",
+      "a pair of square brackets holding an empty space in a tile says 'held' and 'developer' but needs a sentence to reach the one idea"
+    ],
+    "distinctive": [
+      "square brackets are a stock developer-tool motif; the silhouette is a generic rounded tile any dev product could own",
+      "code brackets are a stock developer-tool cue; generic silhouette in a black rounded tile"
+    ],
+    "simple": [
+      "one rounded square with two brackets; drawable in seconds",
+      "a tile with two brackets; easy to redraw"
+    ],
+    "legible": [
+      "at 32 px the brackets still read, at 16 px they close into a dark block with two faint slits",
+      "at 24 and 16 px the brackets close into a dark square with a pale slot; strains at the favicon"
+    ],
+    "adaptable": [
+      "the reversed and one-colour panels hold, the app tile and avatar work; no colour or motion logic shown",
+      "holds in black, reversed and one colour; the phone icon and avatar read"
+    ],
+    "timeless": [
+      "no trend shape; brackets have read as code for decades",
+      "no avoid-list shape, but bracket marks date with developer fashion"
+    ],
+    "universal": [
+      "mirrored is identical; rotated 90 becomes a box with two bars, a faint frame reading, nothing unwanted",
+      "mirrored identical; rotated 90 reads as a camera viewfinder frame"
+    ],
+    "clear": [
+      "unsearched: bracket marks inside a tile are common across code editors and developer tools I know",
+      "unsearched: many developer and code-tool marks use brackets in a box"
+    ],
+    "congruent": [
+      "symmetric, still and medium weight match, but the brackets are a descriptive dev cue the strategy set to false and nothing comes from the name",
+      "symmetric, still, square-with-soft-corners match; heavy weight and angular brackets lean cold; no warmth"
+    ],
+    "system": [
+      "lockup, tiers, avatar, tab and card all derive from the one tile; the wordmark is a plain sans",
+      "lockup, tiers and mockups derive cleanly from one tile"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-held-o",
+    "02-matched-halves",
+    "04-v-tray"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "2f0dcf0620d2ab1a7045403261a6bb9b2478be62470d2f3e2974d371188f0b42"
+}

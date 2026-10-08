@@ -1,0 +1,37 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 4,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the name set as a total on the bookkeeper's double rule: the bottom line, plain and calm",
+    "distinctive": "no competitor of the five uses a totals rule or a moss serif name; capped by the probe: 3 of 20 for \"double underline wordmark logo [firecrawl-images]\"",
+    "simple": "a word and two lines; drawable in seconds",
+    "legible": "the opened word space keeps Clear and Ledger apart at the 120 px minimum; the favicon C on its rules reads at 24 px and strains at 16 px",
+    "adaptable": "one colour, reverse and receipt-printer black all hold; app icons from 96 px up show the whole wordmark, CL and C below",
+    "timeless": "a text serif and a bookkeeping convention; no trend shape",
+    "universal": "mirrored and rotated panels show only reversed type and rules",
+    "clear": "description searches found no serif name on a double totals rule; the name itself is used by other bookkeeping firms (sent to an attorney); the Lens and WIPO image searches were skipped (no Chrome extension)",
+    "congruent": "text serif, regular weight, static, ledger cue, a low-saturation moss away from money green; open rather than framed",
+    "system": "wordmark, compact, small and favicon tiers and five colour variants build; no symbol, so stacked and mark files repeat the wordmark"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {
+    "legible": "lowered my 5 to 4 after the critic's 3: the 16 px C is small and its rules near hairline; it still reads as a C on two bars, so 4 stands, not 3"
+  },
+  "route": "type-quirk",
+  "probe": {
+    "query": "double underline wordmark logo [firecrawl-images]",
+    "hits": 3,
+    "date": "2026-10-08"
+  }
+}

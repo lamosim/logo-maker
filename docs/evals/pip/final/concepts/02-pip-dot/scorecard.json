@@ -1,0 +1,32 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the seed dot gives the name its story without a caption; the friend is implied by the tilt, not drawn",
+    "distinctive": "no competitor among Epic, Khan Kids, Reading Eggs, Homer, Read Along owns a seed dot; probe: 1 of 20 for \"letter i dot seed logo [firecrawl-images]\"",
+    "simple": "three letters and one seed; 12 anchors in the icon",
+    "legible": "pip reads at a glance at 64 px one-colour; no letter collides; the Kia test passes",
+    "adaptable": "one colour and reverse hold; the icon is the i with its seed, drawn for compact, small and favicon; icons from 96 px show the whole wordmark",
+    "timeless": "no trend shape; rounded type is a 'use carefully' item justified by the kids' register",
+    "universal": "the i-with-dot icon alone can read as an information symbol; mirrored qiq is expected for a wordmark",
+    "clear": "Borde Hill's garden wordmark (Here, 2023) also gives its i a seed dot, other category; Lens skipped",
+    "congruent": "round, low complexity, lowercase rounded sans as targeted; less character than the strategy's mascot type",
+    "system": "wordmark, compact, small and favicon built; no symbol, so lockups are the wordmark alone; rationale draft in critique.md"
+  },
+  "route": "type-quirk",
+  "probe": {
+    "query": "letter i dot seed logo [firecrawl-images]",
+    "hits": 1,
+    "date": "2026-10-08"
+  }
+}

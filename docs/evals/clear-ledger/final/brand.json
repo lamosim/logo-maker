@@ -1,0 +1,102 @@
+{
+  "slug": "clear-ledger",
+  "name": "Clear Ledger",
+  "needs_name": false,
+  "track": "full",
+  "created": "2026-10-08T19:01:57-04:00",
+  "updated": "2026-10-08T19:15:28-04:00",
+  "phase": "done",
+  "industry": "bookkeeping and accounting for sole traders",
+  "surfaces": [
+    "app icon",
+    "website header",
+    "print"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "village-ledger",
+  "concept": "01-totals-rule",
+  "fonts": {
+    "wordmark": {
+      "family": "Literata",
+      "weight": 600,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T19:02:29-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: confirmed the brief write-back as written (conservative answer; no corrections)"
+    },
+    {
+      "at": "2026-10-08T19:03:46-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: kept the name Clear Ledger despite existing 'Clear Ledger' bookkeeping firms (US and a UK FreeAgent partner) and registered .com/.co/.io/.ai/.app; conflict sent to a trademark attorney (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T19:03:46-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: approved the strategy as written (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T19:04:24-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: chose Village Ledger, the warmer of the two boards (moss on ledger paper, Literata)"
+    },
+    {
+      "at": "2026-10-08T19:09:44-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: the Chrome extension is unavailable in this session, so the Google Lens image search could not run for the survivors; description searches stand in (scripted: no script answer, took the conservative option of recording the skip rather than presenting unchecked)"
+    },
+    {
+      "at": "2026-10-08T19:11:26-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: named no specific likes in any concept (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T19:11:27-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: chose 01-totals-rule, the survivor the blind critic preferred (beat both others in every pass); told that app icons from 96 px up show the whole wordmark"
+    },
+    {
+      "at": "2026-10-08T19:11:27-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: first reaction 'the two words run together at the invoice size'; probing question asked (what reads wrong, at what size, in which mockup); answer 'the card mockup'. Sorted as a flaw at a named size and mockup: to fix in refinement by opening the word space so the double rule does not fuse Clear and Ledger"
+    },
+    {
+      "at": "2026-10-08T19:13:14-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: approved refinement round 1 after the colour round (Moss wordmark on Ledger Paper, Moss Light reverse on Iron Gall; word space opened per the card-mockup note)"
+    },
+    {
+      "at": "2026-10-08T19:14:28-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: the Chrome extension is unavailable, so the Google Lens and WIPO image searches of final/ could not run; description searches recorded in final/knockout.md (scripted: no script answer, took the conservative option of recording the skip and sending the name and mark to a trademark attorney)"
+    },
+    {
+      "at": "2026-10-08T19:15:27-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: approved the package handover; has the folder and the brand sheet (conservative answer)"
+    }
+  ]
+}

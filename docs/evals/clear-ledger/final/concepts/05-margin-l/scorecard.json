@@ -1,0 +1,27 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "reads as the letter L only; the margin-and-totals rule needs a sentence",
+    "distinctive": "capped by the probe: 12 of 20 for \"letter L negative space square logo [firecrawl-images]\""
+  },
+  "kill": true,
+  "reason": "an L knocked out of a square is a stock construction; the ledger margin reading needs a caption, so appropriate cannot reach 4",
+  "reconciled": {},
+  "route": "negative-space",
+  "probe": {
+    "query": "letter L negative space square logo [firecrawl-images]",
+    "hits": 12,
+    "date": "2026-10-08"
+  }
+}

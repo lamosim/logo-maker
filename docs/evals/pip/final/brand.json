@@ -1,0 +1,108 @@
+{
+  "slug": "pip",
+  "name": "Pip",
+  "needs_name": false,
+  "track": "express",
+  "created": "2026-10-08T19:02:11-04:00",
+  "updated": "2026-10-08T19:13:04-04:00",
+  "phase": "done",
+  "industry": "children's reading education app",
+  "surfaces": [
+    "app icon",
+    "App Store listing",
+    "printed stickers"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "sunny-seed",
+  "concept": "01-seed-friend",
+  "fonts": {
+    "wordmark": {
+      "family": "Fredoka",
+      "weight": 600,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T19:02:49-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: confirmed the brief write-back as written (no corrections)"
+    },
+    {
+      "at": "2026-10-08T19:04:13-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: approved the strategy as written"
+    },
+    {
+      "at": "2026-10-08T19:04:13-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: keep the name Pip despite Pip School (Sprout Labs) and Pip and Tim in early reading; send the conflict to a trademark attorney before filing"
+    },
+    {
+      "at": "2026-10-08T19:04:41-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: chose Sunny Seed, the warmer of the two boards (coral and yolk, Fredoka)"
+    },
+    {
+      "at": "2026-10-08T19:08:20-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: the Claude in Chrome extension is unavailable, so the Google Lens image search could not run for 01-seed-friend and 02-pip-dot (scripted: accepted the skip, the most conservative option available; description searches done)"
+    },
+    {
+      "at": "2026-10-08T19:09:45-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: no specific likes named on the concept sheet"
+    },
+    {
+      "at": "2026-10-08T19:09:45-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: chose 01-seed-friend, the survivor the critic preferred; no steals"
+    },
+    {
+      "at": "2026-10-08T19:09:45-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: first reaction 'the character turns into a blob at the avatar size'; probed, answer 'at the avatar size': a named-size flaw, to fix in refinement with a compact tier for the avatars"
+    },
+    {
+      "at": "2026-10-08T19:10:36-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: primary lockup horizontal, the lockup of the top-ranked surface that shows one (the App Store listing sets the name beside the mark)"
+    },
+    {
+      "at": "2026-10-08T19:11:21-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: approved refinement round 1 after the colour round (coral on cream, designed reverse on cocoa; compact avatar tier redrawn)"
+    },
+    {
+      "at": "2026-10-08T19:12:34-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: the Claude in Chrome extension is unavailable, so the Google Lens and WIPO image searches of final/ could not run (scripted: accepted the skip; description searches done; attorney clearance advised)"
+    },
+    {
+      "at": "2026-10-08T19:13:03-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: approved the package handover; has the folder and the brand sheet"
+    }
+  ]
+}

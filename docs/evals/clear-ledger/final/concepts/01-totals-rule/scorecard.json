@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 4,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the name sits on the double rule under a sum: the bottom line, plain and calm, no caption needed",
+    "distinctive": "no competitor of the five uses a totals rule; capped by the probe: 3 of 20 for \"double underline wordmark logo [firecrawl-images]\"",
+    "simple": "a word and two lines; drawable in seconds",
+    "legible": "Clear Ledger reads at 128 px; the favicon C on its rules reads at 24 px and strains at 16 px",
+    "adaptable": "one colour and reverse hold, but with no symbol every app icon from 96 px shows the whole wordmark, the first surface",
+    "timeless": "a text serif and a bookkeeping convention; no trend shape",
+    "universal": "mirrored and rotated panels show only reversed type and rules",
+    "clear": "description search (serif wordmark with double underline, bookkeeping) found no such mark",
+    "congruent": "text serif, regular weight, static, descriptive ledger cue; open rather than framed",
+    "system": "wordmark plus compact, small and favicon tiers built; no symbol, so stacked and symbol lockups degenerate"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "type-quirk",
+  "probe": {
+    "query": "double underline wordmark logo [firecrawl-images]",
+    "hits": 3,
+    "date": "2026-10-08"
+  }
+}

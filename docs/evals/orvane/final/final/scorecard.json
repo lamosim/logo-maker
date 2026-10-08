@@ -1,0 +1,37 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "two halves of one tile that fit only each other: both sides hold the same proof, closed and still",
+    "distinctive": "no webhook competitor uses a split tile, and the warm ochre stands against the blue uniform; probe carried forward: 1 of 20",
+    "simple": "one tile, one cut with a round tab; 20 anchors",
+    "legible": "the seam stays open at 16 px (favicon gap 80, thinnest 3.28 px); the wordmark reads at 120 px",
+    "adaptable": "black, white, ochre on Logbook and amber on Tower all hold; compact for the GitHub avatar, small and favicon redrawn; the halves can slide and click shut in motion",
+    "timeless": "no trend shape; square app-tile geometry",
+    "universal": "mirrored clean; rotated 90 a faint bowl or smile, a secondary reading",
+    "clear": "description searches found no tab-and-notch tile mark (nearest: Finder's split face, Amber Changing's split heart); Lens and WIPO image searches skipped (no Chrome extension), owner decision recorded",
+    "congruent": "rounded tile with an exact cut (shape 0.55), near-symmetric, low complexity, still, warm ochre/amber against the category, title-case neo-grotesque",
+    "system": "horizontal, stacked, symbol, wordmark, compact, small and favicon all built (refine-1 shows them); designed reverse; rationale drafted"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {
+    "system": "the critic's sheet shows neither the stacked lockup nor the redrawn favicon tier (gap 80, tab 170) that refine-1 shows; I lowered mine from 5 to 4, the system is complete"
+  },
+  "route": "metaphor-2",
+  "probe": {
+    "query": "tab and notch two halves logo [firecrawl-images]",
+    "hits": 1,
+    "date": "2026-10-08"
+  }
+}

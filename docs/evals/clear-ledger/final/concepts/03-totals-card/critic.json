@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a rounded-square page with a solid totals block over two rules: a ledger page in a sentence, but it reads as a generic document icon first",
+      "a soft-cornered frame holding a heavy bar over two ruled lines reads as a ledger page with a total, framed as the strategy asks for finance; it needs no caption"
+    ],
+    "distinctive": [
+      "the silhouette is the stock 'document/receipt' UI glyph; in the phone grid it looks like a system app, and none of the five competitors would struggle to claim it",
+      "no circle, tick or coin, but the rounded square with lines in one corner looks like a stock 'document' or 'article' UI icon; it differs in detail, not in silhouette"
+    ],
+    "simple": [
+      "one rounded frame, one block, two lines; drawable in seconds",
+      "one rounded square, one bar, two lines; you could draw it from memory in seconds"
+    ],
+    "legible": [
+      "the frame and block survive at 24 and 16 px, the two thin rules merge at 16; the slab wordmark reads in every lockup",
+      "the frame and bar still hold at 16 and 24 px and the serif wordmark reads in every lockup; the two thin lines merge into a block by 16 px"
+    ],
+    "adaptable": [
+      "strongest of the three in one colour, reversed, the tab favicon, the avatar and the app tile without a redraw",
+      "works in black, reversed and in one colour at 64 and 32 px; the app tile and the browser tab use the same drawing without changes"
+    ],
+    "timeless": [
+      "square, app-tile-aware geometry with no trend shape; a little UI-icon flavour",
+      "a square, app-tile-aware frame with no trend shape; the bars sit plainly"
+    ],
+    "universal": [
+      "the rotated 90 panel turns into vertical bars, a bar chart or barcode, close to the forbidden chart imagery",
+      "the rotated 90 panel turns the rules into vertical bars that read faintly as a bar chart, the category's forbidden motif; the mirrored panel is clean"
+    ],
+    "clear": [
+      "unsearched: framed page-with-lines glyphs are everywhere in icon sets and invoicing apps",
+      "unsearched: framed-lines icons are everywhere as generic document and news glyphs in apps, though I know no bookkeeping competitor that uses one"
+    ],
+    "congruent": [
+      "framed and flat as targeted, but the block sits off-centre (asymmetric against symmetry 0.8) and the heavy frame stroke exceeds regular weight",
+      "regular-weight serif type, a firm horizontal, soft corners and a frame all match; the bars sitting off to the bottom right cut against the 0.8 symmetry target"
+    ],
+    "system": [
+      "symbol, small and favicon tiers all built and consistent; the lockup pairs it with a separate slab wordmark that shares little DNA",
+      "horizontal lockup, header, avatar, card and every tier from 256 to 16 px all built from one symbol; the lockups are even"
+    ]
+  },
+  "preferred_over": [
+    "02-cl-foot"
+  ],
+  "tied_with": [
+    "01-totals-rule"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "19cb59773f040cff3bf227a243e079975a8b3821048840b4a04faee071e3d3d4"
+}

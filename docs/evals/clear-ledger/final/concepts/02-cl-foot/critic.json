@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 4,
+    "timeless": 3,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a heavy slab CL monogram beside a slab wordmark: plain and Everyman, but nothing on the sheet shows 'see where you stand' beyond a short rule under the L",
+      "a heavy slab CL whose L foot runs under the C hints at an underline, but the ledger idea needs a sentence; it reads as initials first"
+    ],
+    "distinctive": [
+      "a two-letter initial monogram is the category's own habit (enclosed initials); in the phone grid the CL tile reads as any initials app",
+      "a two-letter slab monogram is the generic route; the category uses initials (QuickBooks' qb) and nothing about this silhouette is ownable"
+    ],
+    "simple": [
+      "two letters and an underline; drawable from memory, though the C and L compete equally",
+      "two letters and a long foot; easy to redraw, though the C and L pull as two shapes"
+    ],
+    "legible": [
+      "CL is crisp at 64 and 48 but the 24 and 16 px tiles thin to a smudge where the serifs and underline close up",
+      "CL reads at 64 and 48 px, but by 24 and 16 px the heavy slabs clot into a smudge"
+    ],
+    "adaptable": [
+      "holds in black, reversed, one colour 64 and 32 and the app tile; the icon is the same monogram, no redraw needed",
+      "black, reversed and one colour all work, but the website header crowds the wordmark into the nav ('Product' and 'Sign in' collide), so the lockup does not adapt to the header"
+    ],
+    "timeless": [
+      "a mono-initial doubling as the app icon is a 'use carefully' trend, with the slab giving it some ballast",
+      "a mono-initial standing in for the app icon is a 'use carefully' trend with no reason given in the strategy"
+    ],
+    "universal": [
+      "the mirrored panel reads 'JC' with a strong J; rotated is clean",
+      "the mirrored panel reads as 'JC', a faint second reading; the rotated panel is clean"
+    ],
+    "clear": [
+      "unsearched: CL and C-L slab monograms are common across many categories, and Clear Books sits nearby with the same initials",
+      "unsearched: slab CL monograms are common across many categories; I know no direct bookkeeping look-alike"
+    ],
+    "congruent": [
+      "heavy slab weight runs against the regular-weight target and the softened-corner ladder; upright, symmetric and flat-bottomed as asked",
+      "the very heavy weight and hard slab angles go against the regular weight, the 0.45 roundness and the sincerity target; the serif type fits"
+    ],
+    "system": [
+      "horizontal lockup, header, card and avatar all derive, but the small tiers are simply the monogram shrunk with no small-size redraw",
+      "every tier is built, but the header lockups break against the nav and the symbol and wordmark weights do not match"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-totals-rule",
+    "03-totals-card"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "41dee09139a9d4b9f98d61527f2993f1410bd38c6edffeb053c043c9e4e94e16"
+}

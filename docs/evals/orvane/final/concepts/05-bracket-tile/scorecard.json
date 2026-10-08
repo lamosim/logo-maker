@@ -1,0 +1,37 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the solid block held between two cut brackets: something kept in place, in the developer's own notation",
+    "distinctive": "no webhook competitor uses brackets, but brackets in a tile are a stock dev icon; probe: 6 of 20 for \"bracket square tile logo [firecrawl-images]\", capped at 3",
+    "simple": "one tile, two mirrored cuts; 24 anchors; drawable in seconds",
+    "legible": "brackets read at 32 px; at 16 px the slits narrow toward a dark block (audit thinnest 6.53 px), so 4",
+    "adaptable": "one colour, reverse, tile and avatar all hold; the brackets could close on a held block in motion",
+    "timeless": "no trend shape; square app-tile geometry",
+    "universal": "mirrored identical; rotated 90 reads as a frame with two open corners, no other reading",
+    "clear": "description search found stock 'brackets square' UI icons (shadcn/Phosphor), no company mark; Lens image search skipped (no Chrome extension), owner decision recorded",
+    "congruent": "angular but with rounded tile corners (shape 0.6), symmetric, low complexity, still; slightly cooler than 'not cold' wants",
+    "system": "all lockups and tiers built without warnings; channels widen in small and favicon"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {
+    "legible": "the critic saw the 16 px brackets strain; I lowered mine from 5 to 4, the audit keeps every slit open"
+  },
+  "route": "negative-space",
+  "probe": {
+    "query": "bracket square tile logo [firecrawl-images]",
+    "hits": 6,
+    "date": "2026-10-08"
+  }
+}

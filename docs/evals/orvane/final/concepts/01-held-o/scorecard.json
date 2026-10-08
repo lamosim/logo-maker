@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a round body holding a squared place reads as 'kept' without a caption; exact and quiet, the Sage row",
+    "distinctive": "no competitor among Svix, Hookdeck, Convoy, Hook0, ngrok uses an O, but a squared counter is a known move; probe: 4 of 20 for \"letter O square counter logo [firecrawl-images]\", capped at 3",
+    "simple": "one O, one rounded-square hole; 22 anchors; drawable in two strokes",
+    "legible": "the slot stays open at 16 px (thinnest 3.78 px); the wordmark reads at a glance",
+    "adaptable": "white-on-black and one-colour panels hold; small and favicon tiers thicken the ring",
+    "timeless": "no trend shape; a plain letter treatment that would have read the same ten years ago",
+    "universal": "mirrored identical; rotated 90 reads as a squared ring, nothing else",
+    "clear": "description search found stock 'square rounded letter O' icons (Tabler) and logo-maker templates, no company mark; Lens image search skipped (no Chrome extension), owner decision recorded",
+    "congruent": "shape 0.55 (round body, square slot), symmetric, low complexity, medium-heavy weight; the round O matches the name's opening back vowel",
+    "system": "horizontal, stacked, symbol, small and favicon all built without tier warnings; rationale drafted in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "letterform",
+  "probe": {
+    "query": "letter O square counter logo [firecrawl-images]",
+    "hits": 4,
+    "date": "2026-10-08"
+  }
+}

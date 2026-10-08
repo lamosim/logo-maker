@@ -51,3 +51,8 @@ Cycle order as run: `baseline`, then `ideation` (after the routes, the probe and
 | orvane | kit | 4 | 39 | 2 | none | 15 |
 | clear-ledger | kit | 3 | 43 | 3 | none | 15 |
 | pip | kit | 3 | 38 | 2 | none | 16 |
+| orvane | final | 4 | 39 | 3 | none | 28 |
+| clear-ledger | final | 4 | 44 | 3 | none | 14 |
+| pip (express) | final | 3 | 39 | 2 | none | 11 |
+
+Across the four cycles the critic's `distinctive` on the chosen concept held at 3 or 4 for every brief, with no brief dropping below its baseline, and clear-ledger rising from 3 to 4 by the `final` cycle; single runs are noisy, so read that as "no regression, a small gain" rather than a trend. Non-literal survivors went from unmeasurable in the baseline (no routes) to two or three per sheet in every later cycle, and every chosen concept since `ideation` carries a route other than `object` except pip's `kit` and `final` picks, which the critic preferred on their merits. No gate regressed in any cycle: every run reached `done` with a verified package. On the express track, `pip`'s `final` run took 11 minutes of wall clock against the fifteen-minute target, with one territory, three directions, two survivors and a one-pass critic, so the express brand passed every gate the full track has. orvane's `final` wall clock of 28 minutes is a harness artefact: the brand reached `done` at 19:13 after about 11 minutes of session time, and the nested session then sat idle for sixteen minutes before exiting; the active time matches the other full-track runs.

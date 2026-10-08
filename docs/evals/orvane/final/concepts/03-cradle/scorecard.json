@@ -1,0 +1,27 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 2,
+    "adaptable": 2,
+    "timeless": 3,
+    "universal": 1,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "universal": "upright it reads as a person with raised arms or a smiling face; rotated it reads as a C holding a ball",
+    "legible": "favicon: 2 parts at 512 px become 1 at 16 px (audit fail)"
+  },
+  "kill": true,
+  "reason": "the disc over a raised U reads as a figure with arms up (a stick-figure reading on the Any list), and the favicon merges the disc into the cup; the construction itself carries the reading, so no revise round can fix it",
+  "reconciled": {},
+  "route": "abstraction",
+  "probe": {
+    "query": "circle in cup logo [firecrawl-images]",
+    "hits": 2,
+    "date": "2026-10-08"
+  }
+}

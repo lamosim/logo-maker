@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 2,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a plain geometric-sans 'Orvane' carries no idea of holding or proof; nothing ties it to 'nothing gets dropped'",
+      "a plain sans wordmark with no visible move; nothing on the sheet carries 'nothing gets dropped'"
+    ],
+    "distinctive": [
+      "an Inter-like sans wordmark with no visible quirk is the category uniform; the lone v could be anyone's",
+      "a title-case neo-grotesque wordmark is exactly the category's type uniform; the heavy V icon is generic"
+    ],
+    "simple": [
+      "a word and a letter; trivially redrawable",
+      "six letters in one face and a single V; drawable in seconds"
+    ],
+    "legible": [
+      "the name reads at every size shown and the v holds at 16 px",
+      "Orvane reads at every size shown; the V holds at 16 px"
+    ],
+    "adaptable": [
+      "reversed and one colour fine, but the icon is a bare lowercase v that names no initial and looks thin in the app tile",
+      "works in black, reversed and one colour; the icon is a separate V rather than a drawn-down wordmark"
+    ],
+    "timeless": [
+      "no trend shape; a plain sans would have read the same ten years ago",
+      "no trend shape at all; would have read the same ten years ago"
+    ],
+    "universal": [
+      "mirrored reads 'enavrO' only; the lone v can read as a checkmark or chevron",
+      "mirrored reads only as reversed text; rotated is just the word sideways"
+    ],
+    "clear": [
+      "unsearched: lone-V icons and plain sans wordmarks are common in developer SaaS",
+      "unsearched: plain sans wordmarks and V monograms are everywhere, though no direct webhook look-alike I know"
+    ],
+    "congruent": [
+      "sans and title case match the type target, still and symmetric, but no owned detail and no enclosing softness",
+      "neo-grotesque title case and medium weight match; the pointed V is angular against the round O sound and nothing warm or enclosing shows"
+    ],
+    "system": [
+      "the v is lifted from the wordmark, but icon and lockup feel unrelated; no horizontal mark-plus-word lockup",
+      "wordmark and V tiers build, but the V icon shares no DNA with the wordmark's rhythm and there is no stacked lockup shown"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-held-o",
+    "02-matched-halves",
+    "05-bracket-tile"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "c2f7c3b6062965c757e6c75ac8949d866b70768d1512d6d4f578f73ecff002ba"
+}

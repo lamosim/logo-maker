@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a rounded tile split into two halves joined by one round tab reads as two sides held together, close to 'proves delivery to both sides'",
+      "a closed rounded tile split into two halves that lock round a half-circle tab reads as two sides holding one thing; no caption needed"
+    ],
+    "distinctive": [
+      "the split tile with a single round key is not any category competitor's shape and avoids hooks, nodes and arrows",
+      "the stepped split with a round tab is not the blue symbol, petals or slim wordmarks of the category; no hook, arrow, node or hexagon"
+    ],
+    "simple": [
+      "one rounded square, one cut, one round tab; describable in a sentence",
+      "one rounded square, one split line with a half-circle bump; drawable in a few strokes"
+    ],
+    "legible": [
+      "the notch and split stay visible to 24 px; at 16 px the thin split weakens but the silhouette holds",
+      "the bite stays visible down the ladder to 16 px as a small notch; Orvane reads cleanly beside it in the header mockups"
+    ],
+    "adaptable": [
+      "black, reversed, one colour, app tile, avatar and tab all hold; the two halves suggest a join-and-close motion",
+      "holds in black, reversed white tile on dark, one colour 64 and 32, the phone icon and the avatar"
+    ],
+    "timeless": [
+      "no trend shape from the list; flat and geometric",
+      "no avoid-list shape; a square app-tile construction from the durable list"
+    ],
+    "universal": [
+      "rotated 90 turns the tab into a smiling-mouth/bowl curve, a faint secondary reading; mirrored is clean",
+      "mirrored is clean; rotated 90 the tab reads faintly as a bowl or smile"
+    ],
+    "clear": [
+      "unsearched: split squares with a round tab recall puzzle-piece and integration marks in other categories",
+      "unsearched: split or puzzle-joint tiles exist in other categories, none I know among webhook tools"
+    ],
+    "congruent": [
+      "exact cut with softened corners hits shape 0.55, still and grounded, medium weight; the tab makes it asymmetric against the 0.8 symmetry target",
+      "softened-square shape, medium-heavy weight, still and grounded match; the one-sided tab breaks the 0.8 symmetry target and no warm hue shows"
+    ],
+    "system": [
+      "lockup, tiers, tab, avatar and card all derive from the tile; the wordmark is a plain sans",
+      "horizontal lockup, tile, 16 to 128 tiers, one-colour and mockups all derive from one drawing"
+    ]
+  },
+  "preferred_over": [
+    "01-held-o",
+    "04-v-tray",
+    "05-bracket-tile"
+  ],
+  "tied_with": [],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "fca208171c535ef112e4dfde0ab39cbeec5bab93830d8de6c2378ccd8ca635a9"
+}

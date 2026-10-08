@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 4,
+    "congruent": 5,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "one solid number over a double rule in a frame: you can see where you stand, framed for a finance brand",
+    "distinctive": "no competitor frames a single total; probe 1 of 20 for \"frame with bar over double line logo [firecrawl-images]\"; leans toward a document UI icon",
+    "simple": "a frame, a bar, two rules; drawable in seconds",
+    "legible": "the frame and bar hold at 16 px; the rules thin to 1.2 px there but stay apart",
+    "adaptable": "square, one colour and reverse clean; a natural app tile; the bar can count up in motion",
+    "timeless": "square app-tile geometry, no trend shape",
+    "universal": "rotated reads faintly as a barcode; otherwise only the card",
+    "clear": "description search (accounting app logo, rounded square with bars) found stock document icons, no brand mark",
+    "congruent": "framed, low complexity, static, symmetric weight, descriptive cue; Literata wordmark",
+    "system": "horizontal, stacked, symbol, small and favicon built; tiers thicken frame and rules"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "system",
+  "probe": {
+    "query": "frame with bar over double line logo [firecrawl-images]",
+    "hits": 1,
+    "date": "2026-10-08"
+  }
+}

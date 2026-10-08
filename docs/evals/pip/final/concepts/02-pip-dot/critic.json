@@ -1,0 +1,53 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "the seed-shaped dot on the i nods to the name's story, but there is no friend or character on the sheet, so 'a small friend who reads with you' needs a sentence"
+    ],
+    "distinctive": [
+      "a heavy rounded lowercase wordmark is the category's chunky-sans uniform (Homer, Epic); only the teardrop i-dot differs, a detail rather than a silhouette"
+    ],
+    "simple": [
+      "three letters and one teardrop dot; drawable from memory in seconds"
+    ],
+    "legible": [
+      "pip reads at once at 128 px and in the nav bars; the lone i holds as a stroke and dot at 16 px but becomes a thin sliver"
+    ],
+    "adaptable": [
+      "black, reversed and one-colour panels all hold, but the app tile and avatar show only a narrow i adrift in a square, weak as an icon"
+    ],
+    "timeless": [
+      "rounded heavy sans is a use-carefully 'Smokies' style, justified by the strategy's rounded-sans target; no avoid-list shape"
+    ],
+    "universal": [
+      "the mirrored panel reads 'qiq' and the rotated panel reads as other letters; the i alone could read as an information glyph"
+    ],
+    "clear": [
+      "unsearched: lowercase rounded wordmarks with a leaf- or drop-shaped i-dot are common across kids' and consumer apps"
+    ],
+    "congruent": [
+      "round, open and lowercase-led as targeted, but it drops the mascot logo type, the weight reads heavy not medium, and there is no dosed tilt"
+    ],
+    "system": [
+      "wordmark, small and favicon tiers derive, but the symbol is a lone i that carries little brand, so the icon and avatar feel uneven next to the lockup"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-seed-friend"
+  ],
+  "sheet": 1,
+  "passes": 1,
+  "fingerprint": "83e6a53bfb0140a49a520f67e4fa98581e70cf163d6b3e4e7e0c07c6aca99921"
+}

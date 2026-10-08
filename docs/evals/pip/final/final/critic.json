@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a tilted seed with a curled sprout and two small dot eyes reads at once as a small friendly pip, Caregiver-soft; the reading-with-you half of the idea is not visible, nor does it need to be"
+    ],
+    "distinctive": [
+      "avoids books, owls and big-eyed animals, but a rounded blob with two dot eyes is a familiar kids'-app character type and sits near Reading Eggs' egg mascot in silhouette"
+    ],
+    "simple": [
+      "one rounded seed body, one curled stem, two dots; drawable from memory in seconds"
+    ],
+    "legible": [
+      "the seed-and-stem silhouette holds down the ladder to 16 px though the eyes merge away below 24 px; the bold rounded 'Pip' reads at a glance in every lockup and the nav bars"
+    ],
+    "adaptable": [
+      "black, reversed, both one-colour panels, the coral app tile, the browser tab and the avatar all work unchanged; the springy stem suggests a motion logic but none is drawn"
+    ],
+    "timeless": [
+      "a mascot where warmth is the strategy (a 'use' item); the rounded chunky type is a 'use carefully' Smokies style that the strategy's rounded-sans target justifies"
+    ],
+    "universal": [
+      "mirrored reads clean; rotated 90 turns the seed and stem into a tadpole or mouse with a tail, and the coral fill can hint at a drop, a faint secondary reading"
+    ],
+    "clear": [
+      "unsearched: two-dot-eyed blob and seed characters are common in children's apps and Pip and Tim already uses a Pip character; no exact look-alike known to me"
+    ],
+    "congruent": [
+      "round shape, warm coral hue at medium saturation, small eyes well under a tenth of the body, open frame, a small quick mark for 'Pip'; but tilt plus the off-axis stem are two asymmetries where one was the target, and the solid body runs heavier than medium"
+    ],
+    "system": [
+      "horizontal lockup, symbol tiers 256 to 16, one-colour 64 and 32, app icon, tab favicon, avatar and card are all drawn cleanly; no stacked lockup shown"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 2,
+  "passes": 1,
+  "fingerprint": "c3a27ffdf3632b8c6c8e18f3ac520d657777b18a85b0bbfd8f8a6fcb88005c42"
+}

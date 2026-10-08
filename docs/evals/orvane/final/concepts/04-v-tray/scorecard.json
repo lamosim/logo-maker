@@ -1,0 +1,37 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the flat v is too subtle to see at sheet sizes, so nothing visible carries 'nothing gets dropped'",
+    "distinctive": "the flat v is an owned detail but subtle; probe: 3 of 20 for \"letter v flat bottom logo [firecrawl-images]\", capped at 3",
+    "simple": "the name in one family with one cut; nothing to remember but the word",
+    "legible": "Orvane reads at once at every size; the lone v favicon is clear at 16 px but carries little",
+    "adaptable": "one colour and reverse hold; app icons from 96 px show the whole wordmark, and the favicon is a bare v",
+    "timeless": "a custom wordmark with one owned quirk, the trends page's durable 'use' item",
+    "universal": "mirrored and rotated show only type; no reading",
+    "clear": "description search found generic V templates and Visa's truncated V (different construction, a capital); Lens image search skipped (no Chrome extension), owner decision recorded",
+    "congruent": "neo-grotesque title case, medium weight, still; matches type and weight targets, less the warm-round side",
+    "system": "compact, small and favicon draw the v; no symbol for 96 px and up, so the icon set is thin"
+  },
+  "kill": true,
+  "reason": "after two rounds the v's flat base is invisible at the sizes the wordmark lives at; making it visible turned it into a Y in round 1, so it cannot carry the idea",
+  "reconciled": {
+    "appropriate": "the critic's 2 is closer to the truth: the quirk does not show at 32 to 128 px; I lowered mine to 3, which fails the gate"
+  },
+  "route": "type-quirk",
+  "probe": {
+    "query": "letter v flat bottom logo [firecrawl-images]",
+    "hits": 3,
+    "date": "2026-10-08"
+  }
+}

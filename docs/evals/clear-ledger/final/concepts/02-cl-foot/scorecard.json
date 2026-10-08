@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the initials sit on one ruled line like a sum: Everyman plain, the ledger cue without a coin or chart",
+    "distinctive": "a serif CL monogram; capped by the probe: 14 of 20 for \"CL monogram logo [firecrawl-images]\"",
+    "simple": "two letters on one line; redrawable from memory",
+    "legible": "CL reads to 24 px; at 16 px the wide symbol shrinks to a small strip but stays two letters",
+    "adaptable": "one colour and reverse clean; the symbol is the icon at every size, though wide for a square tile",
+    "timeless": "a text serif monogram; no trend shape",
+    "universal": "mirrored reads as a reversed JC; rotated shows nothing figurative",
+    "clear": "description search found generic CL stock monograms, none in bookkeeping with a shared rule",
+    "congruent": "text serif, upright, regular-to-heavy, ledger cue; weight a step heavier than target",
+    "system": "horizontal, stacked, symbol, small and favicon all built; favicon thickened to hold the join"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "letterform",
+  "probe": {
+    "query": "CL monogram logo [firecrawl-images]",
+    "hits": 14,
+    "date": "2026-10-08"
+  }
+}

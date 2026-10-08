@@ -1,0 +1,32 @@
+{
+  "scores": {
+    "appropriate": 5,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 5,
+    "system": 5
+  },
+  "evidence": {
+    "appropriate": "a small seed leaning in with two dot eyes reads as a quiet friend at once; Caregiver soft, Jester bounce in the lean",
+    "distinctive": "no reading competitor uses a seed or coral; probe: 9 of 20 for \"seed character logo [firecrawl-images]\", capped at 2",
+    "simple": "one seed, one curl, two dots; 21 anchors",
+    "legible": "Pip reads in Fredoka at the 120 px horizontal minimum; the seed holds at 16 px with one eye; the compact tier keeps the face at avatar size",
+    "adaptable": "black, white, colour, mono and a designed reverse all hold; compact, small and favicon tiers redrawn; the curl gives a wiggle for motion",
+    "timeless": "no trend shape; a character where warmth is the strategy is a 'use' item",
+    "universal": "mirrored clean; rotated 90 a creature lying down; a faint bomb-with-fuse at 16 px weakened by coral",
+    "clear": "description searches found seed and sprout mascots in eco and games, none in reading apps; Lens and WIPO image searches skipped (no Chrome extension)",
+    "congruent": "round, low complexity, medium weight, warm coral at medium saturation and mid lightness, open frame, rounded lowercase-led sans, a small light mark for a short front vowel",
+    "system": "horizontal, stacked, symbol, wordmark, compact, small and favicon derive cleanly; tokens with a designed reverse; rationale to write"
+  },
+  "route": "metaphor-2",
+  "probe": {
+    "query": "seed character logo [firecrawl-images]",
+    "hits": 9,
+    "date": "2026-10-08"
+  }
+}

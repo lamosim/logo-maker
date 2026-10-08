@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a closed rounded tile split in two, the left half's half-disc seated in the right half's socket: still, exact and enclosing (Sage with Caregiver), but 'nothing gets dropped' or 'both sides' takes a sentence to reach"
+    ],
+    "distinctive": [
+      "no hook, arrow, node or hexagon and the amber is free in the category, but the silhouette is a plain rounded-square app tile; the split-and-socket is a detail, not an ownable outline"
+    ],
+    "simple": [
+      "one rounded square, one vertical cut, one half-disc tab; drawable from memory in seconds"
+    ],
+    "legible": [
+      "the cut and the curve stay visible down to 24 px and the 16 px tile still shows the curve, though the gap is near a hairline; 'Orvane' reads cleanly in every lockup"
+    ],
+    "adaptable": [
+      "black, reversed white-on-black, one colour at 64 and 32 px, the amber phone tile, browser tab, avatar and dark header all hold; the thin cut is the weak point at the smallest sizes"
+    ],
+    "timeless": [
+      "square, tile-aware geometry and a plain sans wordmark, no 'avoid' trend; nothing here would have dated ten years ago"
+    ],
+    "universal": [
+      "the mirrored panel reads clean, but rotated 90 the tile reads as a tray or a smiling face with the half-disc as a mouth"
+    ],
+    "clear": [
+      "unsearched: split rounded tiles with a socket-and-tab join are common in generic app icons and puzzle-piece marks; nothing I know in webhook tools (Svix, Hookdeck, Convoy, Hook0, ngrok) is close"
+    ],
+    "congruent": [
+      "warm amber against the blue category, softened corners on exact geometry, still and grounded, medium-heavy solid weight and a neo-grotesque title-case wordmark all match; the mark is left-right asymmetric against a 0.8 symmetry target and the wordmark is the category's Inter-like type"
+    ],
+    "system": [
+      "horizontal lockups on light and dark and a tier ladder from 256 to 16 px are shown, but no stacked lockup appears and the 16 px tier looks scaled rather than redrawn"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "5995cb2d33574ce284ec7a86c04f673120f460fcf69d73e6a02ddacdb8f984db"
+}

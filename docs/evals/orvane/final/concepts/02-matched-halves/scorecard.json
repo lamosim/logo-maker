@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "two halves of one tile that fit exactly: both sides hold the same proof; closed and still, nothing loose",
+    "distinctive": "no competitor uses a split tile; probe: 1 of 20 for \"tab and notch two halves logo [firecrawl-images]\"",
+    "simple": "one tile, one cut with a round tab; 20 anchors; describable in one sentence",
+    "legible": "the cut stays open at 16 px (thinnest 3.28 px, gap widened in the favicon tier)",
+    "adaptable": "holds in one colour and reversed; the tile is a ready app tile and avatar",
+    "timeless": "no trend shape; square, app-tile-aware geometry is a durable 'use' item",
+    "universal": "mirrored clean; rotated 90 the halves read as a bowl or a faint smile, a secondary reading",
+    "clear": "description search found only the macOS Finder's split face as a distant relative; no matching mark; Lens image search skipped (no Chrome extension), owner decision recorded",
+    "congruent": "rounded-square body with exact cut (shape 0.55), near-symmetric, heavy fill on the strategy's medium side, still",
+    "system": "every lockup and tier built; the tab grows and the gap widens in small and favicon"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "metaphor-2",
+  "probe": {
+    "query": "tab and notch two halves logo [firecrawl-images]",
+    "hits": 1,
+    "date": "2026-10-08"
+  }
+}

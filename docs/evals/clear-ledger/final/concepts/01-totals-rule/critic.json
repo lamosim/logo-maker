@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 5,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 5,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "the slab wordmark sits on a double rule, the bookkeeper's line under a total: you see where you stand, with no caption needed",
+      "the double rule under 'Clear Ledger' is the totals line under a sum: you can see where you stand, at once and without a caption"
+    ],
+    "distinctive": [
+      "the double totals rule is the ledger's own geometry, owned by no blue or green competitor; an underlined serif wordmark is generic only in silhouette",
+      "no competitor's lowercase rounded-sans blob looks like a text serif sitting on a ledger's double rule; the silhouette is a typographic one the category does not use"
+    ],
+    "simple": [
+      "the name and two horizontal lines; describable in one sentence",
+      "a word on two lines; anyone could describe it in one sentence and draw it"
+    ],
+    "legible": [
+      "Clear Ledger reads at 256 to 128, the CL with double rule holds at 64 and 48, the C-on-rules at 24 and 16 is small but still a C",
+      "the wordmark reads at a glance down to 128 px; the CL and C tiers stay open at 32 and 24 px, though the 16 px C's double rule is close to merging"
+    ],
+    "adaptable": [
+      "one colour, reversed and the header bars all hold; the icon needs the CL/C redraw rather than the wordmark itself",
+      "black, reversed and the one-colour panels hold; the icon switches to a CL or C over the rule, a planned tier change rather than a redraw; the one-colour 64 panel shrinks the full wordmark too far"
+    ],
+    "timeless": [
+      "plain type and a ruling borrowed from ledgers; would have read the same ten years ago",
+      "a plain custom wordmark with one owned detail; it would have read the same ten years ago"
+    ],
+    "universal": [
+      "mirrored and rotated panels only show the name backwards or sideways, with no second reading",
+      "the mirrored and rotated panels show only reversed or turned text, with no second figure"
+    ],
+    "clear": [
+      "unsearched: double-underlined wordmarks exist in accounting firms generally, though none of the named competitors uses one",
+      "unsearched: underlined serif wordmarks are a common pattern in many fields; I know no bookkeeping mark built on a double totals rule"
+    ],
+    "congruent": [
+      "one firm horizontal, level baseline, flat bottom and framed softly by rules as the strategy asks; the slab is a touch heavier than regular",
+      "regular-weight text serif, title case as written, a level baseline, one firm horizontal and the ledger rule as the cue match every target and the name's mid sound"
+    ],
+    "system": [
+      "wordmark, CL tier and C tier all built, but the step from full name to CL at 64 to C at 32 is uneven, and the app tile and tab use different marks",
+      "the wordmark, CL and C tiers each derive cleanly, and the header, avatar, card and app tile are consistent; the step from 64 to 32 px swaps the drawing twice"
+    ]
+  },
+  "preferred_over": [
+    "02-cl-foot",
+    "03-totals-card"
+  ],
+  "tied_with": [],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "c8cd30f91d8d1abaa490eb94abdc81877e2a0c236e87991c7e12725ca3112573"
+}

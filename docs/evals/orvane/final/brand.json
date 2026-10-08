@@ -1,0 +1,90 @@
+{
+  "slug": "orvane",
+  "name": "Orvane",
+  "needs_name": false,
+  "track": "full",
+  "created": "2026-10-08T19:01:55-04:00",
+  "updated": "2026-10-08T19:13:19-04:00",
+  "phase": "done",
+  "industry": "webhook infrastructure saas for developers",
+  "surfaces": [
+    "website header",
+    "GitHub avatar",
+    "docs favicon"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "night-shift",
+  "concept": "02-matched-halves",
+  "fonts": {
+    "wordmark": {
+      "family": "Instrument Sans",
+      "weight": 500,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T19:02:13-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: confirmed the brief write-back as written (conservative answer); no changes"
+    },
+    {
+      "at": "2026-10-08T19:03:42-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: approved the strategy as written (conservative answer); name kept, orvane.com etc. registered, orvane.dev available; any conflict to an attorney"
+    },
+    {
+      "at": "2026-10-08T19:04:06-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: chose Night Shift, the quieter of the two boards"
+    },
+    {
+      "at": "2026-10-08T19:08:53-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: the Claude in Chrome extension is unavailable, so the Google Lens image search could not run for the survivors; scripted conservative answer: accept the description searches and have a trademark attorney run a clearance search"
+    },
+    {
+      "at": "2026-10-08T19:10:37-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: no specific likes named on the concept sheet (conservative answer); the scripted first reaction (symbol disappears in the dark header at 32 px) does not fit 02-matched-halves, whose white tile reads in the dark header, so the sheet stands"
+    },
+    {
+      "at": "2026-10-08T19:10:37-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: chose 02-matched-halves, the survivor the critic preferred (critic's order 02 > 01 > 05); no steals"
+    },
+    {
+      "at": "2026-10-08T19:11:47-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: approved refinement round 1 (after the colour round): Signal Ochre on Logbook, Lamp Amber on Tower; horizontal primary lockup for the website header"
+    },
+    {
+      "at": "2026-10-08T19:12:52-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: the Claude in Chrome extension is unavailable, so neither the Google Lens nor the WIPO Global Brand Database image search could run for final/; scripted conservative answer: rely on the description searches in final/knockout.md and have a trademark attorney run a clearance search"
+    },
+    {
+      "at": "2026-10-08T19:13:19-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: approved the package handover (conservative answer); owner has the folder and the brand sheet"
+    }
+  ]
+}

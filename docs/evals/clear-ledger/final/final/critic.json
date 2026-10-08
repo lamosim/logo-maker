@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "the double rule under the serif 'Clear Ledger' reads at once as a ledger's totals line, plain and Everyman; the 'one honest number' idea still needs a sentence"
+    ],
+    "distinctive": [
+      "a text serif in title case with a double underline stands apart from the rounded lowercase blue/green sans of Xero, FreeAgent and QuickBooks, but a double-underlined serif wordmark is a generic silhouette"
+    ],
+    "simple": [
+      "describable in one sentence (the name in a serif over a double rule), but the symbol shifts from 'CL' at 64 and 48 px to a lone 'C' at 32 px and below, two shapes to remember"
+    ],
+    "legible": [
+      "the wordmark reads cleanly at 256 and 128 px and the CL at 48 px; at 16 px the 'c' with its two rules is a tiny smudge and the rules near hairline weight, risky on the thermal printer"
+    ],
+    "adaptable": [
+      "black, reversed, one-colour 64 and 32 panels all hold; the green CL app tile and the tab favicon work, though the CL sits small within its tile"
+    ],
+    "timeless": [
+      "no trend shape: a book serif and a double rule would have read the same ten years ago; no 'avoid' item touched"
+    ],
+    "universal": [
+      "the mirrored and rotated-90 panels show only the reversed name, no secondary figure or reading"
+    ],
+    "clear": [
+      "unsearched: double-underlined serif wordmarks are common among small accountancy and bookkeeping firms, and other firms already trade as Clear Ledger; no specific near copy known"
+    ],
+    "congruent": [
+      "moss/sage green away from money green, plain text serif in title case, symmetric, static, framed by the rule all match; the stroke reads heavier than regular and the bracketed serifs sharper than the 'softened corners' target"
+    ],
+    "system": [
+      "horizontal lockup, CL symbol and C small tier are drawn and consistent in colour, but no stacked lockup appears and the symbol changes letter count between tiers, so the lockups feel uneven"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "690af9969b7a27e3db8885b988f041914c9d4f4d39a8b5c8effead97b93a32a5"
+}

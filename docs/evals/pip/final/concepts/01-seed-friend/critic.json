@@ -1,0 +1,53 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a tilted seed with a curled stem and two tiny dot eyes reads as a small, quiet character and as a pip at once; soft and enclosing for Caregiver"
+    ],
+    "distinctive": [
+      "small eyes and the stem curl avoid the big-eyed cast of Khan Academy Kids, but a rounded blob mascot sits close to Reading Eggs' egg in silhouette"
+    ],
+    "simple": [
+      "one teardrop body, one curl, two dots; describable in one sentence"
+    ],
+    "legible": [
+      "the solid silhouette and stem hold at 16 px; the eyes merge away by 24 to 16 px; Pip reads cleanly beside it in every lockup"
+    ],
+    "adaptable": [
+      "black, reversed and one-colour 64/32 panels hold, and the app tile and avatar show a strong closed shape; the curl gives a natural wiggle for motion"
+    ],
+    "timeless": [
+      "a character where warmth is the strategy is on the trends Use list; no hexagon, sparkle or other avoid shape"
+    ],
+    "universal": [
+      "mirrored panel reads clean; rotated 90 it reads as a resting creature, and at 16 px the blob-with-curl hints faintly at a cartoon bomb with a fuse"
+    ],
+    "clear": [
+      "unsearched: seed and bean characters with dot eyes are common in kids' apps, and Pip and Tim's Pip and the Reading Eggs egg sit nearby in the category"
+    ],
+    "congruent": [
+      "round, one asymmetry, eyes well under a tenth of the body, mascot plus wordmark as targeted; the type weight is heavy and the wordmark capitalised rather than lowercase-led"
+    ],
+    "system": [
+      "horizontal lockup, symbol, small and favicon tiers all derive from one shape in the nav, tab, tile and card mockups"
+    ]
+  },
+  "preferred_over": [
+    "02-pip-dot"
+  ],
+  "tied_with": [],
+  "sheet": 1,
+  "passes": 1,
+  "fingerprint": "23bbc849894b994d9e73241f19a5b4cd1e27153ba74658ba76a06426e30cff13"
+}

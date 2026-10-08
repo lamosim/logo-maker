@@ -1,0 +1,28 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 2,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the fold reads as a sail or flag on the p, not a page turning",
+    "legible": "the flap and the bowl clot at 24 and 16 px",
+    "universal": "reads as a pennant flying from the p; rotated reads as a G",
+    "distinctive": "probe: 7 of 20 for \"letter p page corner fold logo [firecrawl-images]\", capped at 3"
+  },
+  "kill": true,
+  "reason": "after two express rounds the fold reads as a sail and clots at small sizes; round 1 failed one_colour_merge",
+  "route": "letterform",
+  "probe": {
+    "query": "letter p page corner fold logo [firecrawl-images]",
+    "hits": 7,
+    "date": "2026-10-08"
+  }
+}

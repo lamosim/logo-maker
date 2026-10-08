@@ -1,0 +1,66 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 5,
+    "timeless": 3,
+    "universal": 4,
+    "clear": 2,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a heavy O with a squircle counter is closed and held, so 'nothing dropped' needs only a sentence; round more than exact",
+      "a heavy closed O with a rounded-square counter feels held and still, but the idea needs a sentence"
+    ],
+    "distinctive": [
+      "an O as a thick ring is the letter-in-a-circle cliche the strategy named; the squircle counter is a detail, not a silhouette",
+      "a thick ring around the initial is the letter-in-a-circle clich\u00e9 the strategy names; only the squarish counter differs"
+    ],
+    "simple": [
+      "one ring with a rounded-square hole; drawable in one gesture",
+      "one circle and one rounded-square hole"
+    ],
+    "legible": [
+      "the counter stays open down to 16 px on the ladder and in the browser tab",
+      "the counter stays open at 16 px; Orvane reads in the lockup"
+    ],
+    "adaptable": [
+      "black, reversed, one colour at 32 px, app tile and avatar all hold cleanly",
+      "black, reversed, one colour, phone icon and avatar all hold; the ring survives any size"
+    ],
+    "timeless": [
+      "a concentric ring/aperture is on the trends 'avoid' list and the AI-era cliche",
+      "close to the concentric-aperture shape on the avoid list, softened by the square counter"
+    ],
+    "universal": [
+      "mirrored and rotated panels identical; a faint 'stop/record button' reading",
+      "mirrored and rotated are near-identical; faint reading as a stop or record button"
+    ],
+    "clear": [
+      "unsearched: thick O rings and round-in-round marks are everywhere in tech and beyond",
+      "unsearched: thick O-ring marks are common across tech and media"
+    ],
+    "congruent": [
+      "symmetric, still, heavy and drawn from the name's O, but round over the 0.55 shape target and the warned O-in-circle form",
+      "round outside, exact inside matches shape 0.55, symmetry and stillness, and the round O sound; weight is heavy rather than medium"
+    ],
+    "system": [
+      "every tier, tab, avatar and card is the same ring; the plain sans wordmark is unremarkable",
+      "lockup, tiers and mockups derive cleanly; the O ties symbol to wordmark"
+    ]
+  },
+  "preferred_over": [
+    "05-bracket-tile"
+  ],
+  "tied_with": [
+    "02-matched-halves",
+    "04-v-tray"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "ca8f132420476b182ba3eebda68018d35e9b4ff7860e5fb3b8f56c12d4a872b6"
+}

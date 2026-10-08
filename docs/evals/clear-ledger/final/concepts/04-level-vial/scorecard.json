@@ -1,0 +1,28 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 2,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "legible": "at 24 and 16 px the gauge lines and bubble merge into a dotted capsule",
+    "universal": "the capsule with a centre dot reads as a plaster or pill before it reads as a level",
+    "distinctive": "capped by the probe: 14 of 20 for \"spirit level logo [firecrawl-images]\""
+  },
+  "kill": true,
+  "reason": "reads as a pill or sticking plaster at a glance and the gauge lines merge below 32 px; a structural reading no revise round removes",
+  "reconciled": {},
+  "route": "metaphor-2",
+  "probe": {
+    "query": "spirit level logo [firecrawl-images]",
+    "hits": 14,
+    "date": "2026-10-08"
+  }
+}
