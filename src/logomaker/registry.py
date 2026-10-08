@@ -356,10 +356,14 @@ def vetted_scorecard(paths: ProjectPaths, slug: str, folder: Path, label: str) -
 
 def require_final_critic(paths: ProjectPaths, slug: str, needs: str) -> None:
     """A CliError (exit 2) unless final/critic.json vouches for the final mark as it is now and final/scorecard.json exists
-    with every disagreement reconciled (final_critic_problems), saying what `needs` it ("packaging")."""
+    with every disagreement reconciled (final_critic_problems), saying what `needs` it ("packaging"); then that the scorecard
+    records its route and probe, as _check_final asks."""
     problems = final_critic_problems(paths, slug)
     if problems:
         raise CliError(f"{needs} needs the critic's pass on the final mark: {'; '.join(problems)}")
+    card = load_model(paths.brand(slug) / "final" / "scorecard.json", Scorecard, "final/scorecard.json")
+    if card.route is None or card.probe is None:  # the same rule as _check_final, for package build
+        raise CliError("final/scorecard.json needs route and probe (scorecard.md)")
 
 
 def final_critic_problems(paths: ProjectPaths, slug: str) -> list[str]:

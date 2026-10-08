@@ -359,6 +359,12 @@ def _vetted(paths: ProjectPaths, slug: str, name: str) -> tuple[Path, Scorecard]
     return folder, registry.passing_scorecard(folder, f"concept {name}: scorecard.json")
 
 
+def _require_non_literal(cards: list[Scorecard]) -> None:
+    """A CliError unless at least one survivor's scorecard takes a route other than LITERAL_ROUTE (spec 2026-10-08 §6.1)."""
+    if all(card.route == LITERAL_ROUTE for card in cards):
+        raise CliError("every survivor takes the object route; the sheet needs at least one non-literal survivor (routes in scorecard.md)")
+
+
 def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], renderer: Renderer | None = None,
                    open_after: bool = True) -> dict:
     """Write sheets/concepts.{html,png} for the owner, then open the HTML unless `open_after` is False. Each concept shows
@@ -386,8 +392,7 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
         problems = knockout_problems(paths, slug, folder)
         if problems:
             raise CliError(f"concept {name}: {'; '.join(problems)}")
-    if all(card.route == LITERAL_ROUTE for _, _, card in vetted):
-        raise CliError("every survivor takes the object route; the sheet needs at least one non-literal survivor (routes in scorecard.md)")
+    _require_non_literal([card for _, _, card in vetted])
     env = jinja(paths)
     cards: list[dict] = []
     warnings: list[str] = []
@@ -417,7 +422,8 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
     two or more concepts exactly as the latest critic sheet of the same concepts did, the seed steps up by one until it
     does not; an explicit `seed` is used as given, to reproduce a sheet. The key and the result record the seed used.
     No slug, idea or score is written. Every survivor must be vetted (_vetted: a fresh, rendered, passing audit and a
-    gate-passing scorecard), and final/ must pass registry.require_final_audit, before Chrome starts. The key maps
+    gate-passing scorecard) and at least one must take a route other than LITERAL_ROUTE (_require_non_literal), and final/
+    must pass registry.require_final_audit, before Chrome starts. The key maps
     letters to folder names and records each concept's fingerprint now."""
     import random
 
@@ -436,7 +442,9 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
         registry.require_final_audit(paths, slug, "the critic sheet")
         folders = [("final", brand / "final")]
     else:
-        folders = [(name, _vetted(paths, slug, name)[0]) for name in concept_names]
+        vetted = [(name, *_vetted(paths, slug, name)) for name in concept_names]
+        _require_non_literal([card for _, _, card in vetted])
+        folders = [(name, folder) for name, folder, _ in vetted]
     round_n = next_round(brand, "sheets/critic-*.key.json")
     explicit = seed is not None  # an explicit --seed reproduces a sheet, so only the default seed moves
     seed = round_n if seed is None else seed

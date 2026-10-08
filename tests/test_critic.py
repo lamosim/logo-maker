@@ -201,6 +201,19 @@ def test_critic_sheet_refuses_an_unvetted_concept_before_chrome(project_root, no
     assert not list((project_root / "brands" / "keystone" / "sheets").glob("critic-*"))
 
 
+def test_critic_sheet_needs_one_non_literal_survivor_before_chrome(project_root, no_chrome):
+    for name, fixture in (("01-good", "good"), ("02-dots", "two_dots")):
+        folder = prepare(project_root, name, fixture)
+        (folder / "scorecard.json").write_text(json.dumps({**scorecard(), "route": "object"}))
+    with pytest.raises(CliError, match=r"^every survivor takes the object route; the sheet needs at least one non-literal "
+                                       r"survivor \(routes in scorecard.md\)$"):
+        sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"])
+    assert not list((project_root / "brands" / "keystone" / "sheets").glob("critic-*"))
+    (folder / "scorecard.json").write_text(json.dumps({**scorecard(), "route": "letterform"}))
+    with pytest.raises(AssertionError, match="Chrome started"):  # the rule passes; the render is the next step
+        sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"])
+
+
 def test_critic_sheet_refuses_a_concept_named_twice_before_chrome(project_root, no_chrome):
     prepare(project_root, "01-good")
     prepare(project_root, "02-dots", "two_dots")

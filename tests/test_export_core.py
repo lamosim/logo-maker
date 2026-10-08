@@ -75,6 +75,18 @@ def test_a_final_audit_that_no_longer_vouches_for_the_mark_exits_2_before_chrome
     assert code == 2 and "final/audit.json is missing" in payload["errors"][0]
 
 
+def test_package_build_refuses_a_final_scorecard_without_route_and_probe_before_chrome(project_root, no_chrome):
+    final = make_final_brand(project_root)
+    card_json = final / "scorecard.json"
+    card = json.loads(card_json.read_text())
+    card_json.write_text(json.dumps({k: v for k, v in card.items() if k not in ("route", "probe")}))
+    with pytest.raises(CliError, match=r"final/scorecard.json needs route and probe \(scorecard.md\)"):
+        export.PackageBuilder(project(), "keystone")
+    code, payload = package_build()
+    assert code == 2 and "final/scorecard.json needs route and probe (scorecard.md)" in payload["errors"][0]
+    export.PackageBuilder(project(), "keystone", critic_required=False)  # the Keystone example predates both
+
+
 def test_core_groups_without_chrome(project_root):
     make_final_brand(project_root)
     stub = StubRenderer()
