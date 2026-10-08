@@ -10,7 +10,7 @@ Craft is subtraction plus optics: one idea, black first, tested at 16 px, correc
 |---|---|---|---|
 | Overshoot | a circle as tall as a square looks smaller; round and pointed forms must pass the baseline and cap height [05 §5.2] | 1.5 percent, the kit's default [spec §6.2] | `overshoot(shape, amount=0.015)` scales the whole part about its box centre: round or pointed parts only |
 | Stroke compensation | horizontals look heavier than verticals of equal width, curves thinner than straights; diagonals need their own adjustment [05 §5.2] | horizontals 92 percent and curves 105 percent of the vertical width, the kit's defaults [spec §6.2] | `compensate_stroke(base_width)` returns `StrokeWidths(vertical, horizontal, curve)`, one width per stroke kind |
-| Optical centre | a part centred by its box looks low; set it just above (the Pringles face) [05 §5.2] | no figure in the research: start near 1 to 2 percent of the container's height, judged on the 512 px panel [synthesis] | `center()` it, then `translate(part, 0, dy)` upward (y is up); no helper raises a part |
+| Optical centre | a part centred by its box looks low; set it just above (the Pringles face) [05 §5.2] | no figure in the research: start near 1 to 2 percent of the container's height, judged at 512 px [synthesis] | `center()` it, then `translate(part, 0, dy)` upward (y is up); no helper raises a part |
 | Balance by mass | a lopsided part (a wedge, an arrow, an L) looks off-centre when its box is centred | until it looks still | `center(shape, optical=True)` centres the area centroid (`optical_center(shape)`); it raises nothing |
 | Optical sizing | an icon is not a scaled lockup [05 §5.2] | see the next section | `TIERS` overrides |
 | Letterspacing | pairs are spaced by eye, not by metrics [05 §5.2] | see the wordmark rules | `tracking`, `kern` |
@@ -32,16 +32,16 @@ The research gives each correction's direction, not its size; the kit's 1.5, 92 
 ## Wordmark rules
 
 1. Real fonts only: set type with `text()` and `glyph()` from a cached family. Hand-drawn letters are LLM output's most reliable tell [04 §1.2] [spec §2].
-2. At most two owned quirks, each parametric and applied to the outlines with the kit's node editing (`cut`, `move_node`, `delete_node`) or a boolean: a ligature, a cut, a notch, a terminal. A third quirk is a new typeface, not a wordmark [spec 2026-10-08 §5.3] [04 §1.2]. Over-fused "Typemelts" are to be avoided [05 §1.2, §1.4].
+2. At most two owned quirks, each parametric, applied with the kit's node editing (`cut`, `move_node`, `delete_node`) or a boolean: a ligature, a cut, a notch, a terminal. A third quirk is a new typeface, not a wordmark [spec 2026-10-08 §5.3] [04 §1.2]. Over-fused "Typemelts" are to be avoided [05 §1.2, §1.4].
 3. Letter identity survives every quirk: the Kia test on the 32 px header, and the critic's `legible` score, decide it; "KN" for Kia drew about 30,000 monthly searches [01 §2] [05 §2].
 4. Track optically, pair by pair: tighter at display sizes, looser at small sizes; straight-straight pairs need more air than round-round pairs [05 §5.2]. `tracking` and `kern` are in 1/1000 em, between clusters only; `kern` adds to the font's own kerning [code].
-5. The Kia test: before presenting, read the wordmark where it is smallest (the concept sheet's 32 px site headers, the refine sheet's minimum-size ladder) as a stranger, asking whether any letter could be taken for another (K and N, rn and m, cl and d, I, l and 1) [05 §5.4] [code].
+5. The Kia test: before presenting, read the wordmark at its smallest (the concept sheet's 32 px site headers, the refine sheet's minimum-size ladder) as a stranger: could any letter be taken for another (K and N, rn and m, cl and d, I, l and 1) [05 §5.4] [code].
 6. The audit fails a wordmark whose x-height is under 7 px at the brand's minimum widths (120 px horizontal, 160 px stacked); shorten the lockup or enlarge the type, never thin it [code] [02 §K rule 19].
 7. Decide case first: uppercase reads premium and masculine, lowercase approachable [02 §K rule 12] [05 §3.6].
 8. Weight follows personality: heavy for power, competence and ruggedness, light for sophistication [02 §K rules 10 and 12].
 9. Keep the wordmark's `TextShape` the first operand of every operation, so the audit can still measure it [code].
 
-The wordmark stage: after setting the family, run `uv run logomaker sheet wordmark <slug>`, read `sheets/wordmark-N.png`, kern the pairs its bars flag with `kern={"Ke": -20}` and re-run. The `spacing_rhythm` audit line warns on a pair wider than 1.8 times the median gap or tighter than half of it [code]. Gaps run box to box, so a tight pair at a diagonal or round letter (K, V, A, O) is often optical: judge it on the sheet, never kern blindly.
+The wordmark stage: after setting the family, run `uv run logomaker sheet wordmark <slug>`, read `sheets/wordmark-N.png` and kern each flagged pair, positive to open a tight one (`kern={"Ke": 20}`), negative to close a wide one (`-20`); re-run the sheet and read the gap change rather than converting em units. The `spacing_rhythm` audit warns on a pair wider than 1.8 times the median gap or tighter than half of it [code]. Gaps run box to box, so a tight pair at a diagonal or round letter (K, V, A, O) is often optical: judge it on the sheet, never kern blindly.
 
 ## Construction checklist
 
@@ -67,7 +67,7 @@ The fourteen-item craft checklist [05 §5.4], plus routes, with where each is se
 
 Each snippet runs inside a concept module (after `from logomaker.kit import *`) with Fira Code cached [code].
 
-1. Monogram from a glyph counter: take a letter's counter as its own shape and re-cut it.
+1. Monogram from a glyph counter: re-cut a letter's counter as its own shape.
 
 ```python
 letter = glyph("D", "Fira Code", weight=700, cap_height=600)
@@ -135,21 +135,21 @@ mark = subtract(tile, translate(center(point), 0, 12))   # box-centred, then nud
 ```
 
 ```python
-# 7. A brushed stroke with a swelling terminal: the width runs 30 at the start, 110 at the crest, 50 at the tip.
+# 7. A brushed stroke with a swelling terminal: widths 30 at the start, 110 at the crest, 50 at the tip.
 sweep = brush([(-400, -200), (-250, 250), (50, 250), (150, 0), (250, -250), (350, -250), (400, 0)], [30, 110, 50], cap="round")
 ```
 
 ```python
-# 8. A spline leaf: a closed Catmull-Rom curve through four points, tightened at the tip by moving one node.
+# 8. A spline leaf: a closed Catmull-Rom curve through four points, its tip sharpened by moving one node.
 leaf = spline([(0, 360), (220, 60), (0, -360), (-220, 60)], tension=0.3)
 tip = next(n for n in nodes(leaf) if n.y < -300)
 leaf_tipped = move_node(leaf, tip.index, 0, -60)
 ```
 
 ```python
-# 9. A node-cut glyph: the counter of a D re-cut by a straight line through the letter, the lower part dropped 40 units.
+# 9. A node-cut glyph: a whole D cut across at its snapped mid-height, the lower half lowered 40 units.
 d = glyph("D", "Fira Code", weight=700, cap_height=600)
-upper, lower = cut(d, -1000, d.bounds.cy, 1000, d.bounds.cy)
+upper, lower = cut(d, -1000, snap(d.bounds.cy), 1000, snap(d.bounds.cy))
 split_d = union(upper, translate(lower, 0, -40))
 ```
 

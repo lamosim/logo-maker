@@ -33,8 +33,8 @@ Every primitive returns a `Shape` and takes `free=False`.
 | `line(x1, y1, x2, y2, width, cap="butt")` | a stroked segment |
 | `polyline(points, width, cap="butt", join="miter")` | a stroked open path; joins `miter`, `round`, `bevel` |
 | `bezier(points, width=None, closed=False)` | a cubic chain p0, c1, c2, p1, ... (1 + 3k points): filled when `width` is None, else stroked with round joins |
-| `brush(points, widths, cap="round")` | a stroke whose width varies: `points` a cubic chain as `bezier` takes, `widths` one per on-curve node (or one number), interpolated by arc length; caps `round`, `square`, `butt`; the sides are fitted back to cubics, so a five-node brush keeps about twenty anchors |
-| `spline(points, tension=0.5, closed=True, width=None)` | a Catmull-Rom curve through three or more points (`catmull_rom(points, tension, closed)` gives the chain); tension 0 is the loosest curve, 1 the polygon; filled, or stroked with `width` |
+| `brush(points, widths, cap="round")` | a stroke whose width varies: `points` a cubic chain as `bezier` takes, `widths` one per on-curve node (or one number), interpolated by arc length; caps `round`, `square`, `butt`; the sides are fitted back to cubics, roughly four anchors per node |
+| `spline(points, tension=0.5, closed=True, width=None)` | a Catmull-Rom curve through three or more points (`catmull_rom(points, tension, closed)` gives the chain); tension 0 is the uniform Catmull-Rom spline, 1 the polygon; filled, or stroked with `width` |
 
 `snap(value, step=0.25)` and `snap_angle(angle, step=15)` do the snapping.
 
