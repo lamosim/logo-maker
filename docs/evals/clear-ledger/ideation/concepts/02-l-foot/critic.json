@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 4,
+    "timeless": 5,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a slab-serif L standing on a heavy rule reads as a ledger line, but 'see where you stand' needs a sentence to connect",
+      "a heavy slab-serif L standing on a thick rule reads as the ledger's line and a grounded, plain Everyman voice without explanation"
+    ],
+    "distinctive": [
+      "a serif L avoids the category's rounded lowercase and circle badges, but a single-initial slab monogram is generic in silhouette",
+      "unlike the rounded lowercase fintech marks, a bold slab L on a rule stands apart, though a lone initial is a familiar silhouette"
+    ],
+    "simple": [
+      "one slab L over one bar; drawable from memory in seconds",
+      "one letter and one bar; redrawable from memory at once"
+    ],
+    "legible": [
+      "the slab L stays a solid, readable letter down to 16 px and the serif wordmark reads clearly in the header mockups",
+      "the solid L and its rule stay crisp and readable at 24 and 16 px and in the one-colour 32 panel; no hairlines"
+    ],
+    "adaptable": [
+      "black, reversed, one-colour 64 and 32 and the dark app tile all hold with no hairlines; heavy enough for a thermal printer",
+      "works black, reversed and one-colour; the phone tile and avatar take the L directly; no motion logic shown"
+    ],
+    "timeless": [
+      "a plain slab serif with no trend shape; the mono-initial icon is a 'use carefully' item justified by the strategy's icon-from-wordmark rule",
+      "a slab-serif initial with an underline has no trend shape and would have read the same a decade ago"
+    ],
+    "universal": [
+      "the mirrored panel reads as a J on a bar and the rotated panel as a sideways I-beam: a faint secondary reading",
+      "mirrored reads as a reversed L or J; rotated 90 reads as an I-beam or girder shape, a faint secondary reading"
+    ],
+    "clear": [
+      "unsearched: serif L monograms are common across categories, though none of Xero, QuickBooks, FreeAgent, Coconut or Pandle uses one",
+      "unsearched: underlined serif L initials exist in law, publishing and lettering marks; nothing in the five competitors"
+    ],
+    "congruent": [
+      "sturdy serif and flat ground match the targets, but the very heavy slab weight overshoots 'medium' and no ink green is shown",
+      "symmetric, static, flat-bottomed and serif match the targets; the weight runs heavier than medium and the mark is darker than the wordmark"
+    ],
+    "system": [
+      "horizontal lockup, symbol, ladder and every mockup derive cleanly from the one L-and-rule",
+      "symbol, lockups and every tier derive cleanly; the heavy L sits a little heavy against the lighter wordmark in the horizontal lockup"
+    ]
+  },
+  "preferred_over": [
+    "03-margin-l"
+  ],
+  "tied_with": [
+    "01-double-rule"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "e5025b2b75b311304eb4eda5e6f7922228e32d75d8e35a45d224bfb674cb3add"
+}

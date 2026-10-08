@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 3,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "the bookkeeper's double underline under a calm serif wordmark reads as a final total, the one honest number, with no picture needed",
+      "the serif wordmark with a bookkeeper's double underline, the mark under a final total, says 'one honest number' directly and fits a wordmark-led Everyman-Sage brief"
+    ],
+    "distinctive": [
+      "a serif wordmark with a double rule stands well apart from the five rounded lowercase sans marks, though double underlines are a familiar typographic move",
+      "a serif wordmark is outside the rounded-lowercase category uniform, but a double-underlined serif name is generic in silhouette"
+    ],
+    "simple": [
+      "the name plus two parallel rules; describable in one sentence",
+      "the name plus two rules can be described in one sentence, though the icon shifts between CL and L"
+    ],
+    "legible": [
+      "the wordmark reads at 128 and in the header, but the one-colour 64 wordmark is tiny and the 16 px L with double rule goes to mush",
+      "the name reads at 256 and 128 px, but the one-colour 64 panel shrinks it to a strain, and at 24 and 16 px only an L over two fine rules remains, which risk merging on a thermal printer"
+    ],
+    "adaptable": [
+      "works in black, reversed and one colour, but the icon has to switch to CL and then to L, and the thin double rules risk the thermal printer",
+      "works in one colour and reversed as a wordmark, but the app icon needs a redraw to a CL monogram and the small tiers switch letters again"
+    ],
+    "timeless": [
+      "a plain text serif with an accounting rule; nothing from the trend lists, would have read the same ten years ago",
+      "a text serif with a double rule is accounting tradition, no trend shape"
+    ],
+    "universal": [
+      "mirrored and rotated panels read only as reversed or sideways text; no secondary figure",
+      "mirrored it is plainly backwards text; rotated it reads as the name on its side; no unintended reading"
+    ],
+    "clear": [
+      "unsearched: underlined serif wordmarks exist widely, none among the named competitors",
+      "unsearched: double-underlined serif wordmarks are common among accountancies and law firms, including other Clear Ledger firms"
+    ],
+    "congruent": [
+      "sturdy text serif, level baselines, ruled-line frame and calm weight match the targets; no ink green shown",
+      "serif, sentence case, flat ruled base and a ruled-line frame match the strategy; the thin double rules sit against the no-hairline constraint"
+    ],
+    "system": [
+      "lockups build, but tiers jump from wordmark to CL at 64 to a lone L at 32, so the family is uneven",
+      "lockups are clean but tiers jump from wordmark to CL to L, so the symbol and favicon do not derive from one anchor"
+    ]
+  },
+  "preferred_over": [
+    "03-margin-l"
+  ],
+  "tied_with": [
+    "02-l-foot"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "0763293a80551cf2aa7d20c758c7aeae9e1ab854d34f3a275d3f48fbbb1892c4"
+}

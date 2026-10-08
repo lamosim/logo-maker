@@ -1,0 +1,101 @@
+{
+  "slug": "clear-ledger",
+  "name": "Clear Ledger",
+  "needs_name": false,
+  "created": "2026-10-08T16:50:53-04:00",
+  "updated": "2026-10-08T17:02:26-04:00",
+  "phase": "done",
+  "industry": "accounting for sole traders",
+  "surfaces": [
+    "app icon",
+    "website header",
+    "printed invoices"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "shop-ledger",
+  "concept": "02-l-foot",
+  "fonts": {
+    "wordmark": {
+      "family": "Source Serif 4",
+      "weight": 600,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T16:51:05-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: confirmed the brief write-back as written (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T16:52:17-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: approved the strategy as written; keep the name Clear Ledger despite Clear Ledger Solutions (UK accountancy) and US firms of that name, send the conflict to a trademark attorney (conservative answers)"
+    },
+    {
+      "at": "2026-10-08T16:52:49-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: chose the warmer board, Shop ledger (Source Serif 4 with Source Sans 3; ledger green, shop paper, kraft)"
+    },
+    {
+      "at": "2026-10-08T16:56:27-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: no Chrome extension in this session, so the Google Lens search of each survivor could not run (scripted: conservative answer; description searches done, attorney clearance advised)"
+    },
+    {
+      "at": "2026-10-08T16:59:07-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: asked what the owner likes in each; named no specific likes (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T16:59:19-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: chose 02-l-foot, the survivor the critic preferred (critic order 01 = 02 > 03; 02 has the higher critic total, 41 against 37). No steal."
+    },
+    {
+      "at": "2026-10-08T16:59:19-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: first reaction 'the two words run together at the invoice size'; probing question answered 'the card mockup'. On 02's card mockup the word space between Clear and Ledger is a full space, wider than the r: the reaction does not fit this concept, so the sheet stands as it is; no change made."
+    },
+    {
+      "at": "2026-10-08T16:59:54-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: primary lockup horizontal, from the top-ranked surface that shows a lockup (website header; the app icon draws the mark only) (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T17:01:38-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: approved refinement round 1 after the colour round (Ledger Green #405d4e and Counter Ink #1f1e1b on Shop Paper; reverse Ledger Green Light #97b7a6 and Shop Paper on Counter Ink)"
+    },
+    {
+      "at": "2026-10-08T17:01:50-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: no Chrome extension in this session, so the Google Lens and WIPO image searches of final/ could not run (scripted: conservative answer; description searches done; a trademark attorney to run clearance before filing)"
+    },
+    {
+      "at": "2026-10-08T17:02:26-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: approved the package handover; has the folder and the brand sheet (conservative answer)"
+    }
+  ]
+}

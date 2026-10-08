@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a P-shaped creature with an open mouth hints at reading aloud, but the beaked head reads as a dinosaur or bird before it reads as a small friend",
+      "a rounded column with an open-mouthed head reads as a hand puppet, which fits the persona, but nothing says reading and the open beak reads as a bird or dinosaur more than a gentle friend"
+    ],
+    "distinctive": [
+      "a letter P turned into a creature head is unlike the elephant, owl, egg and chunky wordmarks of the category",
+      "not an elephant, owl or egg; the open-mouth puppet profile is a silhouette none of the five uses"
+    ],
+    "simple": [
+      "one P stem plus a beaked head and a dot eye; drawable in a few strokes",
+      "one body with one wedge mouth and a dot eye; drawable in a few strokes"
+    ],
+    "legible": [
+      "at 24 and 16 px the beak and stem collapse into something that reads as an F, not as the character",
+      "'Pip' reads cleanly beside it, and the silhouette survives to 16 px, but at 24 and 16 px the mark reads as a letter F"
+    ],
+    "adaptable": [
+      "holds in one colour, reversed and on the dark app tile; the black blob works as a sticker",
+      "solid in black, reversed and one colour; the app tile and the avatar are strong and the mouth suggests an open-and-close motion"
+    ],
+    "timeless": [
+      "no trend shape from the avoid list; a flat solid silhouette",
+      "a flat character mark with no gradient, sparkle or other trend shape"
+    ],
+    "universal": [
+      "mirrored is fine, but rotated 90 turns it into a hooked claw, and small sizes misread as the letter F",
+      "the mark reads as a capital F at every size, a wrong letter beside 'Pip'; the mirrored panel turns it into a bird or T-rex head, and the rotated one into a hanging hook shape"
+    ],
+    "clear": [
+      "unsearched: open-mouthed dinosaur heads (the Chrome offline dino family) and Pac-man-like mouths are familiar silhouettes",
+      "unsearched: open-beaked bird and dino-head silhouettes and F-shaped marks are plentiful across categories"
+    ],
+    "congruent": [
+      "the pointed beak and hard notch go against the round 0.2 shape target and 'warm, not loud'; the single dot eye fits",
+      "the sharp wedge mouth and pointed beak break 'every outer corner rounded'; the large gaping mouth goes against the small, light sound of 'Pip'; the gesture is loud, not one calm bounce"
+    ],
+    "system": [
+      "horizontal lockup, tab, avatar and card all derive; the favicon tier loses the gesture",
+      "horizontal lockup, app tile, avatar, card and tab favicon all come out of one shape evenly"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-seed-friend",
+    "05-seed-tittle"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "ed9a726e3e60a798fac759a121298c2e5ccc662820ea8ec0ac25fda9c28feb51"
+}

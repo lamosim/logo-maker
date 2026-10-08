@@ -1,0 +1,35 @@
+{
+  "route": "type-quirk",
+  "kill": false,
+  "reason": "",
+  "scores": {
+    "appropriate": 5,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 5,
+    "universal": 5,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the name ruled off twice like a final total: 'this is where you stand' reads without a caption; plain and orderly (Everyman, Sage)",
+    "distinctive": "no competitor among Xero, QuickBooks, FreeAgent, Coconut, Pandle uses a serif name or a rule; but an underline is a common device; probe: 6 of 20 for \"double underline wordmark logo\" caps it at 3",
+    "simple": "one word line and two rules; drawable in seconds",
+    "legible": "the name reads at 128 px and in the 64 px one-colour panel; the CL icon reads at 32 to 64 px; the 16 px favicon is an L over two rules that strains",
+    "adaptable": "one colour and reversed hold; no symbol, so app icons from 96 px show the whole wordmark; compact, small and favicon tiers draw CL or L over the rules",
+    "timeless": "no trend shape; a text serif and a rule would have read the same twenty years ago",
+    "universal": "mirrored and rotated panels show only reversed or turned text; no secondary reading",
+    "clear": "description and image searches found underline templates in other categories, no double-ruled name in bookkeeping; Lens skipped (no Chrome extension)",
+    "congruent": "low complexity, medium weight, static, symmetric, framed by the rules and the descriptive cue match; the serif misses the sans typeface target, chosen with the Shop ledger territory",
+    "system": "wordmark, compact, small and favicon build without tier warnings; no symbol for the app icon from 96 px; rationale draft in critique.md"
+  },
+  "probe": {
+    "query": "double underline wordmark logo [firecrawl-images]",
+    "hits": 6,
+    "date": "2026-10-08"
+  },
+  "reconciled": {}
+}

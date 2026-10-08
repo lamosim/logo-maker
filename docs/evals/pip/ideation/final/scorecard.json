@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a soft coral friend leans toward the word and looks at it: the friend who reads with you, Caregiver-round",
+    "distinctive": "probe 5 of 20 for \"seed character logo\" caps it at 3; the coral-on-cream eyed drop is unclaimed among Ello, Epic, Khan Kids, Reading Eggs and Duolingo ABC",
+    "simple": "one teardrop body and two dots; 25 anchors",
+    "legible": "Fredoka 'Pip' reads at 120 px; the redrawn compact tier keeps the eyes open at 160 and 80 px; at 16 px the eyes merge to one speck",
+    "adaptable": "colour, reverse (Coral Light on Cocoa), black, white and mono all hold; app tile, avatar and favicon tiers drawn; a lean or blink for motion",
+    "timeless": "a flat single-colour character, no trend shape",
+    "universal": "mirrored and rotated are clean; a faint water-drop or tear reading remains",
+    "clear": "description searches found only stock droplet templates, seed mascots with sprouts and a 'Limo' portfolio dot; Lens and WIPO image searches skipped by the owner's decision (no Chrome extension)",
+    "congruent": "round (0.2), one lean, low complexity, medium filled weight, warm coral of medium saturation on light cream, rounded type, open frame; small and quick like 'Pip'",
+    "system": "horizontal, stacked, symbol, wordmark, compact, small and favicon derive cleanly; one rationale paragraph drafted"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "object",
+  "probe": {
+    "query": "seed character logo [firecrawl-images]",
+    "hits": 5,
+    "date": "2026-10-08"
+  }
+}

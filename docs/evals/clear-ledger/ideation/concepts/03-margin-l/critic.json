@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 2,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a monoline L over two rules hints at a ruled page, but inside a rounded black tile it reads as an app icon more than as clarity",
+      "a monoline L over a ruled line in a black rounded tile hints at a ledger rule, but the idea needs a sentence and the tile reads as software, not the teller"
+    ],
+    "distinctive": [
+      "a letter in a rounded-square tile is the generic app-tile uniform; on the phone shelf it looks like any monogram app",
+      "a white letter in a black rounded square is the app-tile uniform; the double rule under the L is the only owned detail and it is small"
+    ],
+    "simple": [
+      "one tile, one L, two lines; easy to redraw",
+      "one tile, one L, one rule; drawable from memory in seconds"
+    ],
+    "legible": [
+      "the thin white L reads at 32 px but at 16 px shrinks to a speck inside the black square",
+      "the tile holds as a closed silhouette to 16 px, but the thin L and rule are near-invisible inside it at 16 px; the serif name reads cleanly in the header"
+    ],
+    "adaptable": [
+      "works one-colour and as an icon, but the reversed panel turns it into a white slab and the thin strokes risk a thermal printer",
+      "black, reversed, one-colour 64 and 32 panels and the phone icon all work without a redraw; the tile is already an app icon"
+    ],
+    "timeless": [
+      "mono-initial app tile is a 'use carefully' item; the thin monoline L in a container already feels of its moment",
+      "no avoid-list shape; a plain letter tile reads the same as ten years ago, only the square-tile app geometry is current"
+    ],
+    "universal": [
+      "the rotated panel reads as 'IF' or a Greek gamma beside bars; mirrored reads as a backwards L",
+      "mirrored the L becomes a backwards J-like hook; rotated it reads as a bracket with bars; both faint, nothing offensive"
+    ],
+    "clear": [
+      "unsearched: boxed monoline-L marks are common in software and finance",
+      "unsearched: single-letter L marks in black rounded squares are common across apps and SaaS; look-alikes are likely"
+    ],
+    "congruent": [
+      "near-hairline strokes contradict 'no hairlines' and medium weight, and the solid container is the badge the strategy rules out",
+      "a geometric monoline sans L beside a serif wordmark breaks the one-family rule, and the heavy black tile is close to the badge the strategy rules out; flat bottom and symmetry do match"
+    ],
+    "system": [
+      "tile, lockups and ladder derive consistently from the one boxed L",
+      "symbol, lockups, tiers 256 to 16 and one-colour variants all derive from the same tile without breakage"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-double-rule",
+    "02-l-foot"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "765a787e22f0dce36cf16cf32a58c2fc29ca2fb28cfb0c9b3d663f79f7538cb6"
+}

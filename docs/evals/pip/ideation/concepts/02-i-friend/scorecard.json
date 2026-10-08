@@ -1,0 +1,30 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 3,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a figure with a head and body; the reading gesture needs a caption",
+    "distinctive": "probe 5 of 20 for \"letter i character logo\" caps it at 3; it reads as the generic person or user pictogram, so 2",
+    "simple": "a pill and a disc; 14 anchors",
+    "legible": "the pill and disc hold at 16 px; the eye vanishes",
+    "universal": "reads as a person or 'user' icon and an information i"
+  },
+  "kill": true,
+  "reason": "after two rounds it still reads as the generic person pictogram (the stick-figure family on the Any list) and the 'info' i; appropriate 3 fails the gate",
+  "reconciled": {},
+  "route": "letterform",
+  "probe": {
+    "query": "letter i character logo [firecrawl-images]",
+    "hits": 5,
+    "date": "2026-10-08"
+  }
+}

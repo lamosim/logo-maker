@@ -1,0 +1,107 @@
+{
+  "slug": "pip",
+  "name": "Pip",
+  "needs_name": false,
+  "created": "2026-10-08T16:50:46-04:00",
+  "updated": "2026-10-08T17:04:59-04:00",
+  "phase": "done",
+  "industry": "reading and learning for young children",
+  "surfaces": [
+    "app icon",
+    "App Store listing",
+    "printed stickers"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "sunny-burrow",
+  "concept": "01-seed-friend",
+  "fonts": {
+    "wordmark": {
+      "family": "Fredoka",
+      "weight": 600,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T16:51:12-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: confirmed the brief write-back as written (no corrections)"
+    },
+    {
+      "at": "2026-10-08T16:52:54-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: approved the strategy as written"
+    },
+    {
+      "at": "2026-10-08T16:52:54-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: keep the name Pip despite Pip School (Sprout Labs, reading app ages 4-8) and Pip and Tim readers; send the conflict to a trademark attorney before filing (most conservative option)"
+    },
+    {
+      "at": "2026-10-08T16:53:19-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: chose Sunny Burrow, the warmer of the boards (marigold, coral, cocoa; Fredoka 600)"
+    },
+    {
+      "at": "2026-10-08T16:58:02-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: Google Lens image search for the survivors could not run because the Chrome extension is unavailable; scripted: accepted the description searches and the Firecrawl image probes in its place (most conservative option available), and the full knock-out goes to a trademark attorney"
+    },
+    {
+      "at": "2026-10-08T17:01:24-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: named no specific likes on the concept sheet (most conservative option)"
+    },
+    {
+      "at": "2026-10-08T17:01:24-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: first reaction to 01-seed-friend: 'the character turns into a blob at the avatar size'; probing question answered 'at the avatar size'; sorted as a flaw at a named size: redraw the compact (avatar) tier in refinement with larger, more open eyes"
+    },
+    {
+      "at": "2026-10-08T17:01:24-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: chose 01-seed-friend, the survivor the critic preferred (beat both others in every pass); no steals"
+    },
+    {
+      "at": "2026-10-08T17:02:25-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: took the top-ranked lockup-showing surface's lockup (App Store listing, a wide placement) as primary: horizontal"
+    },
+    {
+      "at": "2026-10-08T17:03:16-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: approved refinement round 1 after the colour round (the compact avatar tier with opened eyes, horizontal primary, Coral/Cocoa/Cream with Coral Light reverse)"
+    },
+    {
+      "at": "2026-10-08T17:04:24-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: Google Lens and WIPO image searches for final/ could not run because the Chrome extension is unavailable; scripted: accepted the description searches in final/knockout.md and sent the mark to a trademark attorney for a clearance search (most conservative option)"
+    },
+    {
+      "at": "2026-10-08T17:04:58-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: approved the package handover (has the folder and the brand sheet)"
+    }
+  ]
+}

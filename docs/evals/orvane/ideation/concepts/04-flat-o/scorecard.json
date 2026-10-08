@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the one letter that sits down and stays put: quiet, grounded; the name leads, as a new brand should",
+    "distinctive": "no competitor's wordmark has a flat-bottomed O; probe: 1 of 20 for 'flat bottom letter O wordmark logo'",
+    "simple": "the wordmark with one changed letter; the icon is one arch-shaped O",
+    "legible": "'Orvane' reads at 128 px and in the one-colour 64 px lockup; the O is still an O; favicon O holds at 16 px",
+    "adaptable": "one-colour and reversed fine; but app icons from 96 px up show the whole wordmark, and the small O icon is plain",
+    "timeless": "custom wordmark with one owned quirk is on the use list",
+    "universal": "the lone O icon can read as an arch, a door or a headstone",
+    "clear": "description search found no wordmark with a flat-bottomed O",
+    "congruent": "Instrument Sans 500, medium weight, level base, static: matches type, weight, symmetry and dynamism; rounded shape fits 'not cold'",
+    "system": "compact, small and favicon tiers draw the flat O; no symbol for lockups, so horizontal and stacked are the wordmark alone"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "type-quirk",
+  "probe": {
+    "query": "flat bottom letter O wordmark logo [firecrawl-images]",
+    "hits": 1,
+    "date": "2026-10-08"
+  }
+}

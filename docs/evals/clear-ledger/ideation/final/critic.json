@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "a slab L standing on a heavy rule reads as a ledger's ruled line or bottom line and fits the plain Everyman/Sage tone, but 'see where you stand' needs a sentence to arrive"
+    ],
+    "distinctive": [
+      "no circle badge, cyan or rounded lowercase like the category, but a serif initial over an underline is a generic silhouette; the icon is a letter in a green tile"
+    ],
+    "simple": [
+      "one slab L and one bar beneath it; drawable from memory in two strokes"
+    ],
+    "legible": [
+      "'Clear Ledger' reads cleanly in the header, dark nav and card; the L holds at 16 px, though the gap between L and rule is tight there"
+    ],
+    "adaptable": [
+      "black, reversed, one-colour 64/32, the app tile, browser tab and avatar all hold; no hairlines, so the receipt printer should cope; the rule gives an obvious draw-in motion"
+    ],
+    "timeless": [
+      "a bracketed slab serif and a rule, no trend shape; the mono-initial icon is a use-carefully item that strategy section 8 justifies"
+    ],
+    "universal": [
+      "the mirrored panel reads as a J on a bar and the rotated panel as a bracket; both are just the mark turned, no unintended image"
+    ],
+    "clear": [
+      "unsearched: underlined serif initials are common across law, publishing and accountancy practices; nothing I know copies this exact L-on-rule in sole-trader bookkeeping"
+    ],
+    "congruent": [
+      "deep ink green, static, grounded flat base, lightly framed by a rule, sturdy text serif all match; the L is asymmetric against the 0.8 symmetry target and heavier than medium"
+    ],
+    "system": [
+      "horizontal lockups, the 256-to-16 ladder, the app icon, favicon tab, avatar and card are drawn; no stacked lockup on the sheet and the icon is an L, not the CL pairing the strategy proposed"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "a0731bbe18eababf8d0f8793a7f9097c0e287f278a88e4d31c09962ddffa2aaf"
+}

@@ -1,0 +1,28 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 3,
+    "universal": 4,
+    "clear": 2,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "every reader sees an email app icon; webhooks are not email",
+    "distinctive": "probe: 8 of 20 for 'envelope seal logo' caps it at 2",
+    "clear": "generic mail glyphs are everywhere, including a catalogued 'mail post symbol' logo"
+  },
+  "kill": true,
+  "reason": "reads at once as email, a product Orvane does not sell; a generic mail icon that cannot pass appropriate",
+  "reconciled": {},
+  "route": "object",
+  "probe": {
+    "query": "envelope seal logo [firecrawl-images]",
+    "hits": 8,
+    "date": "2026-10-08"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "route": "abstraction",
+  "kill": true,
+  "reason": "a dot on a bar reads as the generic user (person) icon and needs a paragraph to carry the idea; appropriate cannot reach 4",
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 3,
+    "universal": 2,
+    "clear": 2,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "'one number and where it stands' needs a sentence to read; nothing on the page says ledger",
+    "distinctive": "probe: 3 of 20 for \"dot on horizontal line logo\" caps it at 3; the shape is a stock UI glyph, so 2",
+    "universal": "the 32 px and avatar sizes read as a person icon (head over shoulders); rotated 90 reads as a b"
+  },
+  "probe": {
+    "query": "dot on horizontal line logo [firecrawl-images]",
+    "hits": 3,
+    "date": "2026-10-08"
+  },
+  "reconciled": {}
+}

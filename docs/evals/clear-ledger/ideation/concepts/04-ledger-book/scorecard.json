@@ -1,0 +1,29 @@
+{
+  "route": "object",
+  "kill": true,
+  "reason": "once ruled, the open book reads as a four-pane window or a pointed shield (off limits); the object route is the category's first idea (8 of 20 probe hits)",
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 2,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 3,
+    "timeless": 3,
+    "universal": 2,
+    "clear": 2,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the open book reads only from the top edge; the ruled foot turns it into a window",
+    "distinctive": "probe: 8 of 20 for \"open ledger book logo\" caps it at 2; ledger-book icons are stock",
+    "universal": "the pointed lower outline and cross read as a shield or a window",
+    "legible": "at 16 px it is a cross in a box"
+  },
+  "probe": {
+    "query": "open ledger book logo [firecrawl-images]",
+    "hits": 8,
+    "date": "2026-10-08"
+  },
+  "reconciled": {}
+}

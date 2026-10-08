@@ -1,0 +1,31 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 1,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the P opens into a talking mouth: the name reading aloud",
+    "distinctive": "probe 3 of 20 for \"letter P talking mouth logo\" caps it at 3; speech-bubble P marks are common",
+    "simple": "one glyph with a wedge cut and an eye; 36 anchors",
+    "legible": "reads as P at 16 px; the eye is dropped in the favicon",
+    "universal": "the eye reads as an i's dot over the counter, so 'Pi' at a glance",
+    "clear": "the description search found PBS's P-as-a-human-head (1971, revived 2014 for PBS Digital Studios), a famous mark in children's educational media"
+  },
+  "kill": true,
+  "reason": "the knock-out found PBS's P-as-a-head, a famous mark in the same children's-media space; clear 1",
+  "reconciled": {},
+  "route": "negative-space",
+  "probe": {
+    "query": "letter P talking mouth logo [firecrawl-images]",
+    "hits": 3,
+    "date": "2026-10-08"
+  }
+}

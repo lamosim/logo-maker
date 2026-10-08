@@ -1,0 +1,37 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 4,
+    "congruent": 4,
+    "system": 5
+  },
+  "evidence": {
+    "appropriate": "the L of Ledger on a doubled foot reads as a ruled-off total; plain, orderly serif fits Everyman with Sage; one sentence explains it",
+    "distinctive": "no competitor (Xero, QuickBooks, FreeAgent, Coconut, Pandle) uses a serif letter or a rule, nor ledger green on warm paper; probe carried from the concept: 2 of 20 for \"letter L logo double line foot\"",
+    "simple": "one letter and one bar, 26 anchors; drawable in seconds",
+    "legible": "the L reads at 16 px (favicon 820 weight, thinnest feature 1.78 px) and the name at the 120 px minimum (x-height 7.7 px); the two words stay apart in every header",
+    "adaptable": "black, white, mono, colour and the designed reverse all hold on the refine sheet; heavy enough for a thermal printer; the L is the icon at every size",
+    "timeless": "a text serif and an accounting rule; the mono-initial icon is a 'use carefully' item reasoned in strategy.md section 8",
+    "universal": "mirrored reads as a reversed L or J, rotated 90 a faint I-beam; nothing unwanted (final/knockout.md)",
+    "clear": "description searches found no serif L on a rule and no Clear Ledger trademark; nearest is T-Ledgers' leaf-and-L in Canada; Google Lens and WIPO image searches skipped (no Chrome extension), so 4 rests on the description searches alone",
+    "congruent": "medium weight, low complexity, symmetric base, static, framed underfoot, low-saturation dark ink green and the descriptive rule match; the serif misses the sans typeface target, chosen with the Shop ledger territory",
+    "system": "horizontal, stacked, symbol, wordmark, small and favicon all build without tier warnings; the symbol is the wordmark's own L at the same weight; designed reverse; rationale drafted"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {
+    "system": "designer's 5 stands: the stacked lockup builds and is on refine-1.png (the critic sheet does not show it), and strategy.md section 8 allows a letter or a rule as the icon, not only a CL pairing"
+  },
+  "route": "letterform",
+  "probe": {
+    "query": "letter L logo double line foot [firecrawl-images]",
+    "hits": 2,
+    "date": "2026-10-08"
+  }
+}

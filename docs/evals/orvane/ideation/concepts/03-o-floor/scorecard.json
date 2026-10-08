@@ -1,0 +1,28 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 3,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 1,
+    "clear": 3,
+    "congruent": 3,
+    "system": 3
+  },
+  "evidence": {
+    "universal": "round 1 read as a googly eye, round 2 as a face with a mouth",
+    "legible": "the block is a speck at 16 px",
+    "distinctive": "probe: 4 of 20 for 'letter O with dot inside logo' caps it at 3"
+  },
+  "kill": true,
+  "reason": "the O with a dot, then a block, reads as an eye and then a face at every size; the block becomes a speck at 16 px",
+  "reconciled": {},
+  "route": "letterform",
+  "probe": {
+    "query": "letter O with dot inside logo [firecrawl-images]",
+    "hits": 4,
+    "date": "2026-10-08"
+  }
+}

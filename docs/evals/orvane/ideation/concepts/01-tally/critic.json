@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a rounded tile split by a stepped seam might mean a handoff between two sides, but it reads first as a crack or a break, against 'nothing gets dropped'",
+      "two heavy halves locked by a stepped seam suggest both sides joined and accounted for, but that needs a sentence"
+    ],
+    "distinctive": [
+      "a split rounded tile is different in detail but generic in silhouette, the stock app-tile-with-a-cut look of many SaaS marks",
+      "no webhook competitor uses a split tile with a stepped cut; the rounded-square container itself is generic"
+    ],
+    "simple": [
+      "one rounded square and one stepped white seam; redrawable, though the step's exact shape is hard to recall",
+      "one rounded square split by a single stepped channel; redrawable in seconds"
+    ],
+    "legible": [
+      "the solid tile silhouette survives at 16 px with the seam just visible; Orvane reads cleanly beside it in the lockups",
+      "the stepped channel stays open at 24 and 16 px as a solid silhouette; 'Orvane' reads beside it"
+    ],
+    "adaptable": [
+      "the reversed, one-colour, app-grid, tab and avatar versions all hold; it is built tile-first",
+      "works black, reversed, one-colour and as the app tile and avatar natively; motion logic (halves meeting) is implied"
+    ],
+    "timeless": [
+      "square, app-tile-aware geometry is a durable item; no 'avoid' trend",
+      "square, app-tile-aware geometry, a durable 'use' item; no avoid trend"
+    ],
+    "universal": [
+      "the stepped seam reads faintly as a lightning-bolt crack (an off-limits motif), and rotated 90 it reads as an S or a 5",
+      "the white seam reads faintly as a 4 or an h, and the mirrored and rotated panels shift it to other glyph-like shapes"
+    ],
+    "clear": [
+      "unsearched: split and notched rounded-square tiles are common across SaaS and fintech icons; some look-alikes are likely",
+      "unsearched: split and interlocking square tiles appear across tech marks, but I know none with this step in the category"
+    ],
+    "congruent": [
+      "the heavy weight, rounded corners and flat base fit, but the asymmetric zigzag seam goes against symmetry 0.8 and dynamism 0.2, and no warm hue appears",
+      "heavy weight, rounded corners and a flat grounded base fit; it is rotational rather than mirror symmetric, below the 0.8 target"
+    ],
+    "system": [
+      "the horizontal lockup, symbol tiers down to 16 px, reversed version and mockups all derive cleanly; no stacked lockup is shown",
+      "horizontal lockup, symbol, small and favicon tiers derive cleanly from one tile"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "02-brackets",
+    "04-flat-o"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "f04e938c580e467738a1b2b400b096c2aaa345a8601d2a5ed1cc5ae5c3576a24"
+}

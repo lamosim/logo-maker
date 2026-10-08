@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 5,
+    "timeless": 5,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 5,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a small seed-shaped being with two dot eyes reads at once as a small friend and as a pip; the reading itself is not shown",
+      "a seed-shaped body with two small dot eyes is literally a pip and a small friend at once; Caregiver roundness with one Jester tilt of the point"
+    ],
+    "distinctive": [
+      "not an animal and no big eyes, unlike the elephant and owl; but a round blob with dot eyes is generic in silhouette",
+      "far from the category's big-eyed animals, but a round blob with two dot eyes is a generic character silhouette that others could claim"
+    ],
+    "simple": [
+      "one rounded seed with a tilted tip and two dots; drawable in seconds",
+      "one rounded seed shape plus two dots; drawable in seconds"
+    ],
+    "legible": [
+      "the silhouette holds down to 16 px; the eyes merge into one dot at 16 px",
+      "the silhouette holds to 16 px and the eyes are still visible at 24 px; at 16 px they merge to a single speck, while 'Pip' reads in every lockup"
+    ],
+    "adaptable": [
+      "solid in one colour, reversed white, on the app tile and as a round avatar; a natural bounce for motion",
+      "black, reversed and one-colour panels all work; the app tile, avatar and favicon are the strongest of the three; the motion logic (a tilt or a blink) is implied, not shown"
+    ],
+    "timeless": [
+      "no trend shape; a flat solid character that would read the same ten years ago",
+      "no avoid-list trend; the soft blob character is current but simple enough to have read the same ten years ago"
+    ],
+    "universal": [
+      "mirrored is clean; rotated 90 gives a faint droplet or second-face reading",
+      "the rotated panel tilts the eyes into a faint quizzical face and the shape can read as a droplet; no unwanted reading beyond that"
+    ],
+    "clear": [
+      "unsearched: blob and droplet characters with dot eyes are common in other categories, none I know in kids' reading",
+      "unsearched: two-dot-eyed blob and seed characters are common in apps and games, so similar marks likely exist"
+    ],
+    "congruent": [
+      "round shape, small dot eyes, one tilt as the single gesture, compact and light like the sound of 'Pip'",
+      "round, one shape plus one gesture (the leaning point), small dot eyes far under a tenth of the body, compact like the sound 'Pip'; it hits every adjective-ladder test"
+    ],
+    "system": [
+      "lockups, tab, avatar and card all derive cleanly; the favicon tier keeps the silhouette",
+      "symbol, horizontal lockup, tile, avatar and favicon all derive from the one shape evenly; the reversed lockup holds"
+    ]
+  },
+  "preferred_over": [
+    "03-sock-puppet",
+    "05-seed-tittle"
+  ],
+  "tied_with": [],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "554f5e6d5e86d9930235dd49cd435d6324206b211fca2fd68d62dba6540effe6"
+}

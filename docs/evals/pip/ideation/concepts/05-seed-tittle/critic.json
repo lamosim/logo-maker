@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 3,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "the friend is only the i's dot with a hole for an eye; at a glance it is a wordmark, not a small friend who reads with you",
+      "the i's tittle becomes a small head with one eye, so a friend hides in the name, but it takes a sentence to see a character in a letter"
+    ],
+    "distinctive": [
+      "chunky rounded wordmark is the category uniform (Epic!), and a dotted i made into a head is a common move",
+      "chunky rounded 'Pip' sits close to the category's rounded display type; only the eyed tittle is owned, and the dot-as-head is a familiar move"
+    ],
+    "simple": [
+      "three letters with one modified dot; easy to recall",
+      "one word plus one move, an eye in the dot of the i; easy to draw from memory"
+    ],
+    "legible": [
+      "Pip reads instantly at every lockup size; the lone i icon still reads at 16 px but only as a letter",
+      "'Pip' reads at once in every lockup, but the symbol is a lone i that is a thin sliver at 24 and 16 px, and the eye is gone by 32"
+    ],
+    "adaptable": [
+      "works in one colour and reversed, but the app tile holds a thin i sliver that leaves the square mostly empty",
+      "black, reversed and one-colour panels all hold; the app tile is a narrow i lost in a square, so the icon wants a redraw"
+    ],
+    "timeless": [
+      "heavy rounded display sans sits in the 'Smokies' use-carefully band with no strong reason given",
+      "a custom wordmark with one owned quirk is a durable move; the rounded heavy sans leans toward the 'Smokies' style but is not built on a trend to avoid"
+    ],
+    "universal": [
+      "mirrored reads 'qiP' and rotated reads as type on its side; nothing unintended",
+      "the mirrored panel reads 'qiP' and the rotated one is just the word on its side; no unintended figure"
+    ],
+    "clear": [
+      "unsearched: dotted-i-as-character wordmarks are widespread across kids' and consumer apps",
+      "unsearched: a dotted i turned into a face or eye is common in children's and education wordmarks, so similar marks exist in other categories"
+    ],
+    "congruent": [
+      "rounded type and front-vowel compactness match; it drops the mascot logo type the strategy chose",
+      "round, filled, compact and small fits the light, quick sound of 'Pip'; the character has no tilt or gesture, and the heavy weight is set against the 'medium' weight target"
+    ],
+    "system": [
+      "the wordmark is the lockup; the symbol and favicon are a fragment of it, so tiers feel thin",
+      "lockups are wordmark only, with no separate symbol lockup; the small and favicon tiers fall back to a bare i that does not carry the character"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-seed-friend",
+    "03-sock-puppet"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "2fd8068014a7521e720b33fdb34e9581874f3518c469e36cc89ff9b7696f2d42"
+}

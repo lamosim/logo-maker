@@ -1,0 +1,89 @@
+{
+  "slug": "orvane",
+  "name": "Orvane",
+  "needs_name": false,
+  "created": "2026-10-08T16:50:48-04:00",
+  "updated": "2026-10-08T17:01:22-04:00",
+  "phase": "done",
+  "industry": "webhook delivery saas",
+  "surfaces": [
+    "website header",
+    "GitHub avatar",
+    "docs favicon"
+  ],
+  "primary_lockup": "horizontal",
+  "min_sizes": {
+    "horizontal_px": 120,
+    "stacked_px": 160,
+    "mark_px": 24,
+    "favicon_px": 16,
+    "horizontal_mm": 25.0,
+    "stacked_mm": 25.0,
+    "mark_mm": 6.0
+  },
+  "territory": "night-watch",
+  "concept": "04-flat-o",
+  "fonts": {
+    "wordmark": {
+      "family": "Instrument Sans",
+      "weight": 500,
+      "italic": false
+    }
+  },
+  "decisions": [
+    {
+      "at": "2026-10-08T16:51:03-04:00",
+      "phase": "intake",
+      "by": "user",
+      "note": "scripted: confirmed the brief write-back as written (conservative answer)"
+    },
+    {
+      "at": "2026-10-08T16:51:54-04:00",
+      "phase": "strategy",
+      "by": "user",
+      "note": "scripted: approved the strategy as written (conservative answer); name kept, any conflict to an attorney"
+    },
+    {
+      "at": "2026-10-08T16:52:24-04:00",
+      "phase": "territories",
+      "by": "user",
+      "note": "scripted: chose the quieter board, Night Watch (Instrument Sans 500, Lamp amber on Night)"
+    },
+    {
+      "at": "2026-10-08T16:56:53-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "knock-out skipped: the Chrome extension is unavailable in this evaluation run, so Google Lens could not be reached; description searches done. scripted: took the conservative option of recording the skip and continuing"
+    },
+    {
+      "at": "2026-10-08T16:58:52-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: likes in each: none named (conservative answer); no steal"
+    },
+    {
+      "at": "2026-10-08T16:58:52-04:00",
+      "phase": "concepts",
+      "by": "user",
+      "note": "scripted: chose 04-flat-o, the critic's preferred survivor (critic's order 04-flat-o > 01-tally = 02-brackets). The scripted first reaction (symbol disappears in the dark header at 32 px) does not fit a wordmark-only concept, so per the script the sheet stands as is. Told: app icons from 96 px up show the whole wordmark."
+    },
+    {
+      "at": "2026-10-08T17:00:49-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "scripted: approved refinement round 1 (the colour round): Lamp amber with Night and Paper, designed reverse, horizontal primary lockup"
+    },
+    {
+      "at": "2026-10-08T17:00:50-04:00",
+      "phase": "refinement",
+      "by": "user",
+      "note": "knock-out skipped: the Chrome extension is unavailable in this evaluation run, so Google Lens and the WIPO image search could not be reached; description searches done. scripted: conservative option, recorded the skip"
+    },
+    {
+      "at": "2026-10-08T17:01:21-04:00",
+      "phase": "package",
+      "by": "user",
+      "note": "scripted: approved the package handover (conservative answer)"
+    }
+  ]
+}

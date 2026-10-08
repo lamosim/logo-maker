@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "two halves that only fit each other carry 'both sides'; Sage-orderly, needs no caption to read as one solid thing kept whole",
+    "distinctive": "no hook, arrow, node or hexagon; none of Svix, Hookdeck, Convoy, Hook0, Webhook Relay uses a split tile; probe: 2 of 20 for 'split tally stick logo'",
+    "simple": "a rounded square with one stepped cut; drawable in two strokes; 16 anchors",
+    "legible": "the seam stays open from 256 down to the 16 px favicon (thinnest 6.8 px at 16); the wordmark x-height is 9.6 px at 120 px",
+    "adaptable": "solid silhouette holds in white on black and both one-colour panels; small and favicon tiers widen the seam",
+    "timeless": "flat, no gradient, no trend shape; a rounded square tile is durable",
+    "universal": "mirrored reads the same; rotated 90 gives a faint S, not a misreading",
+    "clear": "description search found no stepped split-tile mark; nearest, macOS Finder, splits straight with a face",
+    "congruent": "symmetric by rotation, medium weight, softened corners, static: matches shape 0.55, symmetry, weight and dynamism targets; open frame",
+    "system": "horizontal, stacked, symbol, small and favicon all built with no tier warnings; rationale drafted in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "metaphor-2",
+  "probe": {
+    "query": "split tally stick logo [firecrawl-images]",
+    "hits": 2,
+    "date": "2026-10-08"
+  }
+}

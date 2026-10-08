@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 5,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a small seed-shaped body with two dot eyes reads at once as a gentle little friend (Caregiver, one Jester tilt of the tip); the reading half of the idea is not drawn and needs the name or a sentence"
+    ],
+    "distinctive": [
+      "no book, owl, elephant or big eyes, and coral on cream away from the category's blue and teal; but a teardrop blob with two dot eyes is a familiar droplet-mascot silhouette, different in detail more than in shape"
+    ],
+    "simple": [
+      "one leaning teardrop plus two dots; describable in one sentence and drawable from memory in seconds"
+    ],
+    "legible": [
+      "'Pip' reads cleanly in every lockup down to the browser-nav size; the mark's silhouette holds at 24 and 16 px, but at 16 px the two eyes merge into one speck and the face is barely there"
+    ],
+    "adaptable": [
+      "black, reversed white-on-black, one-colour 64 and 32 all hold, and the coral app tile sits clear among the phone grid's blues and greens; the tilted tip gives an obvious bounce for motion"
+    ],
+    "timeless": [
+      "a warm character is a 'use' item and the flat solid fill avoids gradients; the rounded display sans is a 'use carefully' Smokies note that strategy.md justifies for an approachable consumer brand"
+    ],
+    "universal": [
+      "the mirrored panel reads as the same character; rotated 90 it becomes a face looking down, still benign, though the teardrop can faintly read as a water drop or a tear"
+    ],
+    "clear": [
+      "unsearched: droplet and seed characters with two dot eyes are common across utilities, kids' apps and stickers; none I know in children's reading (Ello's elephant, Reading Eggs' egg, Duo) is a close copy, though Reading Eggs' egg character sits near"
+    ],
+    "congruent": [
+      "round body (shape 0.2), balanced but not mirrored via the tilted tip (symmetry 0.55), low complexity, solid fills, one coral hue with warm dark ink, rounded lowercase-friendly sans, open frame, calm body with one gesture; small, light and compact like the name's sound"
+    ],
+    "system": [
+      "horizontal lockup in black, reversed, coral on cream and on brown, ladder 256 to 16, favicon tab, avatar and card all derive cleanly; no stacked lockup or redrawn favicon tier is shown on the sheet"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 3,
+  "passes": 1,
+  "fingerprint": "77503840bceb00c4aa9b32a0e1468708c857b88740bc97d6714e2ea0cc33fcd1"
+}

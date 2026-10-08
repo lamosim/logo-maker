@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 2,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "two brackets closing on one block read as held from both sides; quiet, ordered",
+    "distinctive": "brackets are a shared developer cue; probe: 10 of 20 for 'square between brackets logo' caps it at 2",
+    "simple": "two brackets and a square; drawable in seconds; 24 anchors",
+    "legible": "holds to 24 px; at 16 px the block and bracket gap tighten (thinnest 3.0 px) but stay apart",
+    "adaptable": "works reversed and one-colour; small and favicon tiers thicken the brackets",
+    "timeless": "no trend shape; code brackets are durable in developer tools",
+    "universal": "reads as a camera viewfinder or a 'stop recording' icon in the rotated panel",
+    "clear": "description search found bracket marks at Devbyte and Emerald Labs, none with a held square; category is crowded",
+    "congruent": "symmetric, medium weight, static, open: matches most targets; slightly cold, square corners on the brackets",
+    "system": "every lockup and tier builds cleanly; rationale drafted"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "abstraction",
+  "probe": {
+    "query": "square between brackets logo [firecrawl-images]",
+    "hits": 10,
+    "date": "2026-10-08"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": [
+      "the flat-floored arch O fits a calm Sage wordmark, but 'nothing gets dropped' only arrives if someone explains the flat floor as a ledge that holds"
+    ],
+    "distinctive": [
+      "the arch O is the one owned move and no hook, arrow, hexagon or node appears, yet the rest of the word is a plain geometric lowercase sans close to the category's neutral type"
+    ],
+    "simple": [
+      "one shape, a round-topped arch on a flat base, that anyone could draw from memory in a second"
+    ],
+    "legible": [
+      "'Orvane' reads at once from 256 down to the 64 one-colour lockup; the arch stays a solid shape with an open counter at 24 and 16 px, though the counter is getting small at 16"
+    ],
+    "adaptable": [
+      "it holds in black, reversed, in the one-colour 64 and 32 panels, as an ochre app tile, a browser tab and a GitHub avatar; no motion logic is shown"
+    ],
+    "timeless": [
+      "no 'avoid' shape; the mono-initial from the wordmark is a 'use carefully' item that the strategy justifies as a symbol drawn from the name's own letters"
+    ],
+    "universal": [
+      "the mirrored panel reads clean because the arch is symmetric, but the rotated panel turns the O into a D, and the lone arch can faintly read as a tombstone or a doorway"
+    ],
+    "clear": [
+      "unsearched: arch- and doorway-shaped O monograms show up often in property, architecture and storage brands; none of Svix, Hookdeck, Convoy, Hook0 or Webhook Relay uses one that I know of"
+    ],
+    "congruent": [
+      "warm ochre instead of purple or blue, a flat bottom, symmetry, rounded corners and lowercase all match the targets; the wordmark's stroke is lighter than the mid-to-heavy weight asked for"
+    ],
+    "system": [
+      "horizontal lockups and the symbol tiers from 64 to 16 px derive cleanly, but no stacked lockup or rationale appears on the sheet"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [],
+  "sheet": 4,
+  "passes": 1,
+  "fingerprint": "97b7bfa1f2818b2a20975e6af94ef55f3929da73a76c3e747917884daaeab2f4"
+}

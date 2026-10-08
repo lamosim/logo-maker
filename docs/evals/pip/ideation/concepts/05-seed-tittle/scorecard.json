@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 3,
+    "timeless": 5,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 3
+  },
+  "evidence": {
+    "appropriate": "the dot of the i is a small seed with one eye watching the P: a friend on the word, and the name's seed story",
+    "distinctive": "probe 0 of 20 for \"seed dot letter i wordmark logo\"; a one-quirk wordmark nobody in the category has",
+    "simple": "the name in Fredoka with one changed dot; drawable from memory",
+    "legible": "Pip reads at once at every lockup size (Kia test: no letter mistakable); the i icon holds at 16 px",
+    "adaptable": "one colour and reversed fine; but a wordmark-only concept shows the whole wordmark in app icons from 96 px, and the small i icon is thin",
+    "timeless": "a custom wordmark with one owned quirk, on the trends page's use list",
+    "universal": "the full word is clean; the small-tier i alone can read as the 'information' i",
+    "clear": "description search found Pip & Seed catering designs (plain sans) and a Pip Squad contest brief; no seed-dotted i; Lens skipped (owner decision)",
+    "congruent": "rounded type, round seed, one asymmetric gesture, small and light like the name's sound; the character is implied, not drawn",
+    "system": "lockup, compact, small and favicon build; no symbol, so app icons from 96 px show the whole wordmark"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "type-quirk",
+  "probe": {
+    "query": "seed dot letter i wordmark logo [firecrawl-images]",
+    "hits": 0,
+    "date": "2026-10-08"
+  }
+}

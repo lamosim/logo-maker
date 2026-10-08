@@ -1,0 +1,64 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 3,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a solid rounded block held between two square brackets reads at once as something caught and kept, fitting 'nothing gets dropped' and the Sage's order",
+      "a solid square held between two brackets reads at once as something caught and kept, matching 'nothing gets dropped'"
+    ],
+    "distinctive": [
+      "avoids hooks, arrows and hexagons, but square brackets are a stock developer-tool cue; the silhouette is generic even though the details differ",
+      "square brackets are a stock developer-tool cue, and the [\u25a0] silhouette also reads as a generic checkbox or focus icon"
+    ],
+    "simple": [
+      "three parts (two brackets and a block), symmetric, easy to redraw from memory",
+      "two brackets and a square; describable in one sentence"
+    ],
+    "legible": [
+      "at 32 px the bracket gaps hold, but at 16 px the gaps between the brackets and the block close up into a dark speck; the Orvane wordmark reads cleanly at 120 px",
+      "the brackets and square stay separate down to 16 px, though the gaps tighten; 'Orvane' reads in every lockup"
+    ],
+    "adaptable": [
+      "the black, reversed and one-colour 64/32 panels all hold, and so do the app-grid tile, the browser tab and the avatar; no colour version is shown",
+      "solid in one colour, reversed and as the app tile and avatar; the heavy shapes survive the dark header"
+    ],
+    "timeless": [
+      "no trend shape; a bracket and a block would have looked the same ten years ago",
+      "plain geometry with no trend shape"
+    ],
+    "universal": [
+      "the mirrored panel is identical; rotated 90, it reads faintly as a cassette or film frame, a weak second reading",
+      "the rotated panel reads as a chip or a media stop button, a faint secondary reading"
+    ],
+    "clear": [
+      "unsearched: bracket-and-square marks are common among code and dev tools (sandbox and IDE-style marks); this is likely close to marks in nearby categories",
+      "unsearched: bracketed squares are widespread in dev-tool and code icon sets, so a look-alike is likely"
+    ],
+    "congruent": [
+      "symmetric, grounded, heavy weight and a flat base match the targets, but the brackets have sharp corners against the 'softened by a radius' rule, the wordmark is a default geometric sans, and no warm hue appears",
+      "symmetric, grounded and heavy as targeted, but sharp square corners miss the 'softened, never sharp' rule"
+    ],
+    "system": [
+      "the horizontal lockup, symbol tier down to 16 px, reversed version and mockups all derive cleanly; no stacked lockup is shown",
+      "horizontal lockup, symbol and all tiers derive consistently from the one mark"
+    ]
+  },
+  "preferred_over": [],
+  "tied_with": [
+    "01-tally",
+    "04-flat-o"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "f56b6f66667caafc83762db8e6f153eb800da9756bf52121a9e37f13b3351b3d"
+}

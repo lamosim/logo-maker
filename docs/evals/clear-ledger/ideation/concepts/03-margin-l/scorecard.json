@@ -1,0 +1,35 @@
+{
+  "route": "negative-space",
+  "kill": false,
+  "reason": "",
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 5,
+    "adaptable": 5,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a solid page whose margin line and ruled foot cut an L, ruled off twice; reads as 'L' first and as a ruled page second",
+    "distinctive": "no competitor uses a square page; but a letter cut from a tile is a common construction; probe: 5 of 20 for \"ruled page negative space L logo\" caps it at 3",
+    "simple": "one square, one L-shaped cut and one rule; 18 anchors",
+    "legible": "the L reads at 16 px (favicon drops the second rule) with features of 9 px; the wordmark reads at 120 px (x-height 7.4 px)",
+    "adaptable": "one colour and reversed both hold; the tile is the app icon as is; motion: the margin and the rules draw in like a ruled page",
+    "timeless": "square, app-tile-aware geometry is on the use list; no avoid-list shape",
+    "universal": "mirrored reads as a reversed L; rotated 90 a gate-like form; no unwanted reading",
+    "clear": "description and image searches found many negative-space L stock marks cut from blocks and an L-corner pie-chart template; Lens skipped (no Chrome extension)",
+    "congruent": "framed, symmetric silhouette, low complexity, static and the descriptive cue match; the monoline cut is more geometric than the serif wordmark it sits beside",
+    "system": "horizontal, stacked, symbol, small and favicon build; the favicon drops the second rule cleanly; rationale draft in critique.md"
+  },
+  "probe": {
+    "query": "ruled page negative space L logo [firecrawl-images]",
+    "hits": 5,
+    "date": "2026-10-08"
+  },
+  "reconciled": {}
+}

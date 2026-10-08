@@ -1,0 +1,65 @@
+{
+  "scores": {
+    "appropriate": 3,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": [
+      "a flat-bottomed, arch-shaped O grounds the wordmark and matches the Sage's quiet discipline, but the link to 'nothing gets dropped' takes a sentence of explanation (a base nothing falls through)",
+      "the flat-based arch O reads as a doorway or shelter, quiet and Sage-like, but 'nothing gets dropped' needs a sentence to connect"
+    ],
+    "distinctive": [
+      "the flat-based arch O is one owned type quirk that none of Svix, Hookdeck, Convoy, Hook0 or Webhook Relay uses, and it avoids the letter-in-a-circle clich\u00e9",
+      "one owned letter in an otherwise plain lowercase geometric sans that sits close to the category's Inter-like uniform"
+    ],
+    "simple": [
+      "one shape: an arch with a flat base, drawable in seconds; the wordmark carries no other ornament",
+      "a single arch outline with a flat base; drawable in one stroke"
+    ],
+    "legible": [
+      "Orvane reads at a glance in the header and on the business card, and the arch O stays an open, solid ring at 16 and 24 px",
+      "'Orvane' reads at 128 px and in the header, but the outlined arch thins to a small hairline ring at 24 and 16 px"
+    ],
+    "adaptable": [
+      "the reversed and one-colour panels hold; the arch O works as the app tile, browser tab and avatar; the 64 px one-colour wordmark is small but readable",
+      "reversed and one-colour panels hold, but the app tile and avatar show only a thin outline arch with little presence"
+    ],
+    "timeless": [
+      "a custom wordmark with one owned quirk is a durable 'use' item, and the rest of the type is plain",
+      "a custom wordmark with one owned quirk; the mono-initial icon is a careful-use trend built from the wordmark's DNA"
+    ],
+    "universal": [
+      "the mirrored and rotated wordmarks read clean, but the standalone arch icon reads faintly as a tombstone or doorway in the avatar and app tile",
+      "mirrored 'enavrO' and rotated panels read clean; the lone arch faintly suggests a tombstone or a D"
+    ],
+    "clear": [
+      "unsearched: I know of no flat-bottomed-O wordmark among webhook or developer-infrastructure brands; arch-shaped Os do appear in other categories",
+      "unsearched: arch- and doorway-shaped O letters are common across tech and property wordmarks; nothing exact known in webhooks"
+    ],
+    "congruent": [
+      "round-then-flat matches the round-then-crisp sound of OR-vain; symmetric, flat-bottomed and medium-heavy as targeted, though no warm hue appears and the sans is close to the category's neutral",
+      "flat bottom, symmetry and rounded join fit, but the stroke is lighter than the 'medium, solid at 16 px' target and no warm hue shows"
+    ],
+    "system": [
+      "the wordmark, symbol tier from 64 down to 16 px, reversed version and mockups derive cleanly; the header lockup is the wordmark only, with no symbol-plus-name lockup shown",
+      "the lockup is wordmark-only; the symbol tiers exist but the arch alone is weak as the favicon and avatar"
+    ]
+  },
+  "preferred_over": [
+    "02-brackets"
+  ],
+  "tied_with": [
+    "01-tally"
+  ],
+  "sheet": 2,
+  "passes": 2,
+  "fingerprint": "84424a6dd0cb275e0cfee32abc9906c2ee3d5a8eb1d5119f7303a667302b922a"
+}

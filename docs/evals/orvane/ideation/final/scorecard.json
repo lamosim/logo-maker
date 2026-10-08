@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the one letter that sits down and stays put: quiet, grounded; the name leads, as a new brand should",
+    "distinctive": "no competitor's wordmark has a flat-bottomed O; probe: 1 of 20 for 'flat bottom letter O wordmark logo'",
+    "simple": "the wordmark with one changed letter; the icon is one arch-shaped O",
+    "legible": "'Orvane' reads at the 120 px minimum and the 32 px header; the flat O favicon holds at 16 px (thinnest 3.3 px)",
+    "adaptable": "black, white, colour on Paper and a designed reverse on Night all hold; compact, small and favicon draw the flat O; app icons from 96 px show the wordmark",
+    "timeless": "custom wordmark with one owned quirk is on the use list",
+    "universal": "the lone O icon can read as an arch, a door or a headstone",
+    "clear": "description searches found no flat-bottomed-O wordmark and no Orvane mark; image search (Lens, WIPO) skipped by the owner's decision, no Chrome extension",
+    "congruent": "Instrument Sans 500, medium weight, level base, static; Lamp amber at medium saturation and mid lightness meets the warm hue target against the purple-blue uniform",
+    "system": "wordmark, compact, small and favicon build cleanly; tokens with a designed reverse; primary lockup horizontal; rationale drafted"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "type-quirk",
+  "probe": {
+    "query": "flat bottom letter O wordmark logo [firecrawl-images]",
+    "hits": 1,
+    "date": "2026-10-08"
+  }
+}

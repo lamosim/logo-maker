@@ -1,0 +1,35 @@
+{
+  "route": "letterform",
+  "kill": false,
+  "reason": "",
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 4,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the L of Ledger stands on a second rule, its foot doubled like a total; the idea takes one sentence",
+    "distinctive": "no competitor uses an L or a serif letter; the doubled foot is the ownable detail; probe: 2 of 20 for \"letter L logo double line foot\"",
+    "simple": "one letter and one bar, 26 anchors",
+    "legible": "the L reads from 256 px to 16 px; the gap under the foot holds at 24 px and closes towards a thick base at 16 px; the wordmark reads at 120 px (x-height 7.7 px)",
+    "adaptable": "one colour and reversed hold; the L is the icon at every size; motion: the second rule draws in under the foot",
+    "timeless": "a mono-initial icon from the wordmark's own letter is a 'use carefully' item, reasoned in strategy.md section 8 (the name is too long for an icon)",
+    "universal": "mirrored reads as a reversed L or a J; rotated 90 a faint I-beam; nothing unwanted",
+    "clear": "description and image searches found stock double-line L vectors and generic accounting lettermarks, no serif L on a rule; Lens skipped (no Chrome extension)",
+    "congruent": "medium weight, low complexity, symmetric base, static, framed underfoot and the descriptive rule match; the serif misses the sans typeface target",
+    "system": "horizontal, stacked, symbol, small and favicon build; the symbol is the wordmark's own L; rationale draft in critique.md"
+  },
+  "probe": {
+    "query": "letter L logo double line foot [firecrawl-images]",
+    "hits": 2,
+    "date": "2026-10-08"
+  },
+  "reconciled": {}
+}

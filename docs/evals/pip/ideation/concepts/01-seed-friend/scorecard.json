@@ -1,0 +1,35 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 3,
+    "simple": 5,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 3,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "a soft creature leaning toward the word and looking at it: the friend who reads with you, Caregiver-round",
+    "distinctive": "probe 5 of 20 for \"seed character logo\" caps it at 3; the silhouette is close to a stock water-drop with eyes",
+    "simple": "one teardrop body and two dots; 25 anchors; drawable in seconds",
+    "legible": "the silhouette holds at 16 px; the eyes fade below 24 px, leaving a plain drop",
+    "adaptable": "works in white on black and one colour; small and favicon tiers enlarge the eyes; the lean gives a motion logic (nod)",
+    "timeless": "no avoid-list shape; a single drop sits near the 'droplet' family the trends page warns about for water brands",
+    "universal": "mirrored reads clean; the drop shape can read as a water drop or a tear, a faint secondary reading",
+    "clear": "description search found only generic water-drop templates and seed mascots with sprouts; Lens skipped (owner decision)",
+    "congruent": "round (0.2), dosed asymmetry by the lean, low complexity, open frame, small and light like the name's sound",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all build; rationale drafted in critique.md"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {},
+  "route": "object",
+  "probe": {
+    "query": "seed character logo [firecrawl-images]",
+    "hits": 5,
+    "date": "2026-10-08"
+  }
+}

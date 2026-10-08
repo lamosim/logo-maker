@@ -1,0 +1,38 @@
+{
+  "scores": {
+    "appropriate": 4,
+    "distinctive": 4,
+    "simple": 4,
+    "legible": 4,
+    "adaptable": 4,
+    "timeless": 4,
+    "universal": 3,
+    "clear": 4,
+    "congruent": 4,
+    "system": 4
+  },
+  "evidence": {
+    "appropriate": "the persona's sock puppet, mouth open mid-word; but the beaked head can read as a dinosaur or bird before a friend",
+    "distinctive": "probe 0 of 20 for \"hand puppet logo\" (glove-puppet bears, marionette hands, no profile sock); no competitor uses a puppet",
+    "simple": "a sleeve, a long rounded head, one wedge mouth and one eye; 17 anchors",
+    "legible": "the silhouette survives to 16 px, but at 24 and 16 px it can read as a letter F",
+    "adaptable": "one colour and reversed both hold; the mouth gives an obvious motion (it talks when the child reads)",
+    "timeless": "no trend shape; a flat silhouette that would have read the same ten years ago",
+    "universal": "mirrored is clean; the profile can read as a small dinosaur or bird, a secondary reading; rotated 90 is abstract",
+    "clear": "description search found Smith Micro's 2013 Sock Puppets app and the Burlington Sock Puppets team mark, neither a silhouette like this; Lens skipped (owner decision)",
+    "congruent": "round forms, asymmetric gesture (the open mouth), medium filled weight, open frame; small and quick like 'Pip'",
+    "system": "horizontal, stacked, symbol, compact, small and favicon all build; the silhouette echoes the P of the wordmark"
+  },
+  "kill": false,
+  "reason": "",
+  "reconciled": {
+    "appropriate": "I lowered 5 to 4 after the critic's dinosaur-or-bird reading, which I had noted under universal; the puppet persona still reads without a caption, so 4, not 3",
+    "legible": "I lowered 5 to 4 after the critic's F reading at 24 and 16 px; the silhouette holds as one shape with an open mouth at 16 px, so 4 stands over 3"
+  },
+  "route": "metaphor-2",
+  "probe": {
+    "query": "hand puppet logo [firecrawl-images]",
+    "hits": 0,
+    "date": "2026-10-08"
+  }
+}
