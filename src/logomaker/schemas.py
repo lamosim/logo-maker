@@ -316,6 +316,57 @@ class CriticCard(BaseModel):
         return sum(self.scores[c] for c in CRITERIA)
 
 
+class ImageMatch(BaseModel):
+    url: str
+    owner: str = ""
+    note: str = ""
+
+
+class ImageSearch(BaseModel):
+    """One reverse-image search of the rendered mark: `tool` google-lens or wipo; `searched` with its `matches`, or
+    `skipped` with the reason (the gate then needs the owner's `knock-out skipped:` decision)."""
+
+    tool: str
+    date: str = ""
+    searched: bool = False
+    matches: list[ImageMatch] = Field(default_factory=list)
+    skipped: str | None = None
+
+    @model_validator(mode="after")
+    def searched_or_skipped(self) -> ImageSearch:
+        if self.searched and self.skipped:
+            raise ValueError("searched and skipped are exclusive")
+        return self
+
+    @property
+    def done(self) -> bool:
+        return self.searched or bool(self.skipped and self.skipped.strip())
+
+
+class DescriptionQuery(BaseModel):
+    query: str
+    date: str = ""
+    findings: str = ""
+
+
+class Knockout(BaseModel):
+    """<concept>/knockout.json (spec 2026-10-08 §7): the description searches, the Google Lens search of the rendered
+    mark, the WIPO image search (final/ only) and the trademark caveat."""
+
+    description_queries: list[DescriptionQuery] = Field(default_factory=list)
+    image_matches: ImageSearch = Field(default_factory=lambda: ImageSearch(tool="google-lens"))
+    wipo: ImageSearch | None = None
+    caveat: str = ""
+
+    @property
+    def image_done(self) -> bool:
+        return self.image_matches.done
+
+    @property
+    def wipo_done(self) -> bool:
+        return self.wipo is not None and self.wipo.done
+
+
 class ManifestEntry(BaseModel):
     path: str
     purpose: str
