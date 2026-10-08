@@ -13,7 +13,7 @@ from logomaker.kit.mark import ROLES
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.render import fit_size, svg_size
-from tests.conftest import FIXTURES, StubRenderer, make_final_brand, requires_chrome, write_passing_audit
+from tests.conftest import FIXTURES, StubRenderer, critic_run, make_final_brand, requires_chrome, write_passing_audit
 from tests.test_export_core import build, opened
 
 PLATFORM = ["apple", "android", "social", "banners", "previews", "commerce"]
@@ -54,9 +54,10 @@ PLATFORM_FILES = [RASTERS[0][0], *LAYERS, *(name for name, *_ in RASTERS[1:])]
 
 
 def use_concept(final: Path, fixture: str) -> None:
-    """final/ drawn by tests/fixtures/concepts/<fixture>, with a passing audit."""
+    """final/ drawn by tests/fixtures/concepts/<fixture>, with a passing audit and a fresh critic card."""
     shutil.copy(FIXTURES / "concepts" / fixture / "concept.py", final / "concept.py")
     write_passing_audit(project(), "keystone", final)
+    critic_run(project().root, [], final=True)
 
 
 def on_tile(light: dict[str, str]) -> dict[str, str]:

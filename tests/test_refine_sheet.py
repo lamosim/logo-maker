@@ -69,7 +69,7 @@ def test_the_cli_refuses_a_missing_final_concept_or_broken_tokens_before_chrome_
     write_passing_audit(project(), "keystone", final)  # an audit of the mark with these tokens: the tokens are what stops it
     code, errors = sheet()
     assert code == 2 and errors[0].startswith(f"{final / 'tokens.json'} is invalid: ")
-    assert not list((project_root / "brands" / "keystone" / "sheets").iterdir())
+    assert not list((project_root / "brands" / "keystone" / "sheets").glob("refine-*"))
 
 
 def test_the_sheet_refuses_a_final_mark_without_a_passing_audit_before_chrome_starts(project_root, no_chrome):
@@ -92,13 +92,13 @@ def test_the_sheet_refuses_a_final_mark_without_a_passing_audit_before_chrome_st
     assert sheet() == (2, [refusal.format(stale)])
     audit.unlink()
     assert sheet() == (2, [refusal.format(f"is missing (run: {audit_final})")])
-    assert not list((project_root / "brands" / "keystone" / "sheets").iterdir())
+    assert not list((project_root / "brands" / "keystone" / "sheets").glob("refine-*"))
 
 
 def test_a_final_concept_reaches_chrome_and_a_failed_render_writes_no_sheet(project_root, no_chrome):
     make_final_brand(project_root)
     sheets_dir = project_root / "brands" / "keystone" / "sheets"
-    sheets_dir.rmdir()
+    shutil.rmtree(sheets_dir)  # the critic's sheets and keys: the refine sheet reads none of them
     result = CliRunner().invoke(main, ["sheet", "refine", "keystone", "--no-open"])
     payload = json.loads(result.stdout)
     # The stand-in is entered once final/ has loaded and built: the refusal above stopped before Chrome.

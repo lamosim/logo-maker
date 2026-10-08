@@ -113,10 +113,12 @@ class PackageBuilder(DocumentGroups):
     GROUPS: list[str] = ["masters", "pngs", "flattened", "favicons", "apple", "android", "social", "banners", "previews", "commerce",
                          "print_files", "tokens_file", "fonts", "docs", "readme"]
 
-    def __init__(self, paths: ProjectPaths, slug: str, paper: str = "letter"):
+    def __init__(self, paths: ProjectPaths, slug: str, paper: str = "letter", critic_required: bool = True):
         """Check final/ before anything renders: its four files (a missing one is named with what to write, and "finish
         refinement" while the brand is still in refinement), then an audit.json that vouches for the final mark as it is
-        now (registry.require_final_audit). Either refusal is a CliError, exit 2."""
+        now (registry.require_final_audit), then, unless `critic_required` is False (only the Keystone example, which
+        predates the critic), the critic's fresh card and a reconciled final/scorecard.json (registry.require_final_critic).
+        Any refusal is a CliError, exit 2."""
         self.paths, self.slug, self.paper = paths, slug, paper
         self.state = registry.load_state(paths, slug)
         self.brand_dir = paths.brand(slug)
@@ -129,6 +131,8 @@ class PackageBuilder(DocumentGroups):
                     remedy = f"finish refinement and {remedy}"
                 raise CliError(f"final/{name} is missing; {remedy} before packaging")
         registry.require_final_audit(paths, slug, "packaging")
+        if critic_required:
+            registry.require_final_critic(paths, slug, "packaging")
         self.inputs = inputs_fingerprint(paths, slug)  # what this build reads, as the manifest records it
         self.outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(self.final)))
         self.tokens = enrich_tokens(load_tokens(self.final / "tokens.json"))

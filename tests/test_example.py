@@ -70,7 +70,9 @@ def test_example_package_builds_again_and_verifies(project_root, renderer):
     for family in (p for p in (brand / "package" / "fonts").iterdir() if p.is_dir()):  # the package's own copies of its fonts
         shutil.copytree(family, project_root / "assets" / "fonts" / family.name, dirs_exist_ok=True)
     committed = json.loads((brand / "package" / "manifest.json").read_text())
-    manifest = export.PackageBuilder(project(), "keystone").build(renderer)
+    # The Keystone example predates the blind critic (spec 2026-10-08 §10): its final/ has no critic.json, and making one
+    # needs Chrome and an Opus run, so this build skips the critic gate every real build passes.
+    manifest = export.PackageBuilder(project(), "keystone", critic_required=False).build(renderer)
     assert sorted(entry.path for entry in manifest.files) == sorted(entry["path"] for entry in committed["files"])
     assert manifest.skipped == {} and manifest.warnings == []
     hashes = {entry["path"]: entry["sha256"] for entry in committed["files"]}

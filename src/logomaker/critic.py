@@ -121,13 +121,15 @@ def _load(path: Path, model: type[BaseModel], label: str):
     if not path.is_file():
         raise CliError(f"{label} is missing")
     try:
-        return model.model_validate_json(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as err:
+        raise CliError(f"{label} is not valid JSON: {err}") from err
+    try:
+        return model.model_validate(data)
     except ValidationError as err:
         first = err.errors()[0]
         loc = ".".join(str(p) for p in first["loc"]) or "root"
         raise CliError(f"{label} is invalid: {loc}: {first['msg']}") from err
-    except ValueError as err:
-        raise CliError(f"{label} is not valid JSON: {err}") from err
 
 
 def key_path(brand: Path, round_n: int) -> Path:
@@ -161,3 +163,36 @@ def write_cards(paths: ProjectPaths, slug: str, round_n: int) -> dict:
         target.write_text(json.dumps(card.model_dump(), indent=2) + "\n", encoding="utf-8")
         written[name] = str(target)
     return {"sheet": round_n, "passes": len(passes), "cards": written}
+
+
+def refresh_command(slug: str, folder: Path) -> str:
+    """How to give `folder` a fresh critic card: its critic sheet, the critic run, and the merge."""
+    target = "--final" if folder.name == "final" else f"--concepts {folder.name}"
+    return f"logomaker sheet critic {slug} {target}, dispatch the critic, then logomaker concept critic {slug} --sheet N"
+
+
+def critic_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | None = None) -> list[str]:
+    """Why <folder>/critic.json does not vouch for the concept as it is now, or []: missing, not valid JSON, invalid, or
+    stale (its fingerprint is not audit.concept_fingerprint of the concept now). Each message ends with how to refresh it."""
+    from .audit import concept_fingerprint  # imported here: audit imports registry, which imports this module
+
+    label = label or f"{folder.name}/critic.json"
+    path = folder / "critic.json"
+    how = refresh_command(slug, folder)
+    if not path.is_file():
+        return [f"{label} is missing (run: {how})"]
+    try:
+        card = _load(path, CriticCard, label)
+    except CliError as err:
+        return [f"{err} (run: {how})"]
+    if card.fingerprint != concept_fingerprint(paths, slug, folder):
+        return [f"{label} is stale (the concept changed since the critic saw it); re-run: {how}"]
+    return []
+
+
+def preference_line(cards: dict[str, CriticCard]) -> str:
+    """The critic's order as one line: concepts grouped by how many they beat, best first, `>` between groups, `=` within."""
+    groups: dict[int, list[str]] = {}
+    for name, card in cards.items():
+        groups.setdefault(len(card.preferred_over), []).append(name)
+    return " > ".join(" = ".join(sorted(groups[wins])) for wins in sorted(groups, reverse=True))

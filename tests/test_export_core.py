@@ -16,7 +16,7 @@ from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import Manifest, Phase
-from tests.conftest import FIXTURES, StubRenderer, make_final_brand, requires_chrome, write_passing_audit
+from tests.conftest import FIXTURES, StubRenderer, critic_run, make_final_brand, requires_chrome, write_passing_audit
 
 SQ = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -25 100 50"><path d="M0 0"/></svg>'
 CORE = ["masters", "pngs", "flattened", "favicons"]
@@ -152,6 +152,7 @@ def test_named_masters_follow_the_fallback_chains(project_root):
     assert resolved(export.PackageBuilder(project(), "keystone"))["primary"] == "full-stacked"
     shutil.copy(FIXTURES / "concepts" / "tall_frame" / "concept.py", final / "concept.py")  # a symbol alone, with a favicon tier
     write_passing_audit(project(), "keystone", final)
+    critic_run(project_root, [], final=True)
     builder = export.PackageBuilder(project(), "keystone")
     assert resolved(builder) == {"primary": "full-lockup", "horizontal": "full-lockup", "stacked": "full-lockup", "wordmark": None,
                                  "mark": "full-symbol", "small": "full-symbol", "favicon": "favicon"}

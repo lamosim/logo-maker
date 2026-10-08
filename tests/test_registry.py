@@ -9,7 +9,10 @@ from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import Phase, TerritoriesSpec
-from tests.conftest import FIXTURES, install_concept, make_final_brand, scorecard, write_passing_audit
+from tests.conftest import FIXTURES, critic_run, install_concept, make_final_brand, scorecard, write_passing_audit
+
+CRITIC_STALE = ("01-good/critic.json is stale (the concept changed since the critic saw it); re-run: logomaker sheet critic "
+                "keystone --concepts 01-good, dispatch the critic, then logomaker concept critic keystone --sheet N")
 
 
 def run(*args):
@@ -200,6 +203,8 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
         saved = json.loads((folder / "audit.json").read_text())
         (folder / "audit.json").write_text(json.dumps({**saved, "rendered": rendered}))
 
+    audited(rendered=True)
+    critic_run(project_root, ["01-good"])  # the critic sheet needs a rendered audit; the card stays fresh without one
     audited(rendered=False)
     assert registry._check_concept(brand, state) == [f"01-good/audit.json was made with --no-render; re-run without it: {rerun}"]
     audited(rendered=True)
@@ -208,8 +213,9 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
              ("concept.py", (folder / "concept.py").read_text() + "# edited\n"))
     for name, content in edits:
         (folder / name).write_text(content)
-        assert registry._check_concept(brand, state) == [stale], name
+        assert registry._check_concept(brand, state) == [stale, CRITIC_STALE], name  # the critic saw the concept before too
         audited(rendered=True)
+        critic_run(project_root, ["01-good"])
         assert registry._check_concept(brand, state) == [], name
     saved = json.loads((folder / "audit.json").read_text())
     (folder / "audit.json").write_text(json.dumps({**saved, "ok": False}))
@@ -219,6 +225,8 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
 def test_malformed_audit_or_verify_json_is_reported_not_raised(project_root):
     folder = install_concept(project_root, "good")
     (folder / "scorecard.json").write_text(json.dumps(scorecard()))
+    write_passing_audit(project(), "keystone", folder)
+    critic_run(project_root, ["01-good"])  # a fresh critic card, so the malformed audit is the concept gate's one problem
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
     package_verify = "(run: logomaker package verify keystone)"
@@ -264,11 +272,13 @@ def test_the_concept_gate_follows_only_the_brand_settings_the_audit_reads(projec
     audit.audit_concept(project(), "keystone", "01-good")
     saved = json.loads((folder / "audit.json").read_text())
     (folder / "audit.json").write_text(json.dumps({**saved, "rendered": True}))
+    critic_run(project_root, ["01-good"])
     assert run("brand", "set", "keystone", "--concept", "01-good")[0] == 0  # brand.json changes; nothing the audit read does
     assert registry._check_concept(brand, registry.load_state(project(), "keystone")) == []
     assert run("brand", "set", "keystone", "--industry", "AI tooling")[0] == 0  # the cliché check reads the industry
     stale = registry._check_concept(brand, registry.load_state(project(), "keystone"))
-    assert len(stale) == 1 and stale[0].startswith("01-good/audit.json is stale") and "industry" in stale[0]
+    assert len(stale) == 2 and stale[0].startswith("01-good/audit.json is stale") and "industry" in stale[0]
+    assert stale[1] == CRITIC_STALE  # the critic's card carries the same fingerprint
 
 
 def test_the_concept_gate_needs_a_scorecard_that_passes_the_gate(project_root):
@@ -286,6 +296,10 @@ def test_the_concept_gate_needs_a_scorecard_that_passes_the_gate(project_root):
     [problem] = registry._check_concept(brand, state)
     assert problem.startswith("01-good/scorecard.json is invalid: root: Value error, scores missing: distinctive, simple")
     card.write_text(json.dumps(scorecard(distinctive=2)))  # only appropriate, simple and legible gate
+    assert registry._check_concept(brand, state) == [
+        "01-good/critic.json is missing (run: logomaker sheet critic keystone --concepts 01-good, dispatch the critic, then "
+        "logomaker concept critic keystone --sheet N)"]
+    critic_run(project_root, ["01-good"], distinctive=2)
     assert registry._check_concept(brand, state) == []
 
 
@@ -403,6 +417,10 @@ def test_final_tokens_must_validate(project_root):
     missing = check_final()
     assert len(missing) == 1 and missing[0].startswith("final/tokens.json is invalid: colors: ")
     tokens.write_text(json.dumps(good_tokens()))
+    assert check_final() == ["final/critic.json is missing (run: logomaker sheet critic keystone --final, dispatch the critic, "
+                             "then logomaker concept critic keystone --sheet N)"]  # asked once final/'s own files pass
+    critic_run(project_root, [], final=True)
+    (brand / "final" / "scorecard.json").write_text(json.dumps(scorecard()))
     assert check_final() == []
     tokens.unlink()
     assert check_final() == ["final/tokens.json is missing; write final/tokens.json (the approved colours)"]
@@ -436,6 +454,11 @@ def test_the_final_gate_needs_a_current_rendered_passing_audit_of_the_final_mark
     assert code == 2 and payload["missing"] == [f"final/audit.json is missing (run: {rerun})"]
     write_passing_audit(project(), "keystone", final)
     code, payload = run("brand", "advance", "keystone", "--to", "package")
+    assert code == 2 and payload["missing"] == [  # the critic saw the mark before params.json changed
+        "final/critic.json is stale (the concept changed since the critic saw it); re-run: logomaker sheet critic keystone "
+        "--final, dispatch the critic, then logomaker concept critic keystone --sheet N"]
+    critic_run(project_root, [], final=True)
+    code, payload = run("brand", "advance", "keystone", "--to", "package")
     assert code == 0 and payload["brand"]["phase"] == "package"
 
 
@@ -447,8 +470,9 @@ def test_past_concepts_the_chosen_concept_s_audit_need_only_be_on_record(project
     concept = project_root / "brands" / "keystone" / "concepts" / "01-good"
     (concept / "params.json").write_text('{"stroke": 80}')  # the chosen concept changed after its audit
     code, payload = run("brand", "advance", "keystone", "--to", "refinement")
-    assert code == 2 and [m.split(" (")[0] for m in payload["missing"]] == ["01-good/audit.json is stale"]
+    assert code == 2 and [m.split(" (")[0] for m in payload["missing"]] == ["01-good/audit.json is stale", "01-good/critic.json is stale"]
     write_passing_audit(project(), "keystone", concept)
+    critic_run(project_root, ["01-good"])
     assert run("brand", "advance", "keystone", "--to", "refinement")[0] == 0
     (concept / "params.json").write_text('{"stroke": 90}')  # stale again, but final/ is what ships now
     code, payload = run("brand", "advance", "keystone", "--to", "package")

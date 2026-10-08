@@ -18,6 +18,7 @@ from .schemas import (
     PHASE_ORDER,
     BrandState,
     Brief,
+    CriticCard,
     Decision,
     FontChoice,
     Phase,
@@ -332,17 +333,71 @@ def passing_scorecard(folder: Path, label: str) -> Scorecard:
     return card
 
 
+def vetted_scorecard(paths: ProjectPaths, slug: str, folder: Path, label: str) -> tuple[Scorecard, CriticCard]:
+    """The designer's passing scorecard (passing_scorecard) and the critic's fresh card for `folder`, with every criterion
+    they put two or more apart reconciled in the scorecard; otherwise a CliError saying what to do (spec 2026-10-08 §3.3)."""
+    from . import critic as criticlib  # imported here to keep registry import-light
+
+    card = passing_scorecard(folder, label)
+    critic_label = label.replace("scorecard.json", "critic.json")
+    problems = criticlib.critic_problems(paths, slug, folder, critic_label)
+    if problems:
+        raise CliError("; ".join(problems))
+    critic_card = load_model(folder / "critic.json", CriticCard, critic_label)
+    open_ = criticlib.unreconciled(card, critic_card)
+    if open_:
+        raise CliError(f"designer and critic disagree by {criticlib.DISAGREEMENT} or more on {', '.join(open_)}; "
+                       f"add a reconciled entry for each to {label}")
+    return card, critic_card
+
+
+def require_final_critic(paths: ProjectPaths, slug: str, needs: str) -> None:
+    """A CliError (exit 2) unless final/critic.json vouches for the final mark as it is now and final/scorecard.json exists
+    with every disagreement reconciled (final_critic_problems), saying what `needs` it ("packaging")."""
+    problems = final_critic_problems(paths, slug)
+    if problems:
+        raise CliError(f"{needs} needs the critic's pass on the final mark: {'; '.join(problems)}")
+
+
+def final_critic_problems(paths: ProjectPaths, slug: str) -> list[str]:
+    """Why final/critic.json and final/scorecard.json do not vouch for the final mark as it is now, or []: the critic's
+    card is missing, malformed or stale (critic.critic_problems), the scorecard is missing or malformed, or the two put a
+    criterion two or more apart with no reconciled entry."""
+    from . import critic as criticlib
+
+    final = paths.brand(slug) / "final"
+    problems = criticlib.critic_problems(paths, slug, final, "final/critic.json")
+    if problems:
+        return problems
+    if not (final / "scorecard.json").is_file():
+        return ["final/scorecard.json is missing; re-score final/ after the last refinement round (scorecard.md)"]
+    try:
+        card = load_model(final / "scorecard.json", Scorecard, "final/scorecard.json")
+    except CliError as err:
+        return [str(err)]
+    critic_card = load_model(final / "critic.json", CriticCard, "final/critic.json")
+    open_ = criticlib.unreconciled(card, critic_card)
+    if open_:
+        return [f"designer and critic disagree by {criticlib.DISAGREEMENT} or more on {', '.join(open_)}; "
+                "add a reconciled entry for each to final/scorecard.json"]
+    return []
+
+
 def _check_concept(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     """The chosen concept needs a scorecard that passes the gate (passing_scorecard) and, when the brand is leaving the
-    concepts phase (`current`), a passing, rendered audit of what it is now (audit_problems). Once the brand is past it,
-    final/ is what ships and has its own gate, so the concept's audit need only be on record: present and valid JSON."""
+    concepts phase (`current`), a passing, rendered audit of what it is now (audit_problems) and a fresh critic card the
+    scorecard is reconciled with (vetted_scorecard). Once the brand is past it, final/ is what ships and has its own
+    gate, so the concept's audit need only be on record: present and valid JSON."""
     if not state.concept:
         return [f"concept not chosen (run: logomaker brand set {state.slug} --concept <NN-slug>)"]
     folder = brand / "concepts" / state.concept
     paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
     missing = _need(brand, folder / "concept.py") + audit_problems(paths, state.slug, folder, strict=current)
     try:
-        passing_scorecard(folder, f"{state.concept}/scorecard.json")
+        if current:
+            vetted_scorecard(paths, state.slug, folder, f"{state.concept}/scorecard.json")
+        else:
+            passing_scorecard(folder, f"{state.concept}/scorecard.json")
     except CliError as err:
         missing.append(str(err))
     return missing
@@ -350,7 +405,8 @@ def _check_concept(brand: Path, state: BrandState, current: bool = True) -> list
 
 def _check_final(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     """final/ needs concept.py, params.json, a valid tokens.json, and an audit.json that vouches for the final mark as it
-    is now (audit_problems: present, fresh, rendered and passing)."""
+    is now (audit_problems: present, fresh, rendered and passing); once those hold, a fresh critic card and a scorecard
+    reconciled with it (final_critic_problems)."""
     from .color import Tokens  # imported here to keep registry import-light
 
     final = brand / "final"
@@ -359,7 +415,8 @@ def _check_final(brand: Path, state: BrandState, current: bool = True) -> list[s
         missing += _need(brand, final / name, remedy=FINAL_REMEDIES[name])
     missing += _need(brand, final / "tokens.json", model=Tokens, remedy=FINAL_REMEDIES["tokens.json"])
     paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
-    return missing + audit_problems(paths, state.slug, final, "final/audit.json")
+    problems = missing + audit_problems(paths, state.slug, final, "final/audit.json")
+    return problems if problems else final_critic_problems(paths, state.slug)
 
 
 def _check_verify(brand: Path, state: BrandState, current: bool = True) -> list[str]:

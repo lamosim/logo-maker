@@ -149,6 +149,46 @@ def scorecard(**overrides: int) -> dict:
     return {"scores": scores, "evidence": {"appropriate": "arch = holds the invoice together"}}
 
 
+def pass_card(**overrides: int) -> dict:
+    """One letter's card in a critic pass file: 4 on every criterion but `overrides`, with one line of evidence."""
+    from logomaker.schemas import CRITERIA
+
+    scores = {c: 4 for c in CRITERIA}
+    scores.update(overrides)
+    return {"scores": scores, "evidence": {"distinctive": "an arch, which stock sites already sell"}}
+
+
+def both_orders(a: str, b: str, prefer: str) -> list[dict]:
+    """Letters `a` and `b` judged in both orders, `prefer` winning each time."""
+    return [{"first": a, "second": b, "prefer": prefer}, {"first": b, "second": a, "prefer": prefer}]
+
+
+def write_pass(brand: Path, round_n: int, number: int, letters: dict[str, str], prefer: str | None = None, **scores: int) -> None:
+    """Write sheets/critic-<round_n>.pass-<number>.json: every letter scored by pass_card(**scores) and, for two letters
+    and a `prefer` letter, the pair judged in both orders."""
+    cards = {letter: pass_card(**scores) for letter in letters}
+    pairs = []
+    if prefer and len(letters) == 2:
+        a, b = sorted(letters)
+        pairs = both_orders(a, b, prefer)
+    (brand / "sheets" / f"critic-{round_n}.pass-{number}.json").write_text(json.dumps({"cards": cards, "pairs": pairs}))
+
+
+def critic_run(project_root: Path, names: list[str], prefer: str | None = None, final: bool = False, slug: str = "keystone",
+               **scores: int) -> dict:
+    """A critic sheet of brand `slug` over `names` (final/ alone with `final`), one pass scoring 4s but `scores` and
+    preferring `prefer`, merged into each folder's critic.json without Chrome: the letters used."""
+    from logomaker import critic, sheets
+    from logomaker.paths import project
+
+    info = sheets.critic_sheet(project(), slug, names, final=final, renderer=StubChrome())
+    brand = project_root / "brands" / slug
+    winner = next((letter for letter, name in info["letters"].items() if name == prefer), None)
+    write_pass(brand, info["round"], 1, info["letters"], prefer=winner, **scores)
+    critic.write_cards(project(), slug, info["round"])
+    return info["letters"]
+
+
 requires_chrome = pytest.mark.skipif(not CHROME_APP.exists(), reason="Google Chrome is not installed")
 
 
@@ -284,11 +324,12 @@ def make_final_brand(project_root: Path, wordmark_only: bool = False, with_token
     """Brand keystone with every earlier phase's artifacts and a final/ ready to refine and package; returns final/.
 
     The brand gets brief.md and brief.json (BRIEF), strategy.md and strategy.json (STRATEGY), territories.json
-    (TERRITORIES), the forge territory, concept 01-good (the good fixture, with a passing scorecard and audit), the
-    fintech industry and a wordmark font. final/ gets a copy of the good concept (the wordmark-only one with
-    `wordmark_only`), params.json, tokens.json (good_tokens(), unless `with_tokens` is False), rationale.md and a passing
-    audit. The brand then advances one phase at a time to `phase` through registry.advance, so the registry's own gates
-    vouch for the artifacts; None leaves it where it is (intake for a new brand).
+    (TERRITORIES), the forge territory, concept 01-good (the good fixture, with a passing scorecard and audit and a
+    one-pass critic card), the fintech industry and a wordmark font. final/ gets a copy of the good concept (the
+    wordmark-only one with `wordmark_only`), params.json, tokens.json (good_tokens(), unless `with_tokens` is False),
+    rationale.md, a passing audit, a one-pass critic card and a scorecard of 4s. The brand then advances one phase at
+    a time to `phase` through registry.advance, so the registry's own gates vouch for the artifacts; None leaves it
+    where it is (intake for a new brand).
     """
     from logomaker import registry
     from logomaker.paths import project
@@ -307,6 +348,7 @@ def make_final_brand(project_root: Path, wordmark_only: bool = False, with_token
     concept = install_concept(project_root, "good")
     (concept / "scorecard.json").write_text(json.dumps(scorecard()))
     write_passing_audit(paths, "keystone", concept)
+    critic_run(project_root, ["01-good"])
     final = brand / "final"
     shutil.copy(FIXTURES / "concepts" / ("wordmark_only" if wordmark_only else "good") / "concept.py", final / "concept.py")
     (final / "params.json").write_text("{}\n")
@@ -314,6 +356,8 @@ def make_final_brand(project_root: Path, wordmark_only: bool = False, with_token
         (final / "tokens.json").write_text(json.dumps(good_tokens()))
     (final / "rationale.md").write_text(RATIONALE)
     write_passing_audit(paths, "keystone", final)  # after tokens.json, which its fingerprint covers
+    critic_run(project_root, [], final=True)
+    (final / "scorecard.json").write_text(json.dumps(scorecard()))
     if phase is not None:
         state = registry.load_state(paths, "keystone")
         while PHASE_ORDER.index(state.phase) < PHASE_ORDER.index(phase):

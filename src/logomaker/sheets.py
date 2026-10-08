@@ -10,6 +10,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import ValidationError
 
+from . import critic as criticlib
 from . import fonts as fontlib
 from . import mockups as mockuplib
 from . import registry
@@ -360,17 +361,25 @@ def _vetted(paths: ProjectPaths, slug: str, name: str) -> tuple[Path, Scorecard]
 def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], renderer: Renderer | None = None,
                    open_after: bool = True) -> dict:
     """Write sheets/concepts.{html,png} for the owner, then open the HTML unless `open_after` is False. Each concept shows
-    its idea and scores, the critique sheet's strip (lockups in CONCEPT_LOCKUP boxes, the true-size ladder, mirrored and
-    rotated in CONCEPT_MIRROR boxes) and the seven mockups.
+    its idea, the designer's and the critic's totals and the designer's scores, the critique sheet's strip (lockups in
+    CONCEPT_LOCKUP boxes, the true-size ladder, mirrored and rotated in CONCEPT_MIRROR boxes) and the seven mockups; the
+    critic's order of them (critic.preference_line) sits under the preface.
 
-    Every named concept is vetted (_vetted) before any is built, and the PNG is rendered before the folder and both files
-    are written, so a refusal or a failed render leaves no sheet. `warnings` holds each concept's mockup warnings,
+    Every named concept is vetted (_vetted, then registry.vetted_scorecard: a fresh critic card that the scorecard is
+    reconciled with) before any is built, and the PNG is rendered before the folder and both files are written, so a
+    refusal or a failed render leaves no sheet. `warnings` holds each concept's mockup warnings,
     prefixed with its name, then any failure to open the sheet.
     """
     if not concept_names:
         raise CliError("at least one concept is needed (--concepts 01-arch,03-keystone)")
     state = registry.load_state(paths, slug)
     vetted = [(name, *_vetted(paths, slug, name)) for name in concept_names]
+    critics = {}
+    for name, folder, _ in vetted:
+        try:
+            critics[name] = registry.vetted_scorecard(paths, slug, folder, f"{name}/scorecard.json")[1]
+        except CliError as err:
+            raise CliError(f"concept {name}: {err}") from err
     env = jinja(paths)
     cards: list[dict] = []
     warnings: list[str] = []
@@ -381,9 +390,11 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
         ctx = mockup_context(state, outputs, light, dark)
         warnings += [f"{name}: {w}" for w in ctx["warnings"]]
         cards.append({"name": name, "idea": module.meta.idea, "total": card.total, "scores": card.scores,
+                      "critic_total": critics[name].total, "critic_passes": critics[name].passes,
                       "strip": _strip_panels(outputs, CONCEPT_LOCKUP, CONCEPT_MIRROR), "warnings": ctx["warnings"],
                       "mockups": [mockuplib.render_mockup(env, kind, ctx) for kind in mockuplib.MOCKUPS]})
     html = env.get_template("sheets/concepts.html").render(brand=state.name, concepts=cards, width=CONCEPTS_W,
+                                                           preference=criticlib.preference_line(critics),
                                                            lockup_px=CONCEPT_LOCKUP, mirror_px=CONCEPT_MIRROR)
     html_path, png_path = _write_sheet(renderer, html, paths.brand(slug) / "sheets", "concepts", CONCEPTS_W)
     open_file(html_path, open_after, warnings)
@@ -399,8 +410,6 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
     pass registry.require_final_audit, before Chrome starts. The key maps letters to folder names and records each
     concept's fingerprint now."""
     import random
-
-    from . import critic as criticlib
 
     if final and concept_names:
         raise CliError("--final takes no --concepts")

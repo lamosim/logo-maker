@@ -31,9 +31,10 @@
 <body>
 <h1>{{ brand }} &mdash; concept directions</h1>
 <div class="intro">New ideas can be fragile because they are unfamiliar. You may not like something you see here, but you are not allowed to say that for now... find something, anything, you like in every idea. Judge what works at a glance, at 16 px, and in context; not what you like today.</div>
+<div class="intro">critic's order: {{ preference }}</div>
 {% for c in concepts %}
 <section class="concept">
-  <h2>{{ c.name }}<span class="score">{{ c.total }} / 50</span></h2>
+  <h2>{{ c.name }}<span class="score">designer {{ c.total }} / critic {{ c.critic_total }} ({{ c.critic_passes }} pass{{ 'es' if c.critic_passes != 1 else '' }})</span></h2>
   <div class="idea">{{ c.idea }}</div>
   <div class="strip">
     <figure class="panel" style="width:{{ lockup_px + 16 }}px">{{ c.strip.black|safe }}<figcaption>black</figcaption></figure>

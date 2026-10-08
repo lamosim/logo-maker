@@ -1,5 +1,6 @@
 import json
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -17,7 +18,16 @@ from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.render import fit_box
 from logomaker.schemas import CRITERIA, Scorecard
-from tests.conftest import REPO, StubChrome, install_concept, no_open_command, requires_chrome, scorecard, write_passing_audit
+from tests.conftest import (
+    REPO,
+    StubChrome,
+    critic_run,
+    install_concept,
+    no_open_command,
+    requires_chrome,
+    scorecard,
+    write_passing_audit,
+)
 from tests.test_skill_docs import canonical
 
 GATE = "scorecard.json fails the gate (appropriate, simple and legible must be 4 or more, and not killed)"
@@ -30,13 +40,18 @@ SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
 STRIP = re.compile(r'<div class="strip">(.*?)</div>', re.S)
 
 
-def prepare(project_root: Path, name: str, fixture: str = "good", gate_scores: dict | None = None, tokens: dict | None = None) -> Path:
+def prepare(project_root: Path, name: str, fixture: str = "good", gate_scores: dict | None = None, tokens: dict | None = None,
+            critic: bool = True) -> Path:
     """Concept `name`, a copy of `fixture`, with a passing rendered audit and a scorecard of 4s but `gate_scores`.
-    `tokens` becomes its tokens.json before the audit, whose fingerprint covers it."""
+    `tokens` becomes its tokens.json before the audit, whose fingerprint covers it. With `critic`, a one-pass critic
+    card that scores as the designer did; the critic sheet needs a passing scorecard, so it runs on 4s first."""
     folder = install_concept(project_root, fixture, name=name)
     if tokens is not None:
         (folder / "tokens.json").write_text(json.dumps(tokens))
     write_passing_audit(project(), "keystone", folder)
+    if critic:
+        (folder / "scorecard.json").write_text(json.dumps(scorecard()))
+        critic_run(project_root, [name], **(gate_scores or {}))
     (folder / "scorecard.json").write_text(json.dumps(scorecard(**(gate_scores or {}))))
     return folder
 
@@ -153,6 +168,7 @@ def test_the_handle_follows_the_brand_name_or_falls_back_to_the_slug(project_roo
     folder = install_concept(project_root, "good", slug="tokyo-works", name="01-good")  # and the whole sheet builds
     write_passing_audit(project(), "tokyo-works", folder)
     (folder / "scorecard.json").write_text(json.dumps(scorecard()))
+    critic_run(project_root, ["01-good"], slug="tokyo-works")
     info = sheets.concepts_sheet(project(), "tokyo-works", ["01-good"], renderer=StubChrome(), open_after=False)
     html = Path(info["sheet_html"]).read_text()
     assert "東京 &mdash; concept directions" in html and "@tokyoworks" in html
@@ -238,7 +254,7 @@ def test_the_cli_refuses_an_unvetted_concept_before_chrome_starts(project_root, 
 def test_vetted_concepts_reach_chrome_and_a_failed_render_writes_no_sheet(project_root, no_chrome):
     prepare(project_root, "01-good")
     sheets_dir = project_root / "brands" / "keystone" / "sheets"
-    sheets_dir.rmdir()
+    shutil.rmtree(sheets_dir)  # the critic's sheet and key: its card in 01-good/ is all the concept sheet reads
     code, payload = sheet("--concepts", "01-good", "--no-open")
     # The stand-in is entered once every concept is vetted and built: the refusals above stopped before Chrome.
     assert code != 0 and "Chrome started" in payload["errors"][0]
@@ -274,7 +290,8 @@ def test_the_cli_writes_the_sheet_opens_it_and_warns_about_wordmark_fallbacks(pr
     assert (folder / "concepts.png").read_bytes() == b"png"
     html = (folder / "concepts.html").read_text()
     assert [html.count(f'class="mockup" data-mockup="{kind}"') for kind in mockups.MOCKUPS] == [2] * len(mockups.MOCKUPS)
-    assert "40 / 50" in html and "39 / 50" in html and "no symbol in this concept" in html
+    assert "designer 40 / critic 40 (1 pass)" in html and "designer 39 / critic 39 (1 pass)" in html
+    assert "no symbol in this concept" in html and "critic's order: 01-good = 02-word" in html
     code, payload = sheet("--concepts", "01-good,02-word")
     assert code == 0 and payload["warnings"] == [fallback] and opened == [["open", str(folder / "concepts.html")]]
     monkeypatch.setattr(subprocess, "Popen", no_open_command)
@@ -296,7 +313,7 @@ def test_concepts_sheet_renders_all_mockups(project_root, renderer):
     html = Path(info["sheet_html"]).read_text()
     for kind in mockups.MOCKUPS:
         assert html.count(f'class="mockup" data-mockup="{kind}"') == 3, kind
-    assert "01-good" in html and "02-good-colour" in html and "03-word" in html and "40 / 50" in html
+    assert "01-good" in html and "02-good-colour" in html and "03-word" in html and "designer 40 / critic 40 (1 pass)" in html
     fallback = f"{NO_SYMBOL}; so do the icon, favicon and avatar mockups"
     sections = html.split('<section class="concept">')[1:]
     assert [f'<div class="warn">{fallback}</div>' in section for section in sections] == [False, False, True]

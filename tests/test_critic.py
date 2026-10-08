@@ -1,16 +1,27 @@
 import json
 import shutil
+from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
 from pydantic import ValidationError
 
-from logomaker import critic, sheets
+from logomaker import critic, registry, sheets
 from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import CRITERIA, CriticCard, Scorecard
-from tests.conftest import StubChrome, install_concept, make_final_brand, scorecard, write_passing_audit
+from tests.conftest import (
+    StubChrome,
+    both_orders,
+    critic_run,
+    install_concept,
+    make_final_brand,
+    pass_card,
+    scorecard,
+    write_pass,
+    write_passing_audit,
+)
 
 
 def critic_card(**overrides) -> dict:
@@ -33,16 +44,6 @@ def test_scorecard_takes_reconciled_entries_and_defaults_to_none():
     assert Scorecard.model_validate(scorecard()).reconciled == {}
     card = Scorecard.model_validate({**scorecard(), "reconciled": {"distinctive": "the critic saw the stock arches; 3 stands"}})
     assert card.reconciled["distinctive"].startswith("the critic")
-
-
-def pass_card(**overrides) -> dict:
-    scores = {c: 4 for c in CRITERIA}
-    scores.update(overrides)
-    return {"scores": scores, "evidence": {"distinctive": "an arch, which stock sites already sell"}}
-
-
-def both_orders(a: str, b: str, prefer: str) -> list[dict]:
-    return [{"first": a, "second": b, "prefer": prefer}, {"first": b, "second": a, "prefer": prefer}]
 
 
 KEY = {"round": 1, "seed": 1, "letters": {"A": "02-arch", "B": "01-k-jaw"}, "fingerprints": {"02-arch": "f2", "01-k-jaw": "f1"}}
@@ -138,7 +139,7 @@ def test_critic_sheet_for_final_letters_the_final_mark_alone(project_root):
     make_final_brand(project_root)
     info = sheets.critic_sheet(project(), "keystone", [], final=True, renderer=StubChrome())
     assert info["letters"] == {"A": "final"}
-    key = json.loads((project_root / "brands" / "keystone" / "sheets" / "critic-1.key.json").read_text())
+    key = json.loads(Path(info["key"]).read_text())  # make_final_brand's own critic runs took the earlier rounds
     assert key["final"] is True and list(key["fingerprints"]) == ["final"]
 
 
@@ -153,15 +154,6 @@ def test_sheet_critic_cli_needs_concepts_or_final_but_not_both(project_root):
 def test_key_needs_a_fingerprint_for_every_lettered_concept():
     with pytest.raises(ValidationError, match="fingerprints missing for 01-k-jaw"):
         critic.Key.model_validate({**KEY, "fingerprints": {"02-arch": "f2"}})
-
-
-def write_pass(brand, round_n: int, number: int, letters: dict[str, str], prefer: str | None = None, **scores):
-    cards = {letter: pass_card(**scores) for letter in letters}
-    pairs = []
-    if prefer and len(letters) == 2:
-        a, b = sorted(letters)
-        pairs = both_orders(a, b, prefer)
-    (brand / "sheets" / f"critic-{round_n}.pass-{number}.json").write_text(json.dumps({"cards": cards, "pairs": pairs}))
 
 
 def test_concept_critic_merges_the_passes_into_each_concept_folder(project_root):
@@ -200,3 +192,87 @@ def test_concept_critic_refuses_a_missing_concept_folder_before_writing_any_card
     code, payload = run("concept", "critic", "keystone", "--sheet", "1")
     assert code == 2 and payload["errors"] == ["concepts/02-dots is missing; critic sheet 1 lettered it"]
     assert not (brand / "concepts" / "01-good" / "critic.json").exists()
+
+
+def test_critic_problems_name_what_is_missing_stale_or_invalid(project_root):
+    folder = prepare(project_root, "01-good")
+    paths = project()
+    assert critic.critic_problems(paths, "keystone", folder) == [
+        "01-good/critic.json is missing (run: logomaker sheet critic keystone --concepts 01-good, dispatch the critic, "
+        "then logomaker concept critic keystone --sheet N)"]
+    critic_run(project_root, ["01-good"])
+    assert critic.critic_problems(paths, "keystone", folder) == []
+    (folder / "concept.py").write_text((folder / "concept.py").read_text() + "\n# changed\n")
+    assert critic.critic_problems(paths, "keystone", folder) == [
+        "01-good/critic.json is stale (the concept changed since the critic saw it); re-run: logomaker sheet critic keystone "
+        "--concepts 01-good, dispatch the critic, then logomaker concept critic keystone --sheet N"]
+    (folder / "critic.json").write_text("{")
+    assert critic.critic_problems(paths, "keystone", folder)[0].startswith("01-good/critic.json is not valid JSON")
+
+
+def test_vetted_scorecard_needs_a_fresh_critic_and_every_disagreement_reconciled(project_root):
+    folder = prepare(project_root, "01-good")
+    paths = project()
+    with pytest.raises(CliError, match="critic.json is missing"):
+        registry.vetted_scorecard(paths, "keystone", folder, "01-good/scorecard.json")
+    critic_run(project_root, ["01-good"], distinctive=2, timeless=2)
+    with pytest.raises(CliError, match=r"designer and critic disagree by 2 or more on distinctive, timeless; add a reconciled entry "
+                                       r"for each to 01-good/scorecard.json"):
+        registry.vetted_scorecard(paths, "keystone", folder, "01-good/scorecard.json")
+    (folder / "scorecard.json").write_text(json.dumps({**scorecard(), "reconciled": {"distinctive": "stock arches: 2 stands",
+                                                                                      "timeless": "no trend shape: 4 stands"}}))
+    card, crit = registry.vetted_scorecard(paths, "keystone", folder, "01-good/scorecard.json")
+    assert card.total == 40 and crit.total == 36
+
+
+def test_concept_sheet_refuses_without_the_critic_and_shows_both_totals_with_it(project_root, no_chrome):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    with pytest.raises(CliError, match="concept 01-good: 01-good/critic.json is missing"):
+        sheets.concepts_sheet(project(), "keystone", ["01-good", "02-dots"], open_after=False)
+
+
+def test_concept_sheet_prints_the_critic_total_and_preference(project_root):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    critic_run(project_root, ["01-good", "02-dots"], prefer="01-good", distinctive=5)
+    sheets.concepts_sheet(project(), "keystone", ["01-good", "02-dots"], renderer=StubChrome(), open_after=False)
+    html = (project_root / "brands" / "keystone" / "sheets" / "concepts.html").read_text()
+    assert "designer 40 / critic 41 (1 pass)" in html
+    assert "critic's order: 01-good &gt; 02-dots" in html or "critic's order: 01-good > 02-dots" in html
+
+
+def test_preference_line_groups_by_wins():
+    cards = {"a": CriticCard.model_validate({**critic_card(), "preferred_over": ["b", "c"]}),
+             "b": CriticCard.model_validate({**critic_card(), "preferred_over": [], "tied_with": ["c"]}),
+             "c": CriticCard.model_validate({**critic_card(), "preferred_over": [], "tied_with": ["b"]})}
+    assert critic.preference_line(cards) == "a > b = c"
+
+
+def test_advance_to_refinement_and_package_build_read_the_critic(project_root):
+    final = make_final_brand(project_root, phase=None)
+    paths = project()
+    brand = final.parent
+    # make_final_brand runs the critic itself; this test checks the gates, so start without the cards.
+    for stale in (brand / "concepts" / "01-good" / "critic.json", final / "critic.json", final / "scorecard.json"):
+        stale.unlink(missing_ok=True)
+    state = registry.load_state(paths, "keystone")
+    while state.phase.value != "concepts":
+        state = registry.advance(paths, "keystone", registry.allowed_next(state))
+    with pytest.raises(CliError) as err:
+        registry.advance(paths, "keystone", registry.allowed_next(state))
+    assert any("01-good/critic.json is missing" in m for m in err.value.data["missing"])
+    critic_run(project_root, ["01-good"])
+    state = registry.advance(paths, "keystone", registry.allowed_next(state))
+    assert state.phase.value == "refinement"
+    with pytest.raises(CliError) as err:
+        registry.advance(paths, "keystone", registry.allowed_next(state))
+    assert any("final/critic.json is missing" in m for m in err.value.data["missing"])
+    info = sheets.critic_sheet(paths, "keystone", [], final=True, renderer=StubChrome())
+    write_pass(brand, info["round"], 1, info["letters"])
+    critic.write_cards(paths, "keystone", info["round"])
+    with pytest.raises(CliError) as err:
+        registry.advance(paths, "keystone", registry.allowed_next(state))
+    assert any("final/scorecard.json is missing" in m for m in err.value.data["missing"])
+    (final / "scorecard.json").write_text(json.dumps(scorecard()))
+    assert registry.advance(paths, "keystone", registry.allowed_next(state)).phase.value == "package"
