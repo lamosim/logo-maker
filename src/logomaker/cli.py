@@ -408,6 +408,18 @@ def concept_critic(slug: str, rounds: tuple[int, ...]) -> None:
     emit(criticlib.write_cards(project(), slug, list(rounds)))
 
 
+@concept_group.command("knockout")
+@click.argument("slug")
+@click.argument("concept")
+@command
+def concept_knockout(slug: str, concept: str) -> None:
+    """Render the knock-out search images (mark 512 px, lockup 1024 px, black on white) to knockout/round-N/; seed knockout.json."""
+    from . import knockout as knockoutlib
+
+    info = knockoutlib.write_images(project(), slug, concept)
+    emit(info, warnings=info.pop("warnings"))
+
+
 @main.group("sheet")
 def sheet_group() -> None:
     """Owner-facing sheets (opened in the browser)."""
