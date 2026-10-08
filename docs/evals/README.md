@@ -22,6 +22,10 @@ The baseline ran the three briefs in parallel; run later cycles the same way so 
 
 Cycles: `baseline` (after the blind critic, before the kit and ideation work), `kit`, `ideation`, `final` (after the express track; `pip` runs with `--express`).
 
+The runner's prompt tells the skill to create the brand with `brand new "<Name>"`; `--express` changes that one sentence to `brand new "<Name>" --express` and nothing else. In the `final` cycle `pip` is created on the express track, as its timing check:
+
+    uv run python scripts/eval_brand.py pip --cycle final --express
+
 ## Reading a report
 
 - `turns` sums every result segment of the transcript (background critic subagents wake the session again, and each wake-up ends a segment); `segments` counts them; `result` is `success` or the subtypes that were not; `cost usd` is the last segment's cumulative figure.

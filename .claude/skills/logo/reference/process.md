@@ -8,7 +8,7 @@ Agencies run one stable sequence: "research before decisions, strategy before de
 
 | Phase | Claude does | CLI | Artifacts | Gate |
 |---|---|---|---|---|
-| `intake` | Asks the core questions one per message, infers archetype, personality, industry and surfaces, writes back | `brand new "<Name>"` (`--unnamed` for a working title), `brand decide` | `brief.md`, `brief.json` | Owner confirms the brief |
+| `intake` | Asks the core questions one per message, infers archetype, personality, industry and surfaces, writes back | `brand new "<Name>"` (`--unnamed` for a working title, `--express` for the express track), `brand decide` | `brief.md`, `brief.json` | Owner confirms the brief |
 | `naming`, only for a brand made with `--unnamed` | 15 to 25 candidates across descriptive, evocative and invented; analysis, availability and a web knock-out of the shortlist | `names analyze`, `names check`, `brand rename --name` | `naming.md` | Owner picks a name |
 | `strategy` | Positioning, archetype, personality, the one idea, ladder, category audit, feature targets, logo type, constraints | `brand set --industry --surface` | `strategy.md`, `strategy.json` | Owner approves |
 | `territories` | Two or three visual territories | `fonts fetch`, `sheet territories`, `brand set --territory --font` | `territories/territories.json`, `board.html`, `board.png` | Owner picks one |
@@ -79,6 +79,24 @@ What no gate reads, and Claude still owes:
    - Flaw: a misread name (26% read Kia as "KN"), an unintended reading (the University of California monogram), a failure at a named size, or a lost asset (Cracker Barrel's Uncle Herschel). Fix it, or go back to concepts [01 §2] [05 §2].
 7. Judge "what works", not "what one likes or dislikes" (Haviv), and give every option a written rationale, as every Pentagram presentation Bierut has given does [01 §4].
 
+## Express track
+
+`uv run logomaker brand new "<Name>" --express` records `track: "express"` in brand.json; the default is `full`. An express brand is named: `--express` with `--unnamed` exits 2 [spec 2026-10-08 §8] [code].
+
+| Phase | Full | Express |
+|---|---|---|
+| Intake | eleven questions, one per message | five questions (business, onliness, adjectives, surfaces, how the name is written); the rest inferred and shown in the write-back for correction |
+| Strategy | nine sections, approved | nine sections, each one to three sentences, written and approved in one message |
+| Territories | two or three | one allowed (the `territories` gate checks the minimum against the track, not the model) |
+| Concepts | twelve to twenty ideas, five to eight directions, three to five survivors, four revise rounds | eight to twelve ideas, three directions, two survivors, two revise rounds; the critic runs one pass |
+| Refinement | up to three refine sheets | one refine sheet |
+| Package | unchanged | unchanged |
+
+Every gate, every audit, the critic, the probe and the knock-out still run on the express track [spec 2026-10-08 §8]. Two rules [code]:
+
+- `uv run logomaker brand set <slug> --track full` upgrades at any gate. The full counts apply from then on, and since `brand advance` re-checks earlier phases, a brand with one territory adds a second to `territories.json` before it moves again.
+- A downgrade with `brand set <slug> --track express` from `concepts` on is refused: the earlier phases' counts are spent.
+
 ## Sources
 
-01 §1.1 (the phase sequence, presenting, CGH, Collins, Haviv), §2 (Jaguar, Kia, Meta, Max, Mastercard, Verizon, Kenvue, Cracker Barrel), §3 rules 1, 5, 8, 9, 11 to 17, §4 (judging criteria, Collins rules 71 and 95); 05 §2 (cautionary tales); spec §3.1 to §3.3, §4.3, §4.6, §8.1; code: `registry.PHASE_CHECKS`, `registry.prerequisites`, `registry.audit_problems`, `schemas.py`, `audit.concept_fingerprint`, `export_docs.inputs_fingerprint`.
+01 §1.1 (the phase sequence, presenting, CGH, Collins, Haviv), §2 (Jaguar, Kia, Meta, Max, Mastercard, Verizon, Kenvue, Cracker Barrel), §3 rules 1, 5, 8, 9, 11 to 17, §4 (judging criteria, Collins rules 71 and 95); 05 §2 (cautionary tales); spec §3.1 to §3.3, §4.3, §4.6, §8.1; spec 2026-10-08 §8 (the express track); code: `registry.PHASE_CHECKS`, `registry.set_fields` (the track), `registry.prerequisites`, `registry.audit_problems`, `schemas.py`, `audit.concept_fingerprint`, `export_docs.inputs_fingerprint`.

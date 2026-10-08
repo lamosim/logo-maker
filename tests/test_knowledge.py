@@ -34,7 +34,8 @@ REF = SKILL / "reference"
 BUILDER = REPO / "scripts" / "build_reference.py"
 GENERATED = ("cliches.md", "fonts.md")  # rendered from data by BUILDER, so the data sets their length: the floor applies, not the ceiling
 MIN_WORDS, MAX_WORDS = 600, 2000
-MAX_WORDS_BY_FILE = {"kit-api.md": 3000}  # the kit's API reference grows a row with every public name
+MAX_WORDS_BY_FILE = {"kit-api.md": 3000,  # the kit's API reference grows a row with every public name
+                     "process.md": 2500}  # the phase table and the express track's table
 
 REQUIRED = {
     "process.md": ["Phases and gates", "Artifacts each phase must contain", "Agency rules", "Presentation protocol", "Sources"],

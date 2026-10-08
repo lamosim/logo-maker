@@ -244,6 +244,25 @@ def test_build_prompt_names_the_scratch_root_when_given():
     assert "/tmp/scr" not in runner.build_prompt("orvane", OWNER)
 
 
+def test_build_prompt_express_changes_only_the_brand_new_sentence(harness, monkeypatch):
+    runner = load_runner()
+    full, express = runner.build_prompt("pip", OWNER), runner.build_prompt("pip", OWNER, express=True)
+    assert '`uv run logomaker brand new "<Name>"` (no --unnamed)' in full and "--express" not in full
+    assert '`uv run logomaker brand new "<Name>" --express` (no --unnamed)' in express
+    assert express.replace(' --express`', '`') == full
+    runner, tmp, made = harness
+    seen = {}
+
+    def ok(slug, prompt, scratch, model, max_turns):
+        seen["prompt"] = prompt
+        fake_brand(scratch)
+        return transcript(scratch / "run.jsonl")
+
+    monkeypatch.setattr(runner, "run", ok)
+    assert runner.main(["orvane", "--cycle", "final", "--express"]) == 0
+    assert 'brand new "<Name>" --express' in seen["prompt"]
+
+
 @pytest.fixture
 def harness(tmp_path, monkeypatch):
     """`main` against a fake repo: EVALS and ROOT under tmp_path, mkdtemp counted, the owner script in place."""

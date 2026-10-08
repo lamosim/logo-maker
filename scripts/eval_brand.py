@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run one evaluation brief through the logo skill headless and keep its results (spec 2026-10-08 §4).
 
-    uv run python scripts/eval_brand.py <slug> --cycle <label> [--model opus] [--max-turns 400] [--force]
+    uv run python scripts/eval_brand.py <slug> --cycle <label> [--model opus] [--max-turns 400] [--force] [--express]
     uv run python scripts/eval_brand.py <slug> --cycle <label> --report-only
 
 The brief is docs/evals/<slug>/owner.md, a scripted owner in the Keystone walkthrough's format. The nested `claude`
@@ -64,8 +64,9 @@ those paths; never write under the repository's own brands/ folder.
 """
 
 
-def build_prompt(slug: str, script: str, scratch: Path | None = None) -> str:
+def build_prompt(slug: str, script: str, scratch: Path | None = None, express: bool = False) -> str:
     prompt = PROMPT.format(slug=slug, script=script.strip())
+    prompt = prompt.replace('brand new "<Name>"`', 'brand new "<Name>" --express`') if express else prompt
     return prompt + SCRATCH_LINE.format(scratch=scratch, slug=slug) if scratch else prompt
 
 
@@ -298,6 +299,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--model", default="opus")
     parser.add_argument("--max-turns", type=int, default=400)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--express", action="store_true", help="create the brand on the express track")
     parser.add_argument("--report-only", action="store_true",
                         help="rewrite docs/evals/<slug>/<cycle>/report.md from the cycle folder and its run.jsonl; run nothing")
     args = parser.parse_args(argv)
@@ -317,7 +319,7 @@ def main(argv: list[str] | None = None) -> int:
     seed(scratch)
     started = _now()
     try:
-        transcript = run(args.slug, build_prompt(args.slug, script, scratch), scratch, args.model, args.max_turns)
+        transcript = run(args.slug, build_prompt(args.slug, script, scratch, args.express), scratch, args.model, args.max_turns)
     except RuntimeError as err:
         print(f"{err}; scratch kept at {scratch}", file=sys.stderr)
         return 1

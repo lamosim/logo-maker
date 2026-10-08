@@ -22,6 +22,10 @@ Ask one question per message, in this order, skipping any the owner has already 
 
 Whether the venture has a name decides how the brand is created, so settle that before `brand new`: a venture without one is created with `uv run logomaker brand new "<Working title>" --unnamed`, which puts the naming phase after intake. Nothing can set `needs_name` later; `brand rename` only clears it [code].
 
+## Express intake
+
+On the express track ask questions 1, 3, 4, 7 and 11 only, in that order; infer `one_idea` from 3, `persona` and the archetype from 4, `harshest` from 7's first surface (an app icon or favicon means the 16 px tier), `colours_*` and `off_limits` from the category's uniform in cliches.md, and show every inference in the write-back for correction [spec 2026-10-08 §8]. The brand was made with `uv run logomaker brand new "<Name>" --express`, so question 11 confirms the name rather than opening a naming phase [code].
+
 ## Optional questions
 
 Ask only when the answers above leave a gap [spec §4.1] [05 §3.7]:
@@ -126,4 +130,4 @@ A minimal valid file (note the key `not`):
 
 ## Sources
 
-spec §3.3 and §4.1 (questions, optional questions, inference, write-back); 05 §3.1, §3.2, §3.5, §3.7 (the synthesised 22-question discovery brief); 01 §1.1 (Haviv's forcing question, Logo Geek's open questions); 02 §L; 03 §6.1; code: `schemas.Brief`, `audit.resolve_industries`, `assets/cliches.json`, `registry.set_fields`.
+spec §3.3 and §4.1 (questions, optional questions, inference, write-back); spec 2026-10-08 §8 (the express intake); 05 §3.1, §3.2, §3.5, §3.7 (the synthesised 22-question discovery brief); 01 §1.1 (Haviv's forcing question, Logo Geek's open questions); 02 §L; 03 §6.1; code: `schemas.Brief`, `audit.resolve_industries`, `assets/cliches.json`, `registry.set_fields`.

@@ -184,3 +184,17 @@ def test_skill_pins_the_routes_and_the_probe():
     assert '"<motif> logo"' in concepts and "first twenty image results" in concepts and "`probe`" in concepts
     card = (REF / "scorecard.md").read_text(encoding="utf-8")
     assert "## Routes and the probe" in card and "metaphor-2" in card and "capped at 3" in card and "capped at 2" in card
+
+
+def test_skill_pins_the_express_track():
+    text = SKILL.read_text(encoding="utf-8")
+    first = flat(section(text, "First move"))
+    assert 'uv run logomaker brand new "<Name>" --express' in first and "express" in first
+    runbook = flat(section(text, "Phase runbook"))
+    for phrase in ("express: five questions", "express: one territory", "express: eight to twelve ideas, three directions, two survivors",
+                   "express: one refine sheet", "the critic runs one pass"):
+        assert phrase in runbook, phrase
+    process = (REF / "process.md").read_text(encoding="utf-8")
+    assert "## Express track" in process and "--track full" in process
+    questionnaire = (REF / "questionnaire.md").read_text(encoding="utf-8")
+    assert "## Express intake" in questionnaire and "questions 1, 3, 4, 7 and 11" in questionnaire
