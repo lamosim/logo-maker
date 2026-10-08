@@ -111,18 +111,31 @@ def _fit(points: list[Point], t1: Point, t2: Point, tolerance: float) -> list[Cu
     u = _chord_parameters(points)
     c = _generate(points, u, t1, t2)
     error, split = _max_error(points, c, u)
+    # Always reparameterise before splitting: Schneider gates this on the error being within 4x the tolerance, but samples
+    # taken uniformly in t (a brush's sides) start far from chord-length parameters and converge anyway.
+    for _ in range(MAX_ITERATIONS):
+        if error <= tolerance**2:
+            return [c]
+        u = _reparameterise(points, c, u)
+        c = _generate(points, u, t1, t2)
+        error, split = _max_error(points, c, u)
     if error <= tolerance**2:
         return [c]
-    if error <= (tolerance * 4) ** 2:
-        for _ in range(MAX_ITERATIONS):
-            u = _reparameterise(points, c, u)
-            c = _generate(points, u, t1, t2)
-            error, split = _max_error(points, c, u)
-            if error <= tolerance**2:
-                return [c]
     split = min(max(split, 1), len(points) - 2)
     middle = _unit(_sub(points[split - 1], points[split + 1]))  # the centre tangent, shared by both halves
     return _fit(points[: split + 1], t1, middle, tolerance) + _fit(points[split:], _mul(middle, -1), t2, tolerance)
+
+
+def _end_tangent(points: list[Point]) -> Point:
+    """The unit tangent leaving points[0]: the derivative there of the parabola through the first three points
+    (chord-length spaced), which a curved run's first chord misses by a degree or two; the first chord for two points."""
+    if len(points) < 3:
+        return _unit(_sub(points[1], points[0]))
+    a, b, c = points[:3]
+    s1 = math.dist(a, b)
+    s2 = s1 + math.dist(b, c)
+    ka, kb, kc = -(s1 + s2) / (s1 * s2), s2 / (s1 * (s2 - s1)), -s1 / (s2 * (s2 - s1))
+    return _unit((ka * a[0] + kb * b[0] + kc * c[0], ka * a[1] + kb * b[1] + kc * c[1]))
 
 
 def fit_cubics(points: list[Point], tolerance: float = 0.5) -> list[Cubic]:
@@ -134,4 +147,4 @@ def fit_cubics(points: list[Point], tolerance: float = 0.5) -> list[Cubic]:
     pts = [p for i, p in enumerate(pts) if i == 0 or p != pts[i - 1]]  # drop repeated points: they give zero-length chords
     if len(pts) < 2:
         raise ValueError("fit_cubics needs at least two points")
-    return _fit(pts, _unit(_sub(pts[1], pts[0])), _unit(_sub(pts[-2], pts[-1])), tolerance)
+    return _fit(pts, _end_tangent(pts), _end_tangent(pts[::-1]), tolerance)

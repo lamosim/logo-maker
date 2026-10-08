@@ -70,3 +70,13 @@ def test_a_closed_circle_fits_end_to_end():
     assert cubics[0][0] == points[0] and cubics[-1][3] == points[0]
     assert all(a[3] == b[0] for a, b in zip(cubics, cubics[1:]))
     assert max_distance(points, cubics) < 1.0
+
+
+def test_a_sampled_cubic_fits_as_one_or_two_cubics():
+    # Uniform-in-t samples of a humped cubic sit far from chord-length parameters (about 11 units at first), so the fit
+    # must reparameterise before it splits: brush() fits its sides from samples like these.
+    hump = ((-400, 0), (-350, 150), (-250, 150), (-200, 0))
+    points = [cubic_at(hump, i / 24) for i in range(25)]
+    cubics = fit_cubics(points)
+    assert len(cubics) <= 2
+    assert max_distance(points, cubics) < 1.0
