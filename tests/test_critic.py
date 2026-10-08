@@ -18,6 +18,7 @@ from tests.conftest import (
     install_concept,
     make_final_brand,
     pass_card,
+    recorded,
     scorecard,
     write_pass,
     write_passing_audit,
@@ -366,6 +367,8 @@ def test_concept_sheet_prints_the_critic_total_and_preference(project_root):
     prepare(project_root, "01-good")
     prepare(project_root, "02-dots", "two_dots")
     critic_run(project_root, ["01-good", "02-dots"], prefer="01-good", distinctive=5)
+    for name in ("01-good", "02-dots"):
+        recorded(project_root / "brands" / "keystone" / "concepts" / name)
     sheets.concepts_sheet(project(), "keystone", ["01-good", "02-dots"], renderer=StubChrome(), open_after=False)
     html = (project_root / "brands" / "keystone" / "sheets" / "concepts.html").read_text()
     assert "designer 40 / critic 41 (1 pass)" in html

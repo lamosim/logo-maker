@@ -385,9 +385,10 @@ def final_critic_problems(paths: ProjectPaths, slug: str) -> list[str]:
 
 def _check_concept(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     """The chosen concept needs a scorecard that passes the gate (passing_scorecard) and, when the brand is leaving the
-    concepts phase (`current`), a passing, rendered audit of what it is now (audit_problems) and a fresh critic card the
-    scorecard is reconciled with (vetted_scorecard). Once the brand is past it, final/ is what ships and has its own
-    gate, so the concept's audit need only be on record: present and valid JSON."""
+    concepts phase (`current`), a passing, rendered audit of what it is now (audit_problems), a fresh critic card the
+    scorecard is reconciled with (vetted_scorecard) and a recorded image knock-out (knockout.knockout_problems). Once
+    the brand is past it, final/ is what ships and has its own gate, so the concept's audit need only be on record:
+    present and valid JSON, and its knock-out is not asked for."""
     if not state.concept:
         return [f"concept not chosen (run: logomaker brand set {state.slug} --concept <NN-slug>)"]
     folder = brand / "concepts" / state.concept
@@ -400,13 +401,18 @@ def _check_concept(brand: Path, state: BrandState, current: bool = True) -> list
             passing_scorecard(folder, f"{state.concept}/scorecard.json")
     except CliError as err:
         missing.append(str(err))
+    if current:
+        from .knockout import knockout_problems  # imported here: knockout imports registry
+
+        missing += knockout_problems(paths, state.slug, folder)
     return missing
 
 
 def _check_final(brand: Path, state: BrandState, current: bool = True) -> list[str]:
     """final/ needs concept.py, params.json, a valid tokens.json, and an audit.json that vouches for the final mark as it
     is now (audit_problems: present, fresh, rendered and passing); once those hold, a fresh critic card and a scorecard
-    reconciled with it (final_critic_problems)."""
+    reconciled with it (final_critic_problems); once those hold, final/knockout.json with the image knock-out and the
+    WIPO image search (knockout.knockout_problems)."""
     from .color import Tokens  # imported here to keep registry import-light
 
     final = brand / "final"
@@ -416,7 +422,11 @@ def _check_final(brand: Path, state: BrandState, current: bool = True) -> list[s
     missing += _need(brand, final / "tokens.json", model=Tokens, remedy=FINAL_REMEDIES["tokens.json"])
     paths = ProjectPaths(brand.parent.parent)  # brand is brands/<slug> under the project root
     problems = missing + audit_problems(paths, state.slug, final, "final/audit.json")
-    return problems if problems else final_critic_problems(paths, state.slug)
+    if problems:
+        return problems
+    from .knockout import knockout_problems  # imported here: knockout imports registry
+
+    return final_critic_problems(paths, state.slug) or knockout_problems(paths, state.slug, final, "final/knockout.json", final=True)
 
 
 def _check_verify(brand: Path, state: BrandState, current: bool = True) -> list[str]:

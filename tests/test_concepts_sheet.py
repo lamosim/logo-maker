@@ -24,6 +24,7 @@ from tests.conftest import (
     critic_run,
     install_concept,
     no_open_command,
+    recorded,
     requires_chrome,
     scorecard,
     write_passing_audit,
@@ -44,7 +45,8 @@ def prepare(project_root: Path, name: str, fixture: str = "good", gate_scores: d
             critic: bool = True) -> Path:
     """Concept `name`, a copy of `fixture`, with a passing rendered audit and a scorecard of 4s but `gate_scores`.
     `tokens` becomes its tokens.json before the audit, whose fingerprint covers it. With `critic`, a one-pass critic
-    card that scores as the designer did; the critic sheet needs a passing scorecard, so it runs on 4s first."""
+    card that scores as the designer did; the critic sheet needs a passing scorecard, so it runs on 4s first. Last, a
+    recorded knock-out (conftest.recorded)."""
     folder = install_concept(project_root, fixture, name=name)
     if tokens is not None:
         (folder / "tokens.json").write_text(json.dumps(tokens))
@@ -53,6 +55,7 @@ def prepare(project_root: Path, name: str, fixture: str = "good", gate_scores: d
         (folder / "scorecard.json").write_text(json.dumps(scorecard()))
         critic_run(project_root, [name], **(gate_scores or {}))
     (folder / "scorecard.json").write_text(json.dumps(scorecard(**(gate_scores or {}))))
+    recorded(folder)
     return folder
 
 
@@ -169,6 +172,7 @@ def test_the_handle_follows_the_brand_name_or_falls_back_to_the_slug(project_roo
     write_passing_audit(project(), "tokyo-works", folder)
     (folder / "scorecard.json").write_text(json.dumps(scorecard()))
     critic_run(project_root, ["01-good"], slug="tokyo-works")
+    recorded(folder)
     info = sheets.concepts_sheet(project(), "tokyo-works", ["01-good"], renderer=StubChrome(), open_after=False)
     html = Path(info["sheet_html"]).read_text()
     assert "東京 &mdash; concept directions" in html and "@tokyoworks" in html

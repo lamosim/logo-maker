@@ -189,6 +189,15 @@ def critic_run(project_root: Path, names: list[str], prefer: str | None = None, 
     return info["letters"]
 
 
+def recorded(folder: Path, tool: str = "google-lens", wipo: bool = False, skipped: str | None = None) -> None:
+    """Write <folder>/knockout.json: one description query and an image search by `tool` on 2026-10-09 that found no
+    matches, or that was `skipped` with that reason; with `wipo`, the same search by WIPO too."""
+    search = {"tool": tool, "date": "2026-10-09", "searched": skipped is None, "matches": [], "skipped": skipped}
+    data = {"description_queries": [{"query": "arch logo", "findings": "stock arches"}], "image_matches": search,
+            "wipo": {**search, "tool": "wipo"} if wipo else None, "caveat": "These checks are a knock-out only"}
+    (folder / "knockout.json").write_text(json.dumps(data))
+
+
 requires_chrome = pytest.mark.skipif(not CHROME_APP.exists(), reason="Google Chrome is not installed")
 
 
@@ -325,9 +334,10 @@ def make_final_brand(project_root: Path, wordmark_only: bool = False, with_token
 
     The brand gets brief.md and brief.json (BRIEF), strategy.md and strategy.json (STRATEGY), territories.json
     (TERRITORIES), the forge territory, concept 01-good (the good fixture, with a passing scorecard and audit and a
-    one-pass critic card), the fintech industry and a wordmark font. final/ gets a copy of the good concept (the
-    wordmark-only one with `wordmark_only`), params.json, tokens.json (good_tokens(), unless `with_tokens` is False),
-    rationale.md, a passing audit, a one-pass critic card and a scorecard of 4s. The brand then advances one phase at
+    one-pass critic card and a recorded knock-out), the fintech industry and a wordmark font. final/ gets a copy of the
+    good concept (the wordmark-only one with `wordmark_only`), params.json, tokens.json (good_tokens(), unless
+    `with_tokens` is False), rationale.md, a passing audit, a one-pass critic card, a scorecard of 4s and a recorded
+    knock-out with the WIPO search. The brand then advances one phase at
     a time to `phase` through registry.advance, so the registry's own gates vouch for the artifacts; None leaves it
     where it is (intake for a new brand).
     """
@@ -349,6 +359,7 @@ def make_final_brand(project_root: Path, wordmark_only: bool = False, with_token
     (concept / "scorecard.json").write_text(json.dumps(scorecard()))
     write_passing_audit(paths, "keystone", concept)
     critic_run(project_root, ["01-good"])
+    recorded(concept, wipo=True)
     final = brand / "final"
     shutil.copy(FIXTURES / "concepts" / ("wordmark_only" if wordmark_only else "good") / "concept.py", final / "concept.py")
     (final / "params.json").write_text("{}\n")
@@ -358,6 +369,7 @@ def make_final_brand(project_root: Path, wordmark_only: bool = False, with_token
     write_passing_audit(paths, "keystone", final)  # after tokens.json, which its fingerprint covers
     critic_run(project_root, [], final=True)
     (final / "scorecard.json").write_text(json.dumps(scorecard()))
+    recorded(final, wipo=True)
     if phase is not None:
         state = registry.load_state(paths, "keystone")
         while PHASE_ORDER.index(state.phase) < PHASE_ORDER.index(phase):

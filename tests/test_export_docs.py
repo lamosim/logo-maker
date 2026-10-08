@@ -365,3 +365,12 @@ def test_the_brand_sheet_prints_on_one_page(project_root, renderer, paper):
     pdf = PdfReader(str(project_root / "brands" / "keystone" / "package" / "brand-sheet.pdf"))
     assert len(pdf.pages) == 1 and manifest.warnings == []
     assert "https://example.com/og-image-1200x630.png" in pdf.pages[0].extract_text()
+
+
+def test_inputs_fingerprint_covers_the_final_knockout_when_present(project_root):
+    from logomaker.export_docs import inputs_fingerprint
+
+    final = make_final_brand(project_root)
+    before = inputs_fingerprint(project(), "keystone")
+    (final / "knockout.json").write_text('{"caveat": "x"}')
+    assert inputs_fingerprint(project(), "keystone") != before

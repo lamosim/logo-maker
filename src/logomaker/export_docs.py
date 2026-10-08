@@ -42,6 +42,7 @@ PREFIX_SECTIONS = (
 DEFAULT_SECTION = "Documents and tokens"  # every file neither BRAND_SECTIONS nor PREFIX_SECTIONS places
 # What source/ holds, from the brand folder: what rebuilds the package (README.md says how).
 SOURCE_FILES = ("final/concept.py", "final/params.json", "final/tokens.json", "final/rationale.md", "brand.json", "strategy.json")
+FINGERPRINT_EXTRA = ("final/knockout.json",)  # read by the build's documents when present; never a copied source file
 # The brand sheet's logo system row, by primary lockup: the width in CSS px of the primary's two panels (light and dark
 # paper), then of the other lockup's panel. A horizontal lockup gets a wide panel and a stacked one a narrower one, so
 # the row of six stays one line on an A4 page; each art box is its panel less 18 px of padding and border, 82 px tall.
@@ -235,7 +236,7 @@ def inputs_fingerprint(paths: ProjectPaths, slug: str) -> str:
     state = registry.load_state(paths, slug)
     brand = paths.brand(slug)
     settings = state.model_dump(mode="json", include={"name", "primary_lockup", "min_sizes", "fonts"})
-    files = [name for name in SOURCE_FILES if name != "brand.json"]
+    files = [*(name for name in SOURCE_FILES if name != "brand.json"), *FINGERPRINT_EXTRA]
     entries = [(name, (brand / name).read_bytes()) for name in files if (brand / name).is_file()]
     return digest([*entries, ("brand settings", json.dumps(settings, sort_keys=True).encode())])
 

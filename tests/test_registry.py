@@ -9,7 +9,7 @@ from logomaker.cli import main
 from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import Phase, TerritoriesSpec
-from tests.conftest import FIXTURES, critic_run, install_concept, make_final_brand, scorecard, write_passing_audit
+from tests.conftest import FIXTURES, critic_run, install_concept, make_final_brand, recorded, scorecard, write_passing_audit
 
 CRITIC_STALE = ("01-good/critic.json is stale (the concept changed since the critic saw it); re-run: logomaker sheet critic "
                 "keystone --concepts 01-good, dispatch the critic, then logomaker concept critic keystone --sheet N")
@@ -191,6 +191,7 @@ def test_concept_gate_needs_a_current_rendered_passing_audit(project_root):
 
     folder = install_concept(project_root, "good")
     (folder / "scorecard.json").write_text(json.dumps(scorecard()))
+    recorded(folder)  # the knock-out, so the audit and the critic are the gate's only problems
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
     rerun = "logomaker concept audit keystone 01-good"
@@ -227,6 +228,7 @@ def test_malformed_audit_or_verify_json_is_reported_not_raised(project_root):
     (folder / "scorecard.json").write_text(json.dumps(scorecard()))
     write_passing_audit(project(), "keystone", folder)
     critic_run(project_root, ["01-good"])  # a fresh critic card, so the malformed audit is the concept gate's one problem
+    recorded(folder)  # and a recorded knock-out
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
     package_verify = "(run: logomaker package verify keystone)"
@@ -273,6 +275,7 @@ def test_the_concept_gate_follows_only_the_brand_settings_the_audit_reads(projec
     saved = json.loads((folder / "audit.json").read_text())
     (folder / "audit.json").write_text(json.dumps({**saved, "rendered": True}))
     critic_run(project_root, ["01-good"])
+    recorded(folder)
     assert run("brand", "set", "keystone", "--concept", "01-good")[0] == 0  # brand.json changes; nothing the audit read does
     assert registry._check_concept(brand, registry.load_state(project(), "keystone")) == []
     assert run("brand", "set", "keystone", "--industry", "AI tooling")[0] == 0  # the cliché check reads the industry
@@ -284,6 +287,7 @@ def test_the_concept_gate_follows_only_the_brand_settings_the_audit_reads(projec
 def test_the_concept_gate_needs_a_scorecard_that_passes_the_gate(project_root):
     folder = install_concept(project_root, "good")
     write_passing_audit(project(), "keystone", folder)
+    recorded(folder)
     state = registry.set_fields(project(), "keystone", concept="01-good")
     brand = project_root / "brands" / "keystone"
     card = folder / "scorecard.json"
@@ -421,6 +425,9 @@ def test_final_tokens_must_validate(project_root):
                              "then logomaker concept critic keystone --sheet N)"]  # asked once final/'s own files pass
     critic_run(project_root, [], final=True)
     (brand / "final" / "scorecard.json").write_text(json.dumps(scorecard()))
+    assert check_final() == ["final/knockout.json is missing (run: logomaker concept knockout keystone final, search by image, "
+                             "record the matches)"]  # asked once the critic passes
+    recorded(brand / "final", wipo=True)
     assert check_final() == []
     tokens.unlink()
     assert check_final() == ["final/tokens.json is missing; write final/tokens.json (the approved colours)"]

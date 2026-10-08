@@ -325,8 +325,8 @@ def test_process_md_mirrors_the_phases_and_their_checks(project_root):
     messages = " ".join(m for check in registry.PHASE_CHECKS.values() for m in check(paths.brand("gates"), state, True))
     files = {re.sub(r"^(?:concepts/)?01-idea/", "", name) for name in re.findall(r"([\w./-]+\.(?:md|json|py)) is missing", messages)}
     assert files == {"brief.md", "brief.json", "naming.md", "strategy.md", "strategy.json", "territories/territories.json",
-                     "concept.py", "audit.json", "scorecard.json", "final/concept.py", "final/params.json", "final/tokens.json",
-                     "final/audit.json", "package/verify.json"}
+                     "concept.py", "audit.json", "scorecard.json", "knockout.json", "final/concept.py", "final/params.json",
+                     "final/tokens.json", "final/audit.json", "package/verify.json"}
     artifacts = section(text, "Artifacts each phase must contain")
     for name in sorted(files | {"src/logomaker/schemas.py"}):  # each as a whole path in code, never inside a longer one
         assert f"`{name}`" in artifacts, name

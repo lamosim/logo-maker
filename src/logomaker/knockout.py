@@ -3,12 +3,14 @@ Database, the knockout.json they are recorded in, and what the gates ask of it."
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
-from . import render
+from . import registry, render
 from .kit import concept as conceptlib
+from .output import CliError
 from .paths import ProjectPaths
 from .render import fit_size
-from .schemas import Knockout
+from .schemas import Decision, Knockout
 
 SKIP_NOTE = "knock-out skipped:"  # the owner's brand decide note that lets a skipped image search pass a gate
 MARK_PX, LOCKUP_PX = 512, 1024
@@ -56,3 +58,45 @@ class _already:
 
     def __exit__(self, *exc):
         return False
+
+
+def _owner_skipped(decisions: list[Decision]) -> bool:
+    return any(d.by == "user" and d.note.strip().lower().startswith(SKIP_NOTE) for d in decisions)
+
+
+def _latest_round(folder: Path) -> str:
+    """The newest knockout/round-N folder's name, or "round-N" when no images were rendered yet."""
+    base = folder / "knockout"
+    numbers = sorted(int(p.name[6:]) for p in base.glob("round-*") if p.name[6:].isdigit()) if base.is_dir() else []
+    return f"round-{numbers[-1]}" if numbers else "round-N"
+
+
+def knockout_problems(paths: ProjectPaths, slug: str, folder: Path, label: str | None = None, final: bool = False) -> list[str]:
+    """Why <folder>/knockout.json does not record the look-alike searches, or []: missing, invalid, no image knock-out
+    (neither searched nor skipped), skipped without the owner's `knock-out skipped:` decision, or, with `final`, no WIPO
+    search. Each message says what clears it."""
+    label = label or f"{folder.name}/knockout.json"
+    path = folder / "knockout.json"
+    if not path.is_file():
+        return [f"{label} is missing (run: logomaker concept knockout {slug} {folder.name}, search by image, record the matches)"]
+    try:
+        record = registry.load_model(path, Knockout, label)
+    except CliError as err:
+        return [str(err)]
+    image = f"knockout/{_latest_round(folder)}/mark-512.png"
+    state = registry.load_state(paths, slug)
+    phase = "refinement" if final else "concepts"
+    decide = f'logomaker brand decide {slug} --phase {phase} --by user --note "{SKIP_NOTE} <reason>"'
+    problems = []
+    if not record.image_done:
+        problems.append(f"{label} has no image knock-out (run Google Lens on {image} and record the matches, "
+                        "or record skipped with a reason)")
+    elif record.image_matches.skipped and not _owner_skipped(state.decisions):
+        problems.append(f"{label} records the image knock-out as skipped without the owner's decision (run: {decide})")
+    if final:
+        if not record.wipo_done:
+            problems.append(f"{label} has no WIPO image search (upload {image} to the Global Brand Database and record the matches, "
+                            "or record skipped with a reason)")
+        elif record.wipo is not None and record.wipo.skipped and not _owner_skipped(state.decisions):
+            problems.append(f"{label} records the WIPO search as skipped without the owner's decision (run: {decide})")
+    return problems

@@ -5,11 +5,12 @@ from click.testing import CliRunner
 from PIL import Image
 from pydantic import ValidationError
 
-from logomaker import knockout
+from logomaker import knockout, registry, sheets
 from logomaker.cli import main
+from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.schemas import ImageSearch, Knockout
-from tests.conftest import StubRenderer, install_concept
+from tests.conftest import StubRenderer, critic_run, install_concept, make_final_brand, recorded, scorecard, write_passing_audit
 
 
 def run(*args):
@@ -62,3 +63,65 @@ def test_concept_knockout_cli_needs_chrome(project_root, no_chrome):
     code, payload = run("concept", "knockout", "keystone", "01-good")
     assert code == 2 or code == 3  # NoChrome raises AssertionError inside the command wrapper: exit 2 with a traceback
     assert not (project_root / "brands" / "keystone" / "concepts" / "01-good" / "knockout").exists()
+
+
+def test_knockout_problems_for_a_survivor(project_root):
+    folder = install_concept(project_root, "good", name="01-good")
+    paths = project()
+    assert knockout.knockout_problems(paths, "keystone", folder) == [
+        "01-good/knockout.json is missing (run: logomaker concept knockout keystone 01-good, search by image, record the matches)"]
+    knockout.write_images(paths, "keystone", "01-good", renderer=StubRenderer())
+    assert knockout.knockout_problems(paths, "keystone", folder) == [
+        "01-good/knockout.json has no image knock-out (run Google Lens on knockout/round-1/mark-512.png and record the matches, "
+        "or record skipped with a reason)"]
+    recorded(folder)
+    assert knockout.knockout_problems(paths, "keystone", folder) == []
+    recorded(folder, skipped="the Chrome extension was unavailable")
+    assert knockout.knockout_problems(paths, "keystone", folder) == [
+        "01-good/knockout.json records the image knock-out as skipped without the owner's decision (run: logomaker brand decide "
+        'keystone --phase concepts --by user --note "knock-out skipped: <reason>")']
+    registry.decide(paths, "keystone", registry.Phase.concepts, "claude", "knock-out skipped: no Chrome")
+    assert knockout.knockout_problems(paths, "keystone", folder)  # Claude's note does not count
+    registry.decide(paths, "keystone", registry.Phase.concepts, "user", "knock-out skipped: travelling, no Chrome")
+    assert knockout.knockout_problems(paths, "keystone", folder) == []
+
+
+def test_knockout_problems_for_final_need_wipo(project_root):
+    final = make_final_brand(project_root)
+    paths = project()
+    recorded(final)  # overwrites the one make_final_brand records: Lens only, no WIPO
+    assert knockout.knockout_problems(paths, "keystone", final, final=True) == [
+        "final/knockout.json has no WIPO image search (upload knockout/round-N/mark-512.png to the Global Brand Database and record "
+        "the matches, or record skipped with a reason)"]
+    recorded(final, wipo=True)
+    assert knockout.knockout_problems(paths, "keystone", final, final=True) == []
+
+
+def test_the_concept_sheet_and_the_gates_read_the_knockout(project_root, no_chrome):
+    folder = install_concept(project_root, "good", name="01-good")
+    paths = project()
+    write_passing_audit(paths, "keystone", folder)
+    (folder / "scorecard.json").write_text(json.dumps(scorecard()))
+    critic_run(project_root, ["01-good"])
+    with pytest.raises(CliError, match="concept 01-good: 01-good/knockout.json is missing"):
+        sheets.concepts_sheet(paths, "keystone", ["01-good"], open_after=False)
+    recorded(folder)
+    with pytest.raises(AssertionError, match="Chrome started"):  # every check passed; the render is next
+        sheets.concepts_sheet(paths, "keystone", ["01-good"], open_after=False)
+
+
+def test_advance_to_package_needs_the_final_knockout(project_root):
+    final = make_final_brand(project_root)
+    paths = project()
+    (final / "knockout.json").unlink()  # make_final_brand records one; this test checks the gate
+    with pytest.raises(CliError) as err:
+        registry.advance(paths, "keystone", registry.Phase.package)
+    assert any("final/knockout.json is missing" in m for m in err.value.data["missing"])
+    recorded(final, wipo=True)
+    assert registry.advance(paths, "keystone", registry.Phase.package).phase == registry.Phase.package
+
+
+def test_a_concept_needs_its_knockout_only_while_the_brand_leaves_concepts(project_root):
+    final = make_final_brand(project_root)
+    (final.parent / "concepts" / "01-good" / "knockout.json").unlink()  # past concepts, final/ is what ships
+    assert registry.advance(project(), "keystone", registry.Phase.package).phase == registry.Phase.package

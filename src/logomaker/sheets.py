@@ -21,6 +21,7 @@ from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text
 from .kit import concept as conceptlib
 from .kit.mark import ROLES, VARIANTS, Mark
 from .kit.shape import fmt
+from .knockout import knockout_problems
 from .output import EXIT_EXTERNAL, CliError
 from .paths import ProjectPaths
 from .render import Renderer, fit_box
@@ -367,9 +368,9 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
     sheets) sits under the preface.
 
     Every named concept is vetted (_vetted, then registry.vetted_scorecard: a fresh critic card that the scorecard is
-    reconciled with) before any is built, and the PNG is rendered before the folder and both files are written, so a
-    refusal or a failed render leaves no sheet. `warnings` holds each concept's mockup warnings,
-    prefixed with its name, then any failure to open the sheet.
+    reconciled with, then knockout.knockout_problems: the image knock-out recorded) before any is built, and the PNG is
+    rendered before the folder and both files are written, so a refusal or a failed render leaves no sheet. `warnings`
+    holds each concept's mockup warnings, prefixed with its name, then any failure to open the sheet.
     """
     if not concept_names:
         raise CliError("at least one concept is needed (--concepts 01-arch,03-keystone)")
@@ -381,6 +382,9 @@ def concepts_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], ren
             critics[name] = registry.vetted_scorecard(paths, slug, folder, f"{name}/scorecard.json")[1]
         except CliError as err:
             raise CliError(f"concept {name}: {err}") from err
+        problems = knockout_problems(paths, slug, folder)
+        if problems:
+            raise CliError(f"concept {name}: {'; '.join(problems)}")
     env = jinja(paths)
     cards: list[dict] = []
     warnings: list[str] = []
