@@ -17,6 +17,7 @@ from logomaker.kit.ops import (
     move_node,
     nodes,
     offset,
+    repeat,
     rotate,
     scale,
     stroke,
@@ -337,3 +338,53 @@ def test_cut_counts_a_free_segment_only_for_an_off_grid_line():
 def test_parse_and_emit_round_trip_a_primitive_exactly():
     for shape in (rect(0, 0, 100, 50), polygon([(0, 0), (100, 0), (50, 75)])):
         assert list(_emit(shape, _parse(shape)).commands()) == list(shape.commands())
+
+
+def test_repeat_radial_grid_and_mirror():
+    petal = rect(150, -20, 100, 40)
+    six = repeat(petal, 6, cx=0, cy=0)
+    assert math.isclose(six.area, 6 * 4000, rel_tol=0.01) and six.anchor_count() == 24
+    dots = repeat(circle(0, 0, 20), 5, mode="grid", cols=3, step=100)
+    assert math.isclose(dots.area, 5 * math.pi * 400, rel_tol=0.01)
+    b = dots.bounds
+    assert math.isclose(b.cx, 0, abs_tol=0.01) and math.isclose(b.cy, 0, abs_tol=0.01)  # the grid is centred on (cx, cy)
+    assert b.w > 200 and b.h > 100
+    half = polygon([(0, 0), (100, 0), (0, 100)])
+    both = repeat(half, 2, mode="mirror", axis="x")
+    assert math.isclose(both.area, 10000) and both.bounds.x0 == -100
+    four = repeat(half, 4, mode="mirror", axis="xy")
+    assert math.isclose(four.area, 20000)
+    with pytest.raises(ValueError, match="grid needs cols and step"):
+        repeat(petal, 4, mode="grid")
+    with pytest.raises(ValueError, match="axis must be x, y or xy"):
+        repeat(petal, 2, mode="mirror", axis="z")
+    with pytest.raises(ValueError, match="n must be at least 2"):
+        repeat(petal, 1)
+
+
+def test_repeat_edges():
+    petal = rect(150, -20, 100, 40)
+    with pytest.raises(ValueError, match="n must be at least 2"):
+        repeat(petal, 0)
+    with pytest.raises(ValueError, match="mode must be radial, grid or mirror"):
+        repeat(petal, 3, mode="spiral")
+    with pytest.raises(ValueError, match="axis must be x, y or xy"):
+        repeat(petal, 2, mode="mirror")
+    with pytest.raises(ValueError, match="mirror across xy makes 4 copies"):
+        repeat(petal, 2, mode="mirror", axis="xy")
+    with pytest.raises(ValueError, match="mirror across y makes 2 copies"):
+        repeat(petal, 3, mode="mirror", axis="y")
+    # radial about an off-origin centre, and the grid centred on one
+    three = repeat(petal, 3, cx=100, cy=50)
+    assert math.isclose(three.area, 3 * 4000, rel_tol=0.01)
+    assert math.isclose(three.centroid[0], 100, abs_tol=0.5) and math.isclose(three.centroid[1], 50, abs_tol=0.5)
+    grid = repeat(rect(0, 0, 10, 10), 4, mode="grid", cols=2, step=50, cx=200, cy=-100)
+    assert math.isclose(grid.bounds.cx, 200, abs_tol=0.01) and math.isclose(grid.bounds.cy, -100, abs_tol=0.01)
+    assert math.isclose(grid.bounds.w, 60) and math.isclose(grid.bounds.h, 60)
+    # mirror across y = cy
+    up = repeat(polygon([(0, 10), (100, 10), (0, 110)]), 2, mode="mirror", axis="y", cy=10)
+    assert math.isclose(up.area, 10000) and math.isclose(up.bounds.y0, -90)
+    # free segments: each copy carries its source's count; the transforms add none (like rotate)
+    free_petal = rect(150, -20, 100, 40, free=True)
+    assert repeat(free_petal, 7).free_segments == 7 * free_petal.free_segments
+    assert repeat(petal, 7).free_segments == 0

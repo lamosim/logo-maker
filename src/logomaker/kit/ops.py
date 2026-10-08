@@ -209,6 +209,39 @@ def mirror_y(shape: Shape, axis: float = 0.0) -> Shape:
     return _rewound(scale(shape, 1, -1, cy=axis))
 
 
+def repeat(shape: Shape, n: int, mode: str = "radial", cx: float = 0, cy: float = 0, cols: int | None = None,
+           step: float | None = None, axis: str | None = None) -> Shape:
+    """`n` copies of `shape` as one union: `radial` at equal angles about (cx, cy); `grid` in `cols` columns at `step`
+    spacing, rows filling from the bottom left, the whole grid centred on (cx, cy); `mirror` the shape with its
+    reflections across `axis` ("x": the vertical line x = cx, "y": the horizontal line y = cy, "xy": both; n is then 2
+    or 4). Evidence rule 1 favours one repeated element; this is one call.
+
+    Like `rotate` and `translate`, the layout does not snap and adds no free segments: each copy carries its source's
+    count, so the union reports n times it. A radial angle off the 15-degree grid can still warn `near_miss_angles`."""
+    if n < 2:
+        raise ValueError("n must be at least 2")
+    if mode == "radial":
+        return union(*(rotate(shape, 360 * i / n, cx, cy) for i in range(n)))
+    if mode == "grid":
+        if not cols or step is None:
+            raise ValueError("grid needs cols and step")
+        laid = union(*(translate(shape, (i % cols) * step, (i // cols) * step) for i in range(n)))
+        b = laid.bounds
+        return translate(laid, cx - b.cx, cy - b.cy)
+    if mode == "mirror":
+        if axis not in ("x", "y", "xy"):
+            raise ValueError(f"axis must be x, y or xy, got {axis!r}")
+        if n != 2 * len(axis):
+            raise ValueError(f"mirror across {axis} makes {2 * len(axis)} copies, got n={n}")
+        copies = [shape]
+        if "x" in axis:
+            copies += [mirror_x(c, cx) for c in copies]
+        if "y" in axis:
+            copies += [mirror_y(c, cy) for c in copies]
+        return union(*copies)
+    raise ValueError(f"mode must be radial, grid or mirror, got {mode!r}")
+
+
 def align(shape: Shape, to: Shape | Box, edge: str) -> Shape:
     tb = to if isinstance(to, Box) else to.bounds
     sb = shape.bounds
