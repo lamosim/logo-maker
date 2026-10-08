@@ -92,13 +92,15 @@ SWAPPED = {"round": 2, "seed": 2, "letters": {"A": "01-k-jaw", "B": "02-arch"}, 
 
 
 def test_merge_translates_two_sheets_with_different_letters_into_one_card_per_concept():
-    # Sheet 1 letters 02-arch A; sheet 2 letters it B. Both passes prefer 02-arch and score its distinctive 3 then 4.
+    # Sheet 1 letters 02-arch A; sheet 2 letters it B. Both passes prefer 02-arch and score its distinctive 3 then 4, and
+    # 01-k-jaw's 4 then 2: merged by letter instead of by concept, 02-arch's distinctive would be (3 + 2) / 2, rounded to 3.
     first = critic.CriticPass(cards={"A": pass_card(distinctive=3), "B": pass_card(simple=2)}, pairs=both_orders("A", "B", "A"))
-    second = critic.CriticPass(cards={"A": pass_card(simple=3), "B": pass_card(distinctive=4)}, pairs=both_orders("A", "B", "B"))
+    second = critic.CriticPass(cards={"A": pass_card(simple=3, distinctive=2), "B": pass_card(distinctive=4)},
+                               pairs=both_orders("A", "B", "B"))
     cards = critic.merge([(critic.Key.model_validate(KEY), first), (critic.Key.model_validate(SWAPPED), second)])
     arch, jaw = cards["02-arch"], cards["01-k-jaw"]
     assert arch.scores["distinctive"] == 4 and arch.scores["simple"] == 4  # (3 + 4) / 2 rounds up; 4 and 4
-    assert jaw.scores["distinctive"] == 4 and jaw.scores["simple"] == 3  # (2 + 3) / 2 rounds up to 3
+    assert jaw.scores["distinctive"] == 3 and jaw.scores["simple"] == 3  # (4 + 2) / 2; (2 + 3) / 2 rounds up to 3
     assert arch.passes == jaw.passes == 2 and arch.sheet == jaw.sheet == 2 and arch.fingerprint == "f2"
     assert arch.preferred_over == ["01-k-jaw"] and jaw.tied_with == ["02-arch"]
 
@@ -157,6 +159,17 @@ def test_critic_sheet_letters_the_survivors_in_a_seeded_shuffle_and_writes_the_k
     assert sorted(other["letters"].values()) == sorted(info["letters"].values())
 
 
+def test_a_second_critic_sheet_of_the_same_concepts_gets_another_lettering(project_root):
+    prepare(project_root, "01-good")
+    prepare(project_root, "02-dots", "two_dots")
+    first = sheets.critic_sheet(project(), "keystone", ["02-dots", "01-good"], renderer=StubChrome())
+    second = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], renderer=StubChrome())
+    assert first["letters"] != second["letters"]
+    key = json.loads(Path(second["key"]).read_text())
+    assert key["seed"] == second["seed"] and key["letters"] == second["letters"]
+    assert json.loads(Path(first["key"]).read_text())["seed"] == first["seed"] == 1  # the first sheet keeps its default seed
+
+
 def test_critic_sheet_refuses_an_unvetted_concept_before_chrome(project_root, no_chrome):
     folder = prepare(project_root, "01-good")
     (folder / "scorecard.json").unlink()
@@ -206,14 +219,22 @@ def test_concept_critic_merges_two_sheets_by_their_own_keys(project_root):
     prepare(project_root, "01-good")
     prepare(project_root, "02-dots", "two_dots")
     brand = project_root / "brands" / "keystone"
-    for seed, distinctive in ((1, 3), (2, 4)):
-        info = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], seed=seed, renderer=StubChrome())
+    maps = []
+    for distinctive in ({"01-good": 5, "02-dots": 1}, {"01-good": 4, "02-dots": 2}):
+        info = sheets.critic_sheet(project(), "keystone", ["01-good", "02-dots"], renderer=StubChrome())
+        maps.append(info["letters"])
         winner = next(letter for letter, name in info["letters"].items() if name == "01-good")
-        write_pass(brand, info["round"], 1, info["letters"], prefer=winner, distinctive=distinctive)
+        cards = {letter: pass_card(distinctive=distinctive[name]) for letter, name in info["letters"].items()}
+        pairs = both_orders("A", "B", winner)
+        (brand / "sheets" / f"critic-{info['round']}.pass-1.json").write_text(json.dumps({"cards": cards, "pairs": pairs}))
+    assert maps[0] != maps[1]  # the second sheet letters the concepts the other way round
     code, payload = run("concept", "critic", "keystone", "--sheet", "1", "--sheet", "2")
     assert code == 0 and payload["passes"] == 2 and payload["sheets"] == [1, 2]
     good = json.loads((brand / "concepts" / "01-good" / "critic.json").read_text())
-    assert good["scores"]["distinctive"] == 4 and good["preferred_over"] == ["02-dots"] and good["sheet"] == 2 and good["passes"] == 2
+    dots = json.loads((brand / "concepts" / "02-dots" / "critic.json").read_text())
+    # (5 + 4) / 2 and (1 + 2) / 2, both rounded up; merged by letter, each would be 3
+    assert good["scores"]["distinctive"] == 5 and dots["scores"]["distinctive"] == 2
+    assert good["preferred_over"] == ["02-dots"] and good["sheet"] == 2 and good["passes"] == 2
     code, payload = run("concept", "critic", "keystone", "--sheet", "1", "--sheet", "1")
     assert code == 2 and payload["errors"] == ["sheet 1 is named twice; give each critic sheet once"]
 

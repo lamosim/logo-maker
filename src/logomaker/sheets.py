@@ -406,7 +406,9 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
                  renderer: Renderer | None = None) -> dict:
     """Write sheets/critic-N.{html,png} for the blind critic and sheets/critic-N.key.json for the merge (spec 2026-10-08
     §3.1). Each survivor (or final/, with `final`) shows the critique strip, the one-colour panels and the mockups under
-    a letter, in the order a Random seeded with `seed` (default N) shuffles them; no slug, idea or score is written. Every
+    a letter, in the order a Random seeded with `seed` (default N) shuffles them; when that letters two or more concepts
+    exactly as the latest critic sheet of the same concepts did, the seed steps up by one until it does not, and the key
+    and the result record the seed used. No slug, idea or score is written. Every
     survivor must be vetted (_vetted: a fresh, rendered, passing audit and a gate-passing scorecard), and final/ must
     pass registry.require_final_audit, before Chrome starts. The key maps letters to folder names and records each
     concept's fingerprint now."""
@@ -427,8 +429,13 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
         folders = [(name, _vetted(paths, slug, name)[0]) for name in concept_names]
     round_n = next_round(brand, "sheets/critic-*.key.json")
     seed = round_n if seed is None else seed
-    order = list(folders)
-    random.Random(seed).shuffle(order)
+    previous = _previous_letters(brand, round_n, {name for name, _ in folders})
+    while True:
+        order = list(folders)
+        random.Random(seed).shuffle(order)
+        if len(order) < 2 or previous is None or _letter_map(order) != previous:
+            break
+        seed += 1  # the same lettering as the last sheet of these concepts: a second pass needs another shuffle
     env = jinja(paths)
     cards, letters, fingerprints = [], {}, {}
     for letter, (name, folder) in zip(criticlib.LETTERS, order, strict=False):
@@ -448,7 +455,27 @@ def critic_sheet(paths: ProjectPaths, slug: str, concept_names: list[str], seed:
     key = criticlib.Key(round=round_n, seed=seed, letters=letters, fingerprints=fingerprints, final=final)
     key_file = criticlib.key_path(brand, round_n)
     key_file.write_text(json.dumps(key.model_dump(), indent=2) + "\n", encoding="utf-8")
-    return {"sheet_html": str(html_path), "sheet_png": str(png_path), "key": str(key_file), "round": round_n, "letters": letters}
+    return {"sheet_html": str(html_path), "sheet_png": str(png_path), "key": str(key_file), "round": round_n, "seed": seed,
+            "letters": letters}
+
+
+def _letter_map(order: list[tuple[str, Path]]) -> dict[str, str]:
+    return {letter: name for letter, (name, _) in zip(criticlib.LETTERS, order, strict=False)}
+
+
+def _previous_letters(brand: Path, round_n: int, names: set[str]) -> dict[str, str] | None:
+    """The letters of the latest critic sheet before `round_n` that lettered exactly `names`, or None."""
+    for earlier in range(round_n - 1, 0, -1):
+        path = criticlib.key_path(brand, earlier)
+        if not path.is_file():
+            continue
+        try:
+            letters = json.loads(path.read_text(encoding="utf-8"))["letters"]
+        except (ValueError, KeyError, TypeError):
+            continue
+        if isinstance(letters, dict) and set(letters.values()) == names:
+            return letters
+    return None
 
 
 def clear_space_svg(mark: Mark, x: float) -> str:

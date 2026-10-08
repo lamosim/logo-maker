@@ -13,7 +13,7 @@ The critic is a second designer who sees the work for the first time. LLM judges
 How the sheet is made [code]:
 
 - Each call takes the next round number N and writes `sheets/critic-N.html`, `sheets/critic-N.png` and `sheets/critic-N.key.json`. It never opens the sheet in the browser.
-- The order of the letters is a shuffle seeded with `--seed` (default: N). Two calls with different seeds give two sheets, N and N+1, each with its own key; the same concept is usually a different letter on each.
+- The order of the letters is a shuffle seeded with `--seed` (default: N). Two calls over the same concepts give two sheets, N and N+1, each with its own key and a different lettering: when a shuffle would letter two or more concepts exactly as the latest sheet of the same concepts did, the seed steps up by one until it does not, and the key and the JSON result record the seed used. `--seed` is there to reproduce a sheet, not to tell two sheets apart.
 - The key holds the round, the seed, the letter-to-concept map and each concept's fingerprint at that moment. Only you read it, and only to check; the merge reads it for you.
 - `sheet critic` refuses a survivor that is not vetted: it needs a fresh, rendered, passing audit and a gate-passing `scorecard.json`, the same rule as `sheet concepts`, checked before Chrome starts. It letters at most eight concepts (`critic.LETTERS`, A to H).
 - `uv run logomaker sheet critic <slug> --final` letters `final/` alone as Concept A. It needs a fresh, rendered, passing final audit, and takes no `--concepts`.
@@ -64,7 +64,7 @@ You score first, before the critic sheet exists; the critic never sees your card
 - The gate criteria stay yours. The critic informs the gate; it does not own it. A critic's 2 on `legible` against your 4 is a reason to look again at the ladder, then to lower your score or say in one line why 4 stands.
 - `uv run logomaker sheet concepts <slug> --concepts <a,b,c>` refuses a survivor whose `critic.json` is missing, invalid or stale, or whose scorecard leaves a disagreement of two or more without a `reconciled` entry; each refusal names the command that clears it. `brand advance --to refinement` applies the same rule to the chosen concept [code].
 - The concept sheet shows two totals per survivor, "designer 43 / critic 38 (2 passes)", and under the preface the critic's order: concepts grouped by how many they beat, best first, `>` between groups and `=` within. It prints the order only when every survivor's card comes from one merge; otherwise it prints "critic's order: not comparable; the cards come from different critic sheets (one order: logomaker sheet critic <slug> --concepts <a,b,c>)" [code].
-- After a concept module changes, its card is stale. Refresh it with the other survivors, so the order stays comparable: `sheet critic` twice again over all the survivors, with different `--seed` values, one critic per sheet, then `concept critic` with both sheets. The refusal names a one-concept `sheet critic`; that clears the gate too, but leaves the order not comparable.
+- After a concept module changes, its card is stale. Refresh it with the other survivors, so the order stays comparable: `sheet critic` twice again over all the survivors, one critic per sheet, then `concept critic` with both sheets. The refusal names a one-concept `sheet critic`; that clears the gate too, but leaves the order not comparable.
 
 The final pass [spec 2026-10-08 §3.3]:
 
@@ -73,7 +73,7 @@ The final pass [spec 2026-10-08 §3.3]:
 
 ## Dispatch
 
-1. Run `uv run logomaker sheet critic <slug> --concepts <a,b,c> --seed 1`, then the same with `--seed 2`. Read `round` from each JSON result: these are N and M. Do not read either PNG before the critics have written their passes, and never pass a key to a critic.
+1. Run `uv run logomaker sheet critic <slug> --concepts <a,b,c>` twice; the second sheet gets a different shuffle by itself. Read `round` from each JSON result: these are N and M. Never pass a key to a critic.
 2. Dispatch two critics in one message: two Agent calls, each with `model: "opus"` set explicitly, never inherited from the session. Each gets its own sheet. For the final pass, one call with the `--final` sheet.
 3. Give each subagent this prompt verbatim, with the paths filled in:
 
