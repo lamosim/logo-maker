@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  body{margin:0;width:{{ width }}px;font:14px/1.4 -apple-system,Helvetica,Arial,sans-serif;background:#f3f3f3;color:#222;padding:24px;box-sizing:border-box}
+  h1{font-size:22px;margin:0 0 16px} h2{font-size:16px;margin:24px 0 8px;color:#444}
+  .row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+  .panel{background:#fff;border:1px solid #ddd;display:flex;flex-direction:column;align-items:center;margin:0;padding:12px;box-sizing:border-box}
+  .panel figcaption{align-self:flex-start;margin-top:6px;font-size:11px;color:#888;white-space:nowrap}
+  .rhythm{display:flex;align-items:flex-end;gap:6px;height:140px;background:#fff;border:1px solid #ddd;padding:12px}
+  .bar{width:48px;background:#e8572a;position:relative} .bar.wide{background:#9a6a00} .bar.tight{background:#b00020}
+  .bar span{position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:11px;color:#555}
+  .bar b{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:12px}
+  .note{color:#777;font-size:12px;margin-top:24px}
+</style></head>
+<body>
+<h1>{{ brand }} &mdash; wordmark round {{ round_n }} ({{ font }})</h1>
+<h2>Sizes</h2>
+<div class="row">
+  <figure class="panel" style="width:300px;height:80px">{{ header|safe }}<figcaption>32 px header</figcaption></figure>
+  <figure class="panel" style="width:200px;height:100px">{{ minimum|safe }}<figcaption>{{ min_px }} px (the minimum width)</figcaption></figure>
+  <figure class="panel" style="width:460px;height:200px">{{ large|safe }}<figcaption>400 px</figcaption></figure>
+</div>
+<h2>Gaps between glyphs (units; median {{ median }})</h2>
+<div class="rhythm">{% for g in gaps %}<div class="bar{% if g.kind %} {{ g.kind }}{% endif %}" style="height:{{ g.height }}px"><span>{{ g.gap }}</span><b>{{ g.pair }}</b></div>{% endfor %}</div>
+<div class="note">A bar is the space between two glyph boxes. Amber is wider than {{ wide }} times the median, red tighter than {{ tight }} of it: kern the pair with text(..., kern={"{{ gaps[0].pair if gaps else 'AV' }}": -20}) and re-run.</div>
+</body></html>

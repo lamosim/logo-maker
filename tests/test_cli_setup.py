@@ -116,7 +116,7 @@ def test_every_command_has_a_one_line_description():
                 yield " ".join((*prefix, name)), cmd
 
     commands = dict(leaves(main))
-    assert len(commands) == 27
+    assert len(commands) == 28
     assert [name for name, cmd in commands.items() if not (cmd.help or "").strip() or "\n" in cmd.help.strip()] == []
     result = CliRunner().invoke(main, ["brand", "--help"])
     assert result.exit_code == 0 and "Move a brand to its next phase." in result.stdout

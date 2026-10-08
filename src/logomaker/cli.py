@@ -467,6 +467,21 @@ def sheet_refine(slug: str, round_n: int | None, no_open: bool) -> None:
     emit(info, warnings=info.pop("warnings"))
 
 
+@sheet_group.command("wordmark")
+@click.argument("slug")
+@click.option("--concept", "concept", default="final", help="Concept folder name, e.g. 03-keystone (default: final).")
+@ROUND_OPTION
+@click.option("--no-open", is_flag=True, help="Write the sheet without opening it in the browser.")
+@command
+def sheet_wordmark(slug: str, concept: str, round_n: int | None, no_open: bool) -> None:
+    """Render the wordmark sheet (three sizes, every glyph gap) to sheets/wordmark-N.{html,png} and open it in the browser."""
+    from . import sheets as sheetlib
+
+    # No renderer passed: the sheet launches Chrome itself, only once the concept has built and its wordmark checked.
+    info = sheetlib.wordmark_sheet(project(), slug, concept, open_after=not no_open, round_n=round_n)
+    emit(info, warnings=info.pop("warnings"))
+
+
 @sheet_group.command("critic")
 @click.argument("slug")
 @click.option("--concepts", "concepts", default=None, help="Comma-separated survivors to letter, e.g. 01-arch,03-keystone")

@@ -6,6 +6,7 @@ import os
 import shlex
 import subprocess
 from pathlib import Path
+from statistics import median
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pydantic import ValidationError
@@ -14,13 +15,14 @@ from . import critic as criticlib
 from . import fonts as fontlib
 from . import mockups as mockuplib
 from . import registry
-from .audit import MIN_FEATURE, concept_fingerprint, text_roles
+from .audit import MIN_FEATURE, RHYTHM_TIGHT, RHYTHM_WIDE, concept_fingerprint, text_roles
 from .color import CVD_KINDS, Tokens, check_tokens, chip_text, load_tokens, palettes_of, simulate_cvd
 from .color import info as color_info
 from .kit import arc, glyph, polyline, rect_centered, ring, rrect_centered, text, union
 from .kit import concept as conceptlib
 from .kit.mark import ROLES, VARIANTS, Mark
 from .kit.shape import fmt
+from .kit.text import TextShape, wordmark_gaps
 from .knockout import knockout_problems
 from .output import EXIT_EXTERNAL, CliError
 from .paths import ProjectPaths
@@ -39,6 +41,7 @@ BOARD_W = 1600
 CONCEPTS_W = 1800
 CONCEPT_LOCKUP, CONCEPT_MIRROR = 256, 128  # the concept sheet's strip: lockup boxes, mirrored and rotated boxes
 REFINE_W = 1600
+WORDMARK_W = 1400
 REFINE_TIERS = (("full-lockup", "full lockup 400", 400), ("compact", "compact 160", 160), ("small", "small 64", 64),
                 ("favicon", "favicon 32", 32))  # output, caption, box
 X_RULES = {"cap-height": "the wordmark cap height", "symbol-fifth": "one fifth of the symbol height",
@@ -582,3 +585,41 @@ def refine_sheet(paths: ProjectPaths, slug: str, renderer: Renderer | None = Non
     html_path, png_path = _write_sheet(renderer, html, brand / "sheets", f"refine-{round_n}", REFINE_W)
     open_file(html_path, open_after, warnings)
     return {"sheet_html": str(html_path), "sheet_png": str(png_path), "round": round_n, "warnings": warnings}
+
+
+def wordmark_sheet(paths: ProjectPaths, slug: str, concept_name: str = "final", renderer: Renderer | None = None,
+                   open_after: bool = True, round_n: int | None = None) -> dict:
+    """Write sheets/wordmark-N.{html,png}: the wordmark at the 32 px header size, at the brand's minimum horizontal width
+    and at 400 px, then one bar per glyph gap (kit.text.wordmark_gaps) against the median, coloured where it breaks the
+    rhythm as the spacing_rhythm audit reads it (spec 2026-10-08 §5.6). Needs a wordmark set with text(); a concept
+    without one, or whose wordmark lost its metrics, is a CliError before Chrome starts."""
+    state = registry.load_state(paths, slug)
+    folder = conceptlib.concept_folder(paths, slug, concept_name)
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
+    if "full-wordmark" not in outputs:
+        raise CliError(f"{concept_name} has no wordmark set with text(); the wordmark sheet needs one")
+    word = outputs["full-wordmark"].wordmark
+    if not isinstance(word, TextShape):
+        raise CliError(f"{concept_name}: wordmark metrics unknown (not a TextShape); build it with text() and keep it the first operand")
+    svg = outputs["full-wordmark"].to_svg("black")
+    gaps = wordmark_gaps(word)
+    mid = median(g["gap"] for g in gaps) if gaps else 0.0
+    top = max((abs(g["gap"]) for g in gaps), default=1.0) or 1.0
+    bars = []
+    for g in gaps:
+        kind = ""
+        if mid > 0 and g["gap"] > RHYTHM_WIDE * mid:
+            kind = "wide"
+        elif mid > 0 and g["gap"] < RHYTHM_TIGHT * mid:
+            kind = "tight"
+        bars.append({**g, "kind": kind, "height": max(2, round(100 * abs(g["gap"]) / top))})
+    brand = paths.brand(slug)
+    round_n = round_n or next_round(brand, "sheets/wordmark-*.html")
+    html = jinja(paths).get_template("sheets/wordmark.html").render(
+        brand=state.name, round_n=round_n, font=word.font, width=WORDMARK_W, header=fit_box(svg, 260, 32),
+        minimum=fit_box(svg, state.min_sizes.horizontal_px, 60), min_px=state.min_sizes.horizontal_px, large=fit_box(svg, 400, 160),
+        gaps=bars, median=number(mid), wide=RHYTHM_WIDE, tight=RHYTHM_TIGHT)
+    html_path, png_path = _write_sheet(renderer, html, brand / "sheets", f"wordmark-{round_n}", WORDMARK_W)
+    warnings: list[str] = [f"{b['pair']} is {b['kind']} against the median gap" for b in bars if b["kind"]]
+    open_file(html_path, open_after, warnings)
+    return {"sheet_html": str(html_path), "sheet_png": str(png_path), "round": round_n, "gaps": gaps, "median": mid, "warnings": warnings}

@@ -17,7 +17,7 @@ from logomaker.output import CliError
 from logomaker.paths import project
 from logomaker.raster import ink_mask
 from logomaker.schemas import AuditResult, Finding
-from tests.conftest import install_concept, requires_chrome
+from tests.conftest import StubChrome, install_concept, make_final_brand, requires_chrome
 
 SVG_SIZES = re.compile(r'<svg width="(\d+)" height="(\d+)"')
 AUDIT_LINE_DIV = re.compile(r'<div class="(fail|warn|info|more)">(.*?)</div>')
@@ -341,3 +341,76 @@ def test_sheet_draws_spec_sizes_and_never_drops_audit_lines_silently(project_roo
     lines = AUDIT_LINE_DIV.findall(html)
     assert len(lines) == sheets.AUDIT_LINES and lines[0] == ("fail", "fail: problem 0")
     assert lines[-1] == ("more", f"+{60 - (sheets.AUDIT_LINES - 1)} more (see audit.json)")
+
+
+def test_wordmark_sheet_draws_three_sizes_and_the_gap_bars(project_root):
+    make_final_brand(project_root)
+    info = sheets.wordmark_sheet(project(), "keystone", renderer=StubChrome(), open_after=False)
+    assert info["round"] == 1 and [g["pair"] for g in info["gaps"]] == ["Go", "oo", "od"]
+    html = (project_root / "brands" / "keystone" / "sheets" / "wordmark-1.html").read_text()
+    assert "32 px header" in html and "120 px" in html and "400 px" in html
+    assert html.count('<div class="bar') == 3 and "median" in html  # a flagged bar reads class="bar wide"
+
+
+def test_wordmark_sheet_takes_a_concept_folder(project_root):
+    install_concept(project_root, "good", name="01-good")
+    info = sheets.wordmark_sheet(project(), "keystone", "01-good", renderer=StubChrome(), open_after=False)
+    assert [g["pair"] for g in info["gaps"]] == ["Go", "oo", "od"]
+    assert all(w.endswith("against the median gap") for w in info["warnings"])
+
+
+def test_wordmark_sheet_refuses_a_concept_without_a_text_wordmark_before_chrome(project_root, no_chrome):
+    folder = install_concept(project_root, "good", name="01-good")
+    source = (folder / "concept.py").read_text()
+    (folder / "concept.py").write_text(source.replace('word = text("Good", family="Fira Code", weight=600, cap_height=180)',
+                                                      "word = rect(0, 0, 400, 100)"))
+    with pytest.raises(CliError, match="wordmark metrics unknown"):
+        sheets.wordmark_sheet(project(), "keystone", "01-good", open_after=False)
+    (folder / "concept.py").write_text(source.replace('return Mark(symbol=symbol, wordmark=word, lockup="horizontal", gap=p.gap)',
+                                                      "return Mark(symbol=symbol)"))
+    with pytest.raises(CliError, match="no wordmark set with text"):
+        sheets.wordmark_sheet(project(), "keystone", "01-good", open_after=False)
+    assert not list((project_root / "brands" / "keystone" / "sheets").glob("wordmark-*"))
+
+
+def test_sheet_wordmark_cli_takes_concept_and_round_and_never_opens_with_no_open(project_root, monkeypatch):
+    install_concept(project_root, "good", name="01-good")
+    monkeypatch.setattr(sheets, "Renderer", StubChrome)
+    opened = []
+    monkeypatch.setattr(sheets.subprocess, "Popen", lambda argv, **kw: opened.append(argv))
+    monkeypatch.delenv("LOGOMAKER_NO_OPEN", raising=False)
+    result = CliRunner().invoke(main, ["sheet", "wordmark", "keystone", "--concept", "01-good", "--round", "4", "--no-open"])
+    assert result.exit_code == 0, result.output
+    data = json.loads(result.stdout)
+    assert data["round"] == 4 and data["sheet_png"].endswith("wordmark-4.png") and opened == []
+    result = CliRunner().invoke(main, ["sheet", "wordmark", "keystone", "--concept", "01-good"])
+    assert result.exit_code == 0, result.output
+    assert len(opened) == 1 and opened[0][1].endswith("wordmark-5.html")
+    monkeypatch.setenv("LOGOMAKER_NO_OPEN", "1")
+    assert CliRunner().invoke(main, ["sheet", "wordmark", "keystone", "--concept", "01-good"]).exit_code == 0
+    assert len(opened) == 1
+
+
+def test_sheet_wordmark_cli_refuses_a_concept_without_a_wordmark_with_exit_2(project_root, no_chrome):
+    folder = install_concept(project_root, "good", name="01-good")
+    source = (folder / "concept.py").read_text()
+    (folder / "concept.py").write_text(source.replace('return Mark(symbol=symbol, wordmark=word, lockup="horizontal", gap=p.gap)',
+                                                      "return Mark(symbol=symbol)"))
+    result = CliRunner().invoke(main, ["sheet", "wordmark", "keystone", "--concept", "01-good", "--no-open"])
+    assert result.exit_code == 2 and "no wordmark set with text" in result.stdout
+
+
+@requires_chrome
+@pytest.mark.render
+def test_sheet_wordmark_renders_the_keystone_example_through_chrome(project_root, monkeypatch):
+    example = Path(__file__).resolve().parent.parent / "docs" / "examples" / "keystone"
+    brand = project_root / "brands" / "keystone"
+    shutil.copytree(example, brand)
+    for family in (p for p in (brand / "package" / "fonts").iterdir() if p.is_dir()):
+        shutil.copytree(family, project_root / "assets" / "fonts" / family.name, dirs_exist_ok=True)
+    monkeypatch.setenv("LOGOMAKER_NO_OPEN", "1")
+    result = CliRunner().invoke(main, ["sheet", "wordmark", "keystone"])
+    assert result.exit_code == 0, result.output
+    png = Image.open(brand / "sheets" / "wordmark-1.png")
+    assert png.width == sheets.WORDMARK_W and png.height > 300
+    assert png.convert("L").getextrema()[0] < 64  # the wordmark and its bars drew ink
