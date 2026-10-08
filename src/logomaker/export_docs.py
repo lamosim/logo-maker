@@ -42,7 +42,7 @@ PREFIX_SECTIONS = (
 DEFAULT_SECTION = "Documents and tokens"  # every file neither BRAND_SECTIONS nor PREFIX_SECTIONS places
 # What source/ holds, from the brand folder: what rebuilds the package (README.md says how).
 SOURCE_FILES = ("final/concept.py", "final/params.json", "final/tokens.json", "final/rationale.md", "brand.json", "strategy.json")
-FINGERPRINT_EXTRA = ("final/knockout.json",)  # read by the build's documents when present; never a copied source file
+FINGERPRINT_EXTRA = ("final/knockout.json",)  # fingerprinted when present, so a new search makes a new build; not copied
 # The brand sheet's logo system row, by primary lockup: the width in CSS px of the primary's two panels (light and dark
 # paper), then of the other lockup's panel. A horizontal lockup gets a wide panel and a stacked one a narrower one, so
 # the row of six stays one line on an A4 page; each art box is its panel less 18 px of padding and border, 82 px tall.

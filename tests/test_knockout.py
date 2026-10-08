@@ -58,6 +58,15 @@ def test_write_images_warns_for_a_wordmark_only_concept(project_root):
     assert info["warnings"] == ["no symbol: the mark image shows the full lockup"]
 
 
+def test_write_images_refuses_an_invalid_record_before_rendering(project_root):
+    folder = install_concept(project_root, "good", name="01-good")
+    (folder / "knockout.json").write_text(json.dumps({"image_matches": {"tool": "google-lens", "searched": True, "skipped": "x"}}))
+    renderer = StubRenderer()
+    with pytest.raises(CliError):
+        knockout.write_images(project(), "keystone", "01-good", renderer=renderer)
+    assert renderer.calls == [] and not list(folder.glob("knockout/round-*"))
+
+
 def test_concept_knockout_cli_needs_chrome(project_root, no_chrome):
     install_concept(project_root, "good", name="01-good")
     code, payload = run("concept", "knockout", "keystone", "01-good")

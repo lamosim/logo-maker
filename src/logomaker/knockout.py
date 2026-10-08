@@ -26,6 +26,13 @@ def write_images(paths: ProjectPaths, slug: str, concept_name: str, renderer=Non
     from .sheets import next_round  # imported here: sheets imports registry, which the gates below also import
 
     folder = conceptlib.concept_folder(paths, slug, concept_name)
+    record = folder / "knockout.json"
+    created = not record.is_file()
+    if created:
+        data = Knockout().model_dump()
+    else:  # checked before rendering, so a refused record leaves no new round folder
+        registry.load_model(record, Knockout, f"{folder.name}/knockout.json")  # refuses an invalid record, untouched
+        data = json.loads(record.read_text(encoding="utf-8"))  # the raw record, so fields the model does not know stay
     outputs = conceptlib.build_outputs(conceptlib.build_tiers(conceptlib.load_concept(folder)))
     warnings: list[str] = []
     mark_name = conceptlib.pick_output(outputs, MARK_PX)
@@ -43,13 +50,6 @@ def write_images(paths: ProjectPaths, slug: str, concept_name: str, renderer=Non
     target.mkdir(parents=True)
     for stem, png in renders.items():
         (target / f"{stem}.png").write_bytes(png)
-    record = folder / "knockout.json"
-    created = not record.is_file()
-    if created:
-        data = Knockout().model_dump()
-    else:
-        registry.load_model(record, Knockout, f"{folder.name}/knockout.json")  # refuses an invalid record, untouched
-        data = json.loads(record.read_text(encoding="utf-8"))  # the raw record, so fields the model does not know stay
     fingerprint = concept_fingerprint(paths, slug, folder)
     reset = data.get("fingerprint", "") != fingerprint
     if reset:
