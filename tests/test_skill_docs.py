@@ -166,3 +166,12 @@ def test_settings_allow_the_cli_and_still_deny_env():
     permissions = json.loads((ROOT / ".claude" / "settings.json").read_text(encoding="utf-8"))["permissions"]
     assert "Bash(uv run logomaker:*)" in permissions.get("allow", [])
     assert {"Read(./.env)", "Read(./.env.*)"} <= set(permissions["deny"])
+
+
+def test_skill_pins_the_knockout_by_image():
+    text = flat(SKILL.read_text(encoding="utf-8"))
+    assert "uv run logomaker concept knockout <slug> <NN-slug>" in text and "Google Lens" in text
+    assert "uv run logomaker concept knockout <slug> final" in text and "WIPO Global Brand Database" in text
+    assert "knock-out skipped:" in text
+    naming = (REF / "naming.md").read_text(encoding="utf-8")
+    assert "## Knock-out by image" in naming and "lens.google.com" in naming and "branddb.wipo.int" in naming

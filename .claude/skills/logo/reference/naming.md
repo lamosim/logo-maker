@@ -73,6 +73,19 @@ Syllables are vowel groups, less a silent final e. `pronounceable` means at leas
 - So: analyze every candidate, but check only the shortlist (the top five), one name at a time. Report `unknown` as unknown, never as available, and re-run those later.
 - An unknown handle service or a malformed TLD exits 2 before any lookup [code].
 
+## Knock-out by image
+
+A description search finds marks that are named like yours; a reverse-image search finds marks that look like yours [spec 2026-10-08 §7]. For every survivor before the concept sheet, and for `final/` before the package:
+
+1. `uv run logomaker concept knockout <slug> <NN-slug>` (or `final`) writes `knockout/round-N/mark-512.png` and `lockup-1024.png`, black on white, and seeds `knockout.json` [code].
+2. Load the Chrome tools in one ToolSearch call (`mcp__claude-in-chrome__tabs_context_mcp`, `navigate`, `tabs_create_mcp`, `file_upload`, `get_page_text`, `find`, `tabs_close_mcp`), open a new tab at `https://lens.google.com/`, upload `mark-512.png`, and read the "Visual matches" list. Record the ten nearest in `knockout.json` under `image_matches.matches` as `{"url", "owner", "note"}`, the note saying what matches (silhouette, construction, both), with `searched: true` and the date. Close the tab.
+3. For `final/` only, open `https://branddb.wipo.int/`, choose the image search, upload the same PNG, and record the nearest registered marks the same way under `wipo` (`{"tool": "wipo", "searched": true, "date", "matches"}`), each note naming the Nice class and the status shown.
+4. Write the prose into `final/knockout.md` as before (for a survivor, into `clear` in its `scorecard.json`), with the caveat below word for word, and copy the caveat into `knockout.json`'s `caveat`.
+
+When the Chrome extension is unavailable, record `"skipped": "<reason>"` in place of `searched` and tell the owner: the gate accepts a skipped search only after the owner records `uv run logomaker brand decide <slug> --phase <phase> --by user --note "knock-out skipped: <reason>"`, and the note counts only in the phase the refusal names, `concepts` for a survivor and `refinement` for `final/` [code].
+
+`knockout.json` carries the concept's fingerprint, the one the audit and the critic use. Each `concept knockout` run stamps the current one; when the mark changed since the last search, it resets each search's `searched`, `matches` and `date` (a skip reason, the description queries and the caveat stay) and reports `"reset": true`, so search again. Until then the gates refuse the record: "is stale (the mark changed since the search); re-run: logomaker concept knockout <slug> <NN-slug|final>" [code]. `final/knockout.json` is also in the package fingerprint, so a new search after `package build` makes the package out of date [code].
+
 ## Trademark caveat
 
 Say this sentence, word for word, wherever a knock-out result is reported (canonical wording; SKILL.md quotes this):
@@ -91,4 +104,4 @@ What counts as a conflict: similarity in "sound, appearance, or meaning", or "a 
 
 ## Sources
 
-05 §3.4 (Kolenda's sound symbolism), §3.6 (name types, naming and letterforms); 02 §G entry 29 (Klink, Lowrey and Shrum), §L (name sound by dimension), §K rule 13; 03 §5 (the distinctiveness spectrum, likelihood of confusion, the clearance workflow); 01 §3 rule 18; spec §3.3, §4.2, §4.6; code: `names.analyze`, `names.check`, `names.check_domain`, `names.check_github` (`DEADLINE`, `LIMIT`, `LOOKUP_TIMEOUT`).
+05 §3.4 (Kolenda's sound symbolism), §3.6 (name types, naming and letterforms); 02 §G entry 29 (Klink, Lowrey and Shrum), §L (name sound by dimension), §K rule 13; 03 §5 (the distinctiveness spectrum, likelihood of confusion, the clearance workflow); 01 §3 rule 18; spec §3.3, §4.2, §4.6; spec 2026-10-08 §7 (the knock-out by image); code: `names.analyze`, `names.check`, `names.check_domain`, `names.check_github` (`DEADLINE`, `LIMIT`, `LOOKUP_TIMEOUT`), `knockout.write_images`, `knockout.knockout_problems`, `schemas.Knockout`.
