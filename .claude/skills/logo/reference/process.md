@@ -32,7 +32,7 @@ What `brand advance` checks, phase by phase, as `registry.PHASE_CHECKS` implemen
 - `naming`: checked only when leaving `naming`, and only that `naming.md` exists. Advancing to `strategy` while the brand still needs a name is refused until `brand rename <slug> --name "<Name>"`.
 - `strategy`: `strategy.md` exists; `strategy.json` validates as `Strategy` (at least three ladder rungs, a full set of feature targets, `logo_type` one of the seven values in logo-types.md).
 - `territories`: `territories/territories.json` validates as `TerritoriesSpec` (two or three territories with unique, slug-shaped slugs; one to three fonts and two to six colours each) and contains the territory chosen with `brand set --territory`.
-- `concepts`: a concept chosen with `brand set --concept <NN-slug>`; its `concept.py`; its `scorecard.json`, valid and passing the gate in scorecard.md; its `audit.json`; its `critic.json`, fresh, with every disagreement reconciled (critic.md). When leaving `concepts`, that audit must be fresh (its fingerprint matches the files now), rendered (not `--no-render`) and ok. Later phases only need it present and valid JSON, because `final/` is what ships.
+- `concepts`: a concept chosen with `brand set --concept <NN-slug>`; its `concept.py`; its `scorecard.json`, valid and passing the gate in scorecard.md; its `audit.json`. When leaving `concepts`, that audit must be fresh (its fingerprint matches the files now), rendered (not `--no-render`) and ok, and its `critic.json` fresh, with every disagreement reconciled (critic.md). Later phases only need the audit present and valid JSON and the scorecard passing, because `final/` is what ships.
 - `refinement`: `final/concept.py`; `final/params.json` (`{}` is enough); `final/tokens.json`, valid as `Tokens`; `final/audit.json`, fresh, rendered and ok; `final/critic.json`, fresh, and `final/scorecard.json` reconciled.
 - `package`, checked by `--to done`: `package/verify.json` reports ok, and the inputs fingerprint it checked is still the current one.
 
@@ -40,7 +40,7 @@ Freshness [code]:
 
 - An audit's fingerprint covers `concept.py`, `params.json`, `tokens.json`, the brand's industry (brand.json's and brief.json's), its minimum sizes and `assets/cliches.json`. After any change, re-run `uv run logomaker concept run <slug> <NN-slug or final>` without `--no-render` before `sheet concepts`, `sheet refine`, `brand advance` or `package build`.
 - The package's fingerprint covers `final/concept.py`, `params.json`, `tokens.json` and `rationale.md`, `strategy.json`, and brand.json's name, primary lockup, minimum sizes and fonts. Any change after a build means `package build`, then `package verify`, again.
-- `package build` also refuses without `final/rationale.md` or without a fresh, rendered, passing final audit.
+- `package build` also refuses without `final/rationale.md`, without a fresh, rendered, passing final audit, or without a fresh `final/critic.json` and a `final/scorecard.json` reconciled with it (critic.md).
 
 What no gate reads, and Claude still owes:
 
@@ -69,7 +69,7 @@ What no gate reads, and Claude still owes:
    > "New ideas can be fragile because they are unfamiliar. You may not like something you see here, but you are not allowed to say that for now... find something, anything, you like in every idea."
 
    Collins pairs it with banning devil's advocates from the first presentation [01 §1.1, §4].
-2. Show only fully vetted options, each in context, so that the owner "can literally pick any of the options" (CGH) [01 §1.1]. `sheet concepts` refuses a concept without a fresh, rendered, passing audit and a gate-passing scorecard [code].
+2. Show only fully vetted options, each in context, so that the owner "can literally pick any of the options" (CGH) [01 §1.1]. `sheet concepts` refuses a concept without a fresh, rendered, passing audit, a gate-passing scorecard and a fresh critic card the scorecard is reconciled with [code].
 3. Remember Armani Exchange: rejected on a white page, approved in ads and storefronts. Walk the owner through the mockups before the strips [01 §1.1].
 4. Ask "what do you like in each?" before "which one?". Record the likes with `brand decide`; they become refinement notes or steals, never a blend [spec §3.3].
 5. On a negative first reaction, ask one probing question before changing anything: what reads wrong, at what size, in which mockup [spec §3.3].

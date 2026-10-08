@@ -45,7 +45,7 @@ Whole numbers 1 to 5; 2 and 4 sit between the anchors below [synthesis from 01 �
 - The final mark: `brand advance --to package` and `package build` refuse without a fresh `final/critic.json` and a `final/scorecard.json` reconciled with it (`registry.require_final_critic`) [code]. How to run the critic: critic.md.
 - Fix it or kill it: at most four revise rounds per concept [spec §3.3]. A killed card sets `kill` to true, gives a `reason`, and still carries all ten scores, because the model requires them [code].
 - The other seven criteria do not block the sheet. A score of 1 or 2 on any of them goes into critique.md with its reason, and into what you tell the owner [synthesis].
-- The total out of 50 is shown beside each survivor on the concept sheet; it ranks survivors and never overrides a failed gate [code].
+- Both totals out of 50 are shown beside each survivor on the concept sheet, "designer 43 / critic 38 (2 passes)"; they rank survivors and never override a failed gate [code].
 - The audit's warnings are not scores: each is fixed or justified in critique.md [spec §8.1].
 
 ## scorecard.json format
