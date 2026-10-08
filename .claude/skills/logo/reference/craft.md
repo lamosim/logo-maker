@@ -10,7 +10,7 @@ Craft is subtraction plus optics: one idea, black first, tested at 16 px, correc
 |---|---|---|---|
 | Overshoot | a circle as tall as a square looks smaller; round and pointed forms must pass the baseline and cap height [05 §5.2] | 1.5 percent, the kit's default [spec §6.2] | `overshoot(shape, amount=0.015)` scales the whole part about its box centre: round or pointed parts only |
 | Stroke compensation | horizontals look heavier than verticals of equal width, curves thinner than straights; diagonals need their own adjustment [05 §5.2] | horizontals 92 percent and curves 105 percent of the vertical width, the kit's defaults [spec §6.2] | `compensate_stroke(base_width)` returns `StrokeWidths(vertical, horizontal, curve)`, one width per stroke kind |
-| Optical centre | a part centred by its box looks low; set it slightly above true centre (the Pringles face) [05 §5.2] | no figure in the research: start near 1 to 2 percent of the container's height, judged on the 512 px panel [synthesis] | `center()` it, then `translate(part, 0, dy)` upward (y is up) |
+| Optical centre | a part centred by its box looks low; set it just above (the Pringles face) [05 §5.2] | no figure in the research: start near 1 to 2 percent of the container's height, judged on the 512 px panel [synthesis] | `center()` it, then `translate(part, 0, dy)` upward (y is up); no helper raises a part |
 | Balance by mass | a lopsided part (a wedge, an arrow, an L) looks off-centre when its box is centred | until it looks still | `center(shape, optical=True)` centres the area centroid (`optical_center(shape)`); it raises nothing |
 | Optical sizing | an icon is not a scaled lockup [05 §5.2] | see the next section | `TIERS` overrides |
 | Letterspacing | pairs are spaced by eye, not by metrics [05 §5.2] | see the wordmark rules | `tracking`, `kern` |
@@ -37,7 +37,7 @@ The research gives each correction's direction, not its size; the kit's 1.5, 92 
 4. Track optically, pair by pair: tighter at display sizes, looser at small sizes; straight-straight pairs need more air than round-round pairs [05 §5.2]. `tracking` and `kern` are in 1/1000 em, between clusters only; `kern` adds to the font's own kerning [code].
 5. The Kia test: before presenting, read the wordmark where it is smallest (the concept sheet's 32 px site headers, the refine sheet's minimum-size ladder) as a stranger, asking whether any letter could be taken for another (K and N, rn and m, cl and d, I, l and 1) [05 §5.4] [code].
 6. The audit fails a wordmark whose x-height is under 7 px at the brand's minimum widths (120 px horizontal, 160 px stacked); shorten the lockup or enlarge the type, never thin it [code] [02 §K rule 19].
-7. Decide case before drawing: uppercase reads premium and masculine, lowercase approachable [02 §K rule 12] [05 §3.6].
+7. Decide case first: uppercase reads premium and masculine, lowercase approachable [02 §K rule 12] [05 §3.6].
 8. Weight follows personality: heavy for power, competence and ruggedness, light for sophistication [02 §K rules 10 and 12].
 9. Keep the wordmark's `TextShape` the first operand of every operation, so the audit can still measure it [code].
 
