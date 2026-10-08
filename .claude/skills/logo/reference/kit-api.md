@@ -9,7 +9,7 @@ Written from the code [code]; where spec §6 differs, the code wins [spec §6]. 
 `brands/<slug>/concepts/NN-slug/concept.py` (two digits, a hyphen, a slug) or `brands/<slug>/final/concept.py`:
 
 - `from logomaker.kit import *` first.
-- `META`, a `Meta(slug, idea, logo_type, motifs=[], territory=None, allow_complex=False, complex_reason="")`: `idea`, one sentence without "represents"; `motifs`, plain nouns the cliché check reads.
+- `META`, a `Meta(slug, idea, logo_type, motifs=[], territory=None, allow_complex=False, complex_reason="", snap="grid")`: `idea`, one sentence without "represents"; `motifs`, plain nouns the cliché check reads; `snap="free"` builds every tier as if each primitive had `free=True` (anything else but `"grid"` is a ValueError).
 - `PARAMS`, a `Params(stroke=90, gap=None, ...)`: named values read as `p.stroke`.
 - `TIERS`: keys `full` (required), `compact`, `small`, `favicon`; each value overrides `PARAMS` for that tier; `"wordmark": False` drops the wordmark (a symbol is then required).
 - `def build(p): ... return Mark(...)`, called once per tier; deterministic, since the audit builds twice and fails on any difference.
@@ -57,6 +57,7 @@ Each returns a new shape of its first operand's kind, so a `TextShape` keeps its
 
 - `paper` is not a part role: knock shapes out with `subtract()` [code].
 - `free=True` counts every segment the primitive draws, curves included (a free circle counts 4); the audit reports them as `free_segments`.
+- `FREE_ALL` (a `ContextVar[bool]`) and `with free_snapping(enabled=True):` in `logomaker.kit.primitives` make every primitive in the block free, `brush` and `spline` included; `Meta(snap="free")` is that block around each tier's `build`. An explicit `free=True` inside it is counted once.
 - A `regular_polygon` with n of 5, 7, 10, 11, 13, 14 or 15 (and most n over 16) warns `near_miss_angles` at every snapped rotation; 3, 4, 6, 8, 9, 12 and 16 never do. Glyph outlines used as a symbol can warn too (Fira Code's t at weights 500 to 700): that is the type designer's angle, so justify it.
 - Rotating by anything but a multiple of 15 degrees can create near-miss edges.
 - Inward `offset` limits: holes under 1 unit² are treated as slivers (a sub-unit hole can come back filled); marks with many holes (over about 50) inset slowly; a hairline speck thinner than max(1 unit, 2 percent of the distance) can survive an inset that should be empty; a pathops RuntimeError inside the band's stroke escapes the retry (change the distance slightly); a self-intersecting cubic can inset to nothing.

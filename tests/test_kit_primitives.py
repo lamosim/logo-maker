@@ -8,6 +8,7 @@ from logomaker.kit.primitives import (
     brush,
     catmull_rom,
     circle,
+    free_snapping,
     line,
     polygon,
     polyline,
@@ -211,3 +212,13 @@ def test_open_spline_is_stroked_or_filled():
         spline([(0, 0), (1, 1)])
     with pytest.raises(ValueError, match="tension must be between 0 and 1"):
         spline(DIAMOND, tension=2)
+
+
+def test_free_snapping_context_makes_every_primitive_free():
+    assert circle(0.3, 0, 100.12).bounds.x1 == 100.25
+    with free_snapping():
+        free_disc = circle(0.3, 0, 100.12)
+        assert math.isclose(free_disc.bounds.x1, 100.42, abs_tol=0.01) and free_disc.free_segments == 4
+        assert circle(0, 0, 100, free=True).free_segments == 4  # explicit free=True is not counted twice
+        assert regular_polygon(0, 0, 100, 5, rotation=7).free_segments == 5
+    assert circle(0.3, 0, 100.12).bounds.x1 == 100.25  # restored

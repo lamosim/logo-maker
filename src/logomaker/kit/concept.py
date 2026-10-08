@@ -14,6 +14,7 @@ from pathlib import Path
 from ..output import EXIT_RULE, CliError
 from ..paths import CONCEPT_NAME, ProjectPaths
 from .mark import VARIANTS, Mark
+from .primitives import free_snapping
 
 TIER_NAMES = ("full", "compact", "small", "favicon")
 # The outputs that stand in for a missing small or favicon tier, best first: how exports, the sheets and the audit fall back.
@@ -29,11 +30,14 @@ class Meta:
     territory: str | None = None
     allow_complex: bool = False
     complex_reason: str = ""
+    snap: str = "grid"
 
     def __post_init__(self) -> None:
         # A bare string would be read letter by letter by the cliché check.
         if not isinstance(self.motifs, (list, tuple)) or not all(isinstance(m, str) for m in self.motifs):
             raise ValueError(f"Meta.motifs must be a list of strings, e.g. motifs=['ring'], got {self.motifs!r}")
+        if self.snap not in ("grid", "free"):
+            raise ValueError(f"Meta.snap must be 'grid' or 'free', got {self.snap!r}")
 
 
 class Params(dict):
@@ -137,7 +141,7 @@ def build_tiers(concept: ConceptModule, overrides: dict | None = None) -> dict[s
         drop_wordmark = tier_overrides.get("wordmark") is False
         tier_params = {k: v for k, v in tier_overrides.items() if k != "wordmark"}
         p = concept.params.with_overrides(**(overrides or {})).with_overrides(**tier_params)
-        with _concept_code(f"{concept.path} build() failed for tier {tier!r}"):
+        with _concept_code(f"{concept.path} build() failed for tier {tier!r}"), free_snapping(concept.meta.snap == "free"):
             mark = concept.build(p)
         if not isinstance(mark, Mark):
             raise CliError(f"{concept.path} build() must return a Mark, got {type(mark).__name__}")

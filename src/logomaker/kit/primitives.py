@@ -1,7 +1,10 @@
 """Primitive shapes on the 1000-unit canvas. Coordinates snap to 0.25 units and angles to 15 degrees unless free=True."""
 from __future__ import annotations
 
+import contextvars
 import math
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 import skia
 
@@ -14,6 +17,23 @@ CAPS = {"butt": skia.Paint.kButt_Cap, "round": skia.Paint.kRound_Cap, "square": 
 JOINS = {"miter": skia.Paint.kMiter_Join, "round": skia.Paint.kRound_Join, "bevel": skia.Paint.kBevel_Join}
 
 
+FREE_ALL: contextvars.ContextVar[bool] = contextvars.ContextVar("logomaker_free_all", default=False)
+
+
+@contextmanager
+def free_snapping(enabled: bool = True) -> Iterator[None]:
+    """Within the block every primitive behaves as if free=True: what Meta(snap="free") sets for a whole module."""
+    token = FREE_ALL.set(enabled)
+    try:
+        yield
+    finally:
+        FREE_ALL.reset(token)
+
+
+def _free(free: bool) -> bool:
+    return free or FREE_ALL.get()
+
+
 def snap(value: float, step: float = SNAP) -> float:
     return round(round(value / step) * step, 6)
 
@@ -23,11 +43,11 @@ def snap_angle(angle: float, step: float = ANGLE_SNAP) -> float:
 
 
 def _v(value: float, free: bool) -> float:
-    return value if free else snap(value)
+    return value if _free(free) else snap(value)
 
 
 def _a(angle: float, free: bool) -> float:
-    return angle if free else snap_angle(angle)
+    return angle if _free(free) else snap_angle(angle)
 
 
 def _oval(cx: float, cy: float, r: float) -> skia.Rect:
@@ -42,7 +62,7 @@ def _polar(cx: float, cy: float, r: float, angle: float) -> tuple[float, float]:
 def _finish(path: skia.Path, free: bool) -> Shape:
     """Wrap a primitive's path; with free=True every segment it draws, curved or straight, counts as free."""
     shape = Shape(path)
-    shape.free_segments = shape.segment_count() if free else 0
+    shape.free_segments = shape.segment_count() if _free(free) else 0
     return shape
 
 
@@ -137,7 +157,7 @@ def regular_polygon(cx: float, cy: float, r: float, n: int, rotation: float = 0,
         raise ValueError("regular_polygon needs n >= 3")
     cx, cy, r, rotation = _v(cx, free), _v(cy, free), _v(r, free), _a(rotation, free)
     pts = [_polar(cx, cy, r, rotation + 360 * i / n) for i in range(n)]
-    return polygon(pts, free=True) if free else _finish_polygon_snapped(pts)
+    return polygon(pts, free=True) if _free(free) else _finish_polygon_snapped(pts)
 
 
 def _finish_polygon_snapped(pts: list[tuple[float, float]]) -> Shape:

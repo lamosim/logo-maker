@@ -7,6 +7,7 @@ from click.testing import CliRunner
 from logomaker.cli import main
 from logomaker.kit import concept as conceptlib
 from logomaker.kit.mark import VARIANTS
+from logomaker.kit.primitives import ring
 from logomaker.output import CliError
 from logomaker.paths import project
 from tests.conftest import install_concept
@@ -294,3 +295,20 @@ def test_draft_tokens_only_matter_for_colour_variants(project_root):
     code, payload = run("concept", "build", "keystone", "01-good", "--variants", "color")
     assert code == 2 and "traceback" not in payload and "01-good/tokens.json is invalid" in payload["errors"][0]
     assert snapshot(folder / "build") == before
+
+
+def test_meta_snap_free_builds_every_tier_free(project_root):
+    folder = install_concept(project_root, "good", name="01-free")
+    source = (folder / "concept.py").read_text()
+    (folder / "concept.py").write_text(source.replace('motifs=["ring"])', 'motifs=["ring"], snap="free")'))
+    module = conceptlib.load_concept(folder)
+    outputs = conceptlib.build_outputs(conceptlib.build_tiers(module))
+    expected = ring(0, 0, 400, 90, start=30, end=330, free=True).free_segments  # the fixture's sector, every segment free
+    assert expected > 0 and outputs["full-symbol"].symbol.free_segments == expected
+    grid = conceptlib.load_concept(install_concept(project_root, "good", name="02-grid"))
+    assert conceptlib.build_outputs(conceptlib.build_tiers(grid))["full-symbol"].symbol.free_segments == 0
+
+
+def test_meta_rejects_an_unknown_snap():
+    with pytest.raises(ValueError, match="Meta.snap must be 'grid' or 'free'"):
+        conceptlib.Meta(slug="x", idea="x", logo_type="abstract", snap="loose")
